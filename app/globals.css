@@ -1,0 +1,138 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #f4f1ea;
+  --card: #fffdf8;
+  --ink: #1f1a17;
+  --muted: #6f655d;
+  --accent: #c45d28;
+  --accent-dark: #9a4518;
+  --line: #e4ddd2;
+  --ok: #2f6b4f;
+  --warn: #9a6b1f;
+  --bad: #a33d2d;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+  background:
+    radial-gradient(circle at top left, rgba(196, 93, 40, 0.12), transparent 28%),
+    linear-gradient(180deg, #f8f4ed 0%, var(--bg) 100%);
+  color: var(--ink);
+  font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+}
+
+a {
+  color: inherit;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+.container {
+  width: min(1120px, calc(100% - 2rem));
+  margin: 0 auto;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  box-shadow: 0 18px 50px rgba(31, 26, 23, 0.06);
+}
+
+.label {
+  display: block;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.input,
+.textarea,
+.select {
+  width: 100%;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: #fff;
+  padding: 0.8rem 0.95rem;
+}
+
+.textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.button {
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: #fff;
+  padding: 0.8rem 1.2rem;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.button:hover {
+  background: var(--accent-dark);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-secondary {
+  background: transparent;
+  color: var(--ink);
+  border: 1px solid var(--line);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.2rem 0.65rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+
+.badge-pending {
+  background: #f6ead8;
+  color: var(--warn);
+}
+
+.badge-pass {
+  background: #e4f2ea;
+  color: var(--ok);
+}
+
+.badge-fail {
+  background: #f8e4e0;
+  color: var(--bad);
+}
+
+.muted {
+  color: var(--muted);
+}
+
+.grid-2 {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 900px) {
+  .grid-2 {
+    grid-template-columns: 1.1fr 0.9fr;
+  }
+}
