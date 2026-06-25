@@ -1,62 +1,101 @@
 import { NextResponse } from "next/server";
-import { analyzeImage } from "@/lib/gemini";
-import { createImageRecord } from "@/lib/feishu";
-import { validateAnalyzeInput } from "@/lib/validation";
-import type { AnalyzeRequest } from "@/lib/types";
+import { analyzeImageFromBuffer, fetchImageAsBase64 } from "@/lib/gemini";
+import { analyzeImageBuffer } from "@/lib/pipeline";
+import { canPersistRecords } from "@/lib/persist";
+import { createImageRecord } from "@/lib/records";
+import { createTraceId } from "@/lib/validation";
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as Partial<AnalyzeRequest>;
-    const validated = validateAnalyzeInput(body);
+    const contentType = request.headers.get("content-type") || "";
+    let traceId = createTraceId();
 
-    if (!validated.ok) {
-      const record = await createImageRecord({
-        traceId: body.trace_id || `img-${Date.now()}`,
-        imageUrl: String(body.image_url ?? ""),
-        originalFileName: body.original_file_name || "unknown.jpg",
-        flowStatus: "failed",
-        errorType: validated.error_type,
-        errorMessage: validated.error,
+    if (contentType.includes("multipart/form-data")) {
+      const form = await request.formData();
+      const file = form.get("image");
+      traceId = String(form.get("trace_id") || "").trim() || traceId;
+
+      if (!(file instanceof File) || file.size === 0) {
+        return NextResponse.json(
+          { ok: false, error: "image file is required", error_type: "missing_image" },
+          { status: 400 },
+        );
+      }
+
+      const buffer = Buffer.from(await file.arrayBuffer());
+      const mimeType = file.type || "image/jpeg";
+      const originalFileName = file.name || "upload.jpg";
+      const { ai } = await analyzeImageBuffer(buffer, mimeType, originalFileName);
+
+      let record;
+      if (canPersistRecords()) {
+        try {
+          record = await createImageRecord({
+            traceId,
+            imageUrl: "",
+            originalFileName,
+            flowStatus: "success",
+            ai,
+          });
+        } catch {
+          // optional persistence must not block analyze
+        }
+      }
+
+      return NextResponse.json({
+        ok: true,
+        ai,
+        originalImageBase64: buffer.toString("base64"),
+        mimeType,
+        originalFileName,
+        record,
       });
+    }
+
+    const body = await request.json();
+    const imageUrl = String(body.image_url || "").trim();
+    traceId = body.trace_id || traceId;
+
+    if (!imageUrl) {
       return NextResponse.json(
-        { ok: false, error: validated.error, error_type: validated.error_type, record },
+        { ok: false, error: "image file or image_url is required", error_type: "missing_image" },
         { status: 400 },
       );
     }
 
-    const { image_url, original_file_name, trace_id } = validated.data;
+    const { data, mimeType } = await fetchImageAsBase64(imageUrl);
+    const buffer = Buffer.from(data, "base64");
+    const ai = await analyzeImageFromBuffer(buffer, mimeType);
 
-    try {
-      const ai = await analyzeImage(image_url);
-      const record = await createImageRecord({
-        traceId: trace_id!,
-        imageUrl: image_url,
-        originalFileName: original_file_name!,
-        ai,
-        flowStatus: "success",
-        reviewStatus: "待审核",
-      });
-      return NextResponse.json({ ok: true, record });
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Gemini analysis failed";
-      const errorType = message.startsWith("ai_parse_error") ? "ai_parse_error" : "image_fetch_failed";
-      const record = await createImageRecord({
-        traceId: trace_id!,
-        imageUrl: image_url,
-        originalFileName: original_file_name!,
-        flowStatus: "failed",
-        errorType,
-        errorMessage: message,
-      });
-      return NextResponse.json(
-        { ok: false, error: message, error_type: errorType, record },
-        { status: 502 },
-      );
+    let record;
+    if (canPersistRecords()) {
+      try {
+        record = await createImageRecord({
+          traceId,
+          imageUrl: "",
+          sourceImageUrl: imageUrl,
+          originalFileName: body.original_file_name || "from-url.jpg",
+          flowStatus: "success",
+          ai,
+        });
+      } catch {
+        // optional
+      }
     }
+
+    return NextResponse.json({
+      ok: true,
+      ai,
+      originalImageBase64: data,
+      mimeType,
+      originalFileName: body.original_file_name || "from-url.jpg",
+      record,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected server error";
-    return NextResponse.json({ ok: false, error: message }, { status: 500 });
+    const errorType = message.startsWith("ai_parse_error") ? "ai_parse_error" : "analyze_failed";
+    return NextResponse.json({ ok: false, error: message, error_type: errorType }, { status: 502 });
   }
 }

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { updateImageRecord } from "@/lib/feishu";
+import { updateImageRecord } from "@/lib/records";
 import type { ReviewStatus } from "@/lib/types";
 
 export async function PATCH(

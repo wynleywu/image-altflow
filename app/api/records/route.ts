@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { listImageRecords } from "@/lib/feishu";
+import { listImageRecords } from "@/lib/records";
 
 export async function GET(request: Request) {
   try {

@@ -72,6 +72,11 @@ function ReviewEditor({ record, onSaved }: { record: ImageRecord; onSaved: (reco
           style={{ width: "100%", maxHeight: 220, objectFit: "contain", marginTop: "1rem", borderRadius: 12, background: "#f7f2ea" }}
         />
       ) : null}
+      {record.sourceImageUrl ? (
+        <div className="muted" style={{ fontSize: "0.85rem", marginTop: "0.5rem", wordBreak: "break-all" }}>
+          原始来源：<a href={record.sourceImageUrl} target="_blank" rel="noreferrer">{record.sourceImageUrl}</a>
+        </div>
+      ) : null}
 
       <div style={{ display: "grid", gap: "0.9rem", marginTop: "1rem" }}>
         <div>
@@ -142,7 +147,7 @@ export default function ReviewPage() {
       <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", flexWrap: "wrap", alignItems: "center" }}>
         <div>
           <h1 style={{ margin: 0, fontSize: "1.8rem" }}>审核列表</h1>
-          <p className="muted" style={{ marginBottom: 0 }}>数据来自飞书多维表格，可直接在此修改并保存。</p>
+          <p className="muted" style={{ marginBottom: 0 }}>数据保存在自有数据库，可直接在此修改并保存。</p>
         </div>
         <button className="button button-secondary" onClick={() => loadRecords()} disabled={loading}>
           刷新

@@ -1,5 +1,10 @@
 # Image Altflow 流程实施说明
 
+> **Legacy（2026-06-25）** — 本文档描述 **n8n + 飞书多维表格 + 人工审核** 的早期 MVP，**不是当前实现**。  
+> 当前方案见：[integration-guide.md](./integration-guide.md) · [architecture.md](./architecture.md)
+
+---
+
 ## 1. 目标
 
 把当前 MVP 收敛成一条可以直接在 n8n 中搭建、测试、复盘的最小闭环：

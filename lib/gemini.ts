@@ -3,13 +3,10 @@ import type { AiImageResult } from "./types";
 import { AI_PROMPT } from "./prompt";
 
 const REQUIRED_FIELDS: (keyof AiImageResult)[] = [
-  "image_description",
+  "image_description_en",
   "new_file_name",
-  "alt_text",
-  "caption",
-  "product_type",
-  "main_color",
-  "scene",
+  "alt_text_en",
+  "caption_en",
 ];
 
 function stripMarkdownFence(text: string): string {
@@ -28,33 +25,43 @@ function stripMarkdownFence(text: string): string {
   return cleaned;
 }
 
-function normalizeAiResult(raw: Partial<AiImageResult>): AiImageResult {
-  const tags = Array.isArray(raw.tags) ? raw.tags.map(String) : [];
-  const altText = String(raw.alt_text ?? "");
+function parseTags(value: unknown): string[] {
+  if (Array.isArray(value)) {
+    return value.map(String).filter(Boolean);
+  }
+  if (typeof value === "string" && value.trim()) {
+    return value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
+  }
+  return [];
+}
+
+export function normalizeAiResult(raw: Partial<AiImageResult> & Record<string, unknown>): AiImageResult {
+  const altEn = String(raw.alt_text_en ?? raw.alt_text ?? "");
+  const altZh = String(raw.alt_text_zh ?? "");
+  const captionEn = String(raw.caption_en ?? raw.caption ?? altEn);
+  const captionZh = String(raw.caption_zh ?? altZh);
+
   return {
-    image_description: String(raw.image_description ?? ""),
+    image_description_en: String(raw.image_description_en ?? raw.image_description ?? ""),
+    image_description_zh: String(raw.image_description_zh ?? ""),
     new_file_name: String(raw.new_file_name ?? ""),
-    alt_text: altText,
-    caption: String(raw.caption ?? altText),
-    tags,
-    product_type: String(raw.product_type ?? ""),
-    main_color: String(raw.main_color ?? "uncertain"),
-    scene: String(raw.scene ?? "uncertain"),
+    alt_text_en: altEn,
+    alt_text_zh: altZh,
+    caption_en: captionEn,
+    caption_zh: captionZh,
+    tags_en: parseTags(raw.tags_en ?? raw.tags),
+    tags_zh: parseTags(raw.tags_zh),
+    product_type_en: String(raw.product_type_en ?? raw.product_type ?? ""),
+    product_type_zh: String(raw.product_type_zh ?? ""),
+    main_color_en: String(raw.main_color_en ?? raw.main_color ?? "uncertain"),
+    main_color_zh: String(raw.main_color_zh ?? ""),
+    scene_en: String(raw.scene_en ?? raw.scene ?? "uncertain"),
+    scene_zh: String(raw.scene_zh ?? ""),
     confidence_note: raw.confidence_note === "uncertain" ? "uncertain" : "certain",
   };
 }
 
-export async function fetchImageAsBase64(imageUrl: string): Promise<{ data: string; mimeType: string }> {
-  const response = await fetch(imageUrl, { redirect: "follow" });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch image (${response.status})`);
-  }
-  const mimeType = response.headers.get("content-type")?.split(";")[0] || "image/jpeg";
-  const buffer = Buffer.from(await response.arrayBuffer());
-  return { data: buffer.toString("base64"), mimeType };
-}
-
-export async function analyzeImage(imageUrl: string): Promise<AiImageResult> {
+async function callGeminiWithInlineData(data: string, mimeType: string): Promise<AiImageResult> {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured");
@@ -65,19 +72,18 @@ export async function analyzeImage(imageUrl: string): Promise<AiImageResult> {
   const model = genAI.getGenerativeModel({
     model: modelName,
     generationConfig: {
-      maxOutputTokens: 1024,
+      maxOutputTokens: 2048,
       responseMimeType: "application/json",
     },
   });
 
-  const { data, mimeType } = await fetchImageAsBase64(imageUrl);
   const result = await model.generateContent([
     AI_PROMPT,
     { inlineData: { data, mimeType } },
   ]);
 
   const text = result.response.text();
-  let parsed: Partial<AiImageResult>;
+  let parsed: Partial<AiImageResult> & Record<string, unknown>;
   try {
     parsed = JSON.parse(stripMarkdownFence(text));
   } catch {
@@ -91,4 +97,23 @@ export async function analyzeImage(imageUrl: string): Promise<AiImageResult> {
   }
 
   return normalized;
+}
+
+export async function fetchImageAsBase64(imageUrl: string): Promise<{ data: string; mimeType: string }> {
+  const response = await fetch(imageUrl, { redirect: "follow" });
+  if (!response.ok) {
+    throw new Error(`Failed to fetch image (${response.status})`);
+  }
+  const mimeType = response.headers.get("content-type")?.split(";")[0] || "image/jpeg";
+  const buffer = Buffer.from(await response.arrayBuffer());
+  return { data: buffer.toString("base64"), mimeType };
+}
+
+export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): Promise<AiImageResult> {
+  return callGeminiWithInlineData(buffer.toString("base64"), mimeType || "image/jpeg");
+}
+
+export async function analyzeImage(imageUrl: string): Promise<AiImageResult> {
+  const { data, mimeType } = await fetchImageAsBase64(imageUrl);
+  return callGeminiWithInlineData(data, mimeType);
 }
