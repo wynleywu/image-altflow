@@ -1,36 +1,22 @@
 import type { AiImageResult } from "./types";
 import { AI_PROMPT } from "./prompt";
-import { normalizeAiResult } from "./gemini";
+import { normalizeAiResult, stripMarkdownFence } from "./gemini";
 
 const MODELSCOPE_BASE_URL = "https://api-inference.modelscope.cn/v1";
 
-function stripMarkdownFence(text: string): string {
-  let cleaned = text.trim();
-  const fence = "```";
-  if (cleaned.startsWith(fence)) {
-    cleaned = cleaned.slice(fence.length);
-    if (cleaned.toLowerCase().startsWith("json")) {
-      cleaned = cleaned.slice(4);
-    }
-    if (cleaned.endsWith(fence)) {
-      cleaned = cleaned.slice(0, -fence.length);
-    }
-    cleaned = cleaned.trim();
-  }
-  return cleaned;
+function readEnv(key: string): string {
+  const raw = process.env[key] ?? "";
+  return (raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw).trim();
 }
 
+const apiKey = readEnv("MODELSCOPE_API_KEY");
+const model = readEnv("MODELSCOPE_MODEL") || "Qwen/Qwen2.5-VL-72B-Instruct";
+
 export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): Promise<AiImageResult> {
-  const rawKey = process.env.MODELSCOPE_API_KEY ?? "";
-  // U+FEFF BOM may appear when .env.local is saved with BOM encoding on Windows
-  const apiKey = (rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey).trim();
   if (!apiKey) {
     throw new Error("MODELSCOPE_API_KEY is not configured");
   }
 
-  const rawModel = process.env.MODELSCOPE_MODEL ?? "";
-  const model = (rawModel.charCodeAt(0) === 0xFEFF ? rawModel.slice(1) : rawModel).trim()
-    || "Qwen/Qwen2.5-VL-72B-Instruct";
   const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
 
   const response = await fetch(`${MODELSCOPE_BASE_URL}/chat/completions`, {

@@ -9,7 +9,7 @@ const REQUIRED_FIELDS: (keyof AiImageResult)[] = [
   "caption_en",
 ];
 
-function stripMarkdownFence(text: string): string {
+export function stripMarkdownFence(text: string): string {
   let cleaned = text.trim();
   const fence = "```";
   if (cleaned.startsWith(fence)) {
@@ -62,12 +62,14 @@ export function normalizeAiResult(raw: Partial<AiImageResult> & Record<string, u
 }
 
 async function callGeminiWithInlineData(data: string, mimeType: string): Promise<AiImageResult> {
-  const apiKey = process.env.GEMINI_API_KEY;
+  const rawKey = process.env.GEMINI_API_KEY ?? "";
+  const apiKey = (rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey).trim();
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
-  const modelName = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
+  const rawModel = process.env.GEMINI_MODEL ?? "";
+  const modelName = (rawModel.charCodeAt(0) === 0xFEFF ? rawModel.slice(1) : rawModel).trim() || "gemini-3.1-flash-lite";
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
