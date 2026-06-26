@@ -5,7 +5,7 @@
 ## 当前阶段
 
 - **阶段一（已完成）**：CLI + HTTP API + 核心库；双语 Gemini 识图；英文元数据写入图片（ExifTool）。
-- **阶段二（未开始）**：前端 UI 待设计稿；`app/page.tsx` 仍为旧版，未接新 API。
+- **阶段二（进行中）**：首页 UI 已按设计稿实现单张流程；`app/review` 仍为旧版。
 - **Legacy**：`docs/mvp-test-plan.md`、`docs/workflow-spec.md`、`n8n/` 描述早期飞书/n8n 方案，勿按其实现。
 
 ## 技术栈
@@ -35,7 +35,7 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | 变量 | 必填 | 说明 |
 |------|------|------|
 | `GEMINI_API_KEY` | 是 | 识图 |
-| `GEMINI_MODEL` | 否 | 默认 `gemini-2.0-flash-lite` |
+| `GEMINI_MODEL` | 否 | 默认 `gemini-3.1-flash-lite` |
 | `POSTGRES_URL` | 否 | Neon；仅 `canPersistRecords()` 时写库 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储；需与 Postgres 同时配置才在 embed 时持久化 |
 

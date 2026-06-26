@@ -87,7 +87,7 @@ exiftool -G1 -a ./output.jpg
 | 变量 | 必填 | 说明 |
 |------|------|------|
 | `GEMINI_API_KEY` | 是 | Google AI Studio |
-| `GEMINI_MODEL` | 否 | 默认 `gemini-2.0-flash-lite` |
+| `GEMINI_MODEL` | 否 | 默认 `gemini-3.1-flash-lite` |
 | `POSTGRES_URL` | 否 | 历史记录 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储 |
 

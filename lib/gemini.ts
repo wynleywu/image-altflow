@@ -67,7 +67,7 @@ async function callGeminiWithInlineData(data: string, mimeType: string): Promise
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
-  const modelName = process.env.GEMINI_MODEL || "gemini-2.0-flash-lite";
+  const modelName = process.env.GEMINI_MODEL || "gemini-3.1-flash-lite";
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,

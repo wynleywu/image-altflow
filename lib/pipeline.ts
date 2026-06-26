@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "fs/promises";
 import { basename } from "path";
-import { analyzeImageFromBuffer, normalizeAiResult } from "./gemini";
+import { analyzeImageFromBuffer } from "./ai";
+import { normalizeAiResult } from "./gemini";
 import { buildDownloadFileName, embedMetadataIntoImage, resolveMimeType } from "./embed-metadata";
 import { mimeTypeFromFileName } from "./filename";
 import type { AiImageResult, PipelineAnalyzeResult, PipelineEmbedResult } from "./types";

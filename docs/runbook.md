@@ -7,7 +7,7 @@
 | 变量 | 必填 | 来源 | 说明 |
 |------|------|------|------|
 | `GEMINI_API_KEY` | **是** | Google AI Studio | 识图 |
-| `GEMINI_MODEL` | 否 | 手动 | 默认 `gemini-2.0-flash-lite` |
+| `GEMINI_MODEL` | 否 | 手动 | 默认 `gemini-3.1-flash-lite` |
 | `POSTGRES_URL` | 否 | Vercel Neon / Neon 控制台 | 历史记录 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | Vercel Blob | 成品图 URL |
 

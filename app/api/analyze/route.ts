@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { analyzeImageFromBuffer, fetchImageAsBase64 } from "@/lib/gemini";
+import { analyzeImageFromBuffer } from "@/lib/ai";
+import { fetchImageAsBase64 } from "@/lib/gemini";
 import { analyzeImageBuffer } from "@/lib/pipeline";
 import { canPersistRecords } from "@/lib/persist";
 import { createImageRecord } from "@/lib/records";
