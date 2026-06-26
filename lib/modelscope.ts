@@ -21,7 +21,8 @@ function stripMarkdownFence(text: string): string {
 }
 
 export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): Promise<AiImageResult> {
-  const apiKey = process.env.MODELSCOPE_API_KEY;
+  // strip BOM (U+FEFF) that Windows editors may prepend to env file values
+  const apiKey = process.env.MODELSCOPE_API_KEY?.replace(/^﻿/, "").trim();
   if (!apiKey) {
     throw new Error("MODELSCOPE_API_KEY is not configured");
   }
