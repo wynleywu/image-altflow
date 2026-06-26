@@ -1,42 +1,48 @@
 # Handoff & Changelog
 
-> 最后更新：2026-06-25
+> 最后更新：2026-06-26
 
-## 当前状态（阶段一完成）
+## 当前状态
 
 | 能力 | 状态 |
 |------|------|
-| 双语 Gemini 识图（`_en` / `_zh`） | 完成 |
+| 双语识图（`_en` / `_zh`） | 完成（Gemini + ModelScope，`lib/ai.ts`） |
 | 英文元数据写入图片（ExifTool） | 完成 |
 | 本地 CLI `npm run process` | 完成 |
 | `POST /api/analyze` | 完成 |
 | `POST /api/embed` | 完成 |
 | 可选 Neon + Blob 持久化 | 完成 |
-| Web UI（中英对照、两步按钮） | **单张流程已完成**（2026-06-25）；批量 Tab 占位 |
+| Vercel 生产部署 | 完成（2026-06-26，`image-altflow.vercel.app`） |
+| Web UI 单张流程（`app/page.tsx`） | 完成（2026-06-25） |
+| Web UI 批量 Tab | 占位 |
+| `/review` 旧审核 UI | 未清理 |
 | Shopify 回写 | 未开始 |
 
-## 推荐使用方式（2026-06-25）
+## 推荐使用方式（2026-06-26）
 
-单用户、用完即走：
+CLI：
 
 ```bash
-cp .env.example .env.local   # GEMINI_API_KEY
+cp .env.example .env.local   # AI_PROVIDER + 对应 Key
 npm run process -- ./input.jpg ./output.jpg
 ```
 
-需要改文案时：`--analyze-only` → 编辑 `*.ai.json` → `--ai`。
+Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-altflow.vercel.app/**
+需要改文案时（CLI）：`--analyze-only` → 编辑 `*.ai.json` → `--ai`。
 
-## 阶段二待办（设计稿到位后）
+## 阶段二待办
 
-- [ ] `app/page.tsx`：上传、中英对照编辑、「写入并下载」
-- [ ] `app/layout.tsx`：导航与品牌
-- [ ] 移除或隐藏旧审核流 UI
-- [ ] Vercel 部署与 Password Protection（若公开）
+- [ ] 批量上传（首页 Batch Tab）
+- [ ] 移除或隐藏 `/review` 旧审核流 UI
+- [ ] Vercel Password Protection（若公开部署）
 
 ## 历史决策
 
 | 日期 | 决策 |
 |------|------|
+| 2026-06-26 | Vercel 生产部署；识图主路径 `AI_PROVIDER=modelscope` + `Qwen/Qwen3-VL-30B-A3B-Instruct` |
+| 2026-06-26 | 识图支持 ModelScope；`lib/ai.ts` 统一路由，默认 ModelScope、失败可回退 Gemini |
+| 2026-06-25 | 首页单张流程 UI 落地，接 analyze/embed API |
 | 2026-06 | 放弃飞书多维表格（bot 写表权限 91403） |
 | 2026-06 | 存储改为自有 Neon + Blob（可选） |
 | 2026-06 | 产品定位：单用户、元数据写入图片、非审批流 |

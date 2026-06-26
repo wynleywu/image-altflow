@@ -10,7 +10,7 @@ function readEnv(key: string): string {
 }
 
 const apiKey = readEnv("MODELSCOPE_API_KEY");
-const model = readEnv("MODELSCOPE_MODEL") || "Qwen/Qwen2.5-VL-72B-Instruct";
+const model = readEnv("MODELSCOPE_MODEL") || "Qwen/Qwen3-VL-30B-A3B-Instruct";
 
 export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): Promise<AiImageResult> {
   if (!apiKey) {

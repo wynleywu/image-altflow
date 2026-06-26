@@ -1,19 +1,20 @@
 # Architecture
 
-> 最后更新：2026-06-25
+> 最后更新：2026-06-26
 
 ## 概述
 
-Image Altflow 将产品图经 Gemini 识图后，把 **英文** SEO 文案（Alt、Caption、Tags、Description）写入图片 EXIF/XMP/IPTC，供素材库与 CMS 使用。中文文案仅用于对照与校对，不写入二进制。
+Image Altflow 将产品图经视觉模型识图后，把 **英文** SEO 文案（Alt、Caption、Tags、Description）写入图片 EXIF/XMP/IPTC，供素材库与 CMS 使用。中文文案仅用于对照与校对，不写入二进制。
 
-当前交付形态：**CLI + HTTP API**；Web UI 为阶段二。
+当前交付形态：**CLI + HTTP API + Web 单张流程**（`app/page.tsx`）；批量 Tab 与 `/review` 为占位或旧版。
 
 ## 数据流
 
 ```text
 ┌─────────────┐     analyze      ┌──────────────┐
 │ 本地 JPEG   │ ───────────────► │ AiImageResult │
-│ / PNG       │   lib/gemini.ts  │ (_en + _zh)   │
+│ / PNG       │ lib/ai.ts        │ (_en + _zh)   │
+│             │ (Gemini/ModelScope)│              │
 └─────────────┘                  └───────┬───────┘
                                        │ 用户可改 JSON（CLI --ai）
                                        ▼ embed
@@ -31,8 +32,10 @@ Image Altflow 将产品图经 Gemini 识图后，把 **英文** SEO 文案（Alt
 
 | 模块 | 文件 | 说明 |
 |------|------|------|
-| Prompt | `lib/prompt.ts` | 要求 Gemini 输出双语 JSON |
-| 识图 | `lib/gemini.ts` | `analyzeImageFromBuffer` |
+| Prompt | `lib/prompt.ts` | 要求模型输出双语 JSON |
+| 识图路由 | `lib/ai.ts` | 按 `AI_PROVIDER` 选择 Gemini 或 ModelScope；默认 ModelScope，可回退 Gemini |
+| Gemini | `lib/gemini.ts` | `analyzeImageFromBuffer`；`normalizeAiResult` 共用 |
+| ModelScope | `lib/modelscope.ts` | `api-inference.modelscope.cn` OpenAI 兼容；推荐 Qwen3-VL |
 | 元数据 | `lib/embed-metadata.ts` | ExifTool 写 `alt_text_en` 等 |
 | 编排 | `lib/pipeline.ts` | analyze / embed 统一入口 |
 | 文件名 | `lib/filename.ts` | 下载名消毒与扩展名 |
@@ -41,7 +44,7 @@ Image Altflow 将产品图经 Gemini 识图后，把 **英文** SEO 文案（Alt
 
 ## AiImageResult（双语）
 
-Gemini 返回字段示例：
+Gemini 或 ModelScope 返回字段示例：
 
 - `alt_text_en` / `alt_text_zh`
 - `caption_en` / `caption_zh`
@@ -96,12 +99,13 @@ Gemini 返回字段示例：
 | 时期 | 方案 | 文档 |
 |------|------|------|
 | 2026-06 早期 | n8n + 飞书多维表格 + 人工审核 | `docs/workflow-spec.md`, `docs/mvp-test-plan.md` |
-| 2026-06 起 | Next.js + CLI/API + 元数据写入 | 本文档 |
+| 2026-06 起 | Next.js + CLI/API/Web + 元数据写入 + Vercel | 本文档 |
 
 `n8n/` 目录为工作流存档，非主路径。
 
 ## 未实现
 
-- 前端中英对照 UI（阶段二）
+- 批量上传（首页 Batch Tab 占位）
+- `/review` 旧审核流清理
 - Shopify Admin API 回写 Alt
 - 批量目录处理

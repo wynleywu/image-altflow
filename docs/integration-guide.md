@@ -1,13 +1,23 @@
 # Integration Guide
 
-> 最后更新：2026-06-25  
+> 最后更新：2026-06-26  
 > 面向：第一次接入 Image Altflow 的开发者（CLI 或 HTTP）。
 
 ## 前置条件
 
 - Node.js 18+
-- `GEMINI_API_KEY`（[Google AI Studio](https://aistudio.google.com/apikey)）
+- 识图 API Key（二选一，见下方环境变量）
 - 推荐图片格式：**JPEG**
+
+### 识图提供方
+
+| `AI_PROVIDER` | 必填变量 | 说明 |
+|---------------|----------|------|
+| `gemini` | `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/apikey) |
+| `modelscope` | `MODELSCOPE_API_KEY` | [ModelScope 令牌](https://modelscope.cn/my/myaccesstoken) |
+| 未设置 | `MODELSCOPE_API_KEY`；可选 `GEMINI_API_KEY` 作回退 | 代码默认 `modelscope`；失败且已配 Gemini 时自动回退 |
+
+**ModelScope 模型**：`api-inference.modelscope.cn` 仅部分模型可推理。已验证可用：`Qwen/Qwen3-VL-30B-A3B-Instruct`、`Qwen/Qwen3-VL-8B-Instruct`。`Qwen/Qwen2.5-VL-72B-Instruct`、`google/diffusiongemma-26B-A4B-it` 等返回 `has no provider supported`。
 
 ## 方式一：CLI（最快）
 
@@ -16,7 +26,7 @@ git clone https://github.com/wynleywu/image-altflow.git
 cd image-altflow
 npm install
 cp .env.example .env.local
-# 编辑 .env.local，填入 GEMINI_API_KEY
+# 编辑 .env.local：AI_PROVIDER + 对应 API Key
 ```
 
 ### 一步：识图 + 写入 + 输出
@@ -121,7 +131,7 @@ curl -X POST http://localhost:3000/api/embed \
 | 值 | 含义 |
 |----|------|
 | `missing_image` | 未提供图片文件或 URL |
-| `ai_parse_error` | Gemini 返回非 JSON 或缺必填字段 |
+| `ai_parse_error` | 上游返回非 JSON 或缺必填字段；换图重试，确认模型支持识图 |
 | `analyze_failed` | 识图过程失败 |
 | `invalid_ai_json` | embed 请求体 `ai` 无法解析 |
 | `embed_failed` | ExifTool 写入失败 |
@@ -138,13 +148,31 @@ HTTP 状态：客户端错误 `400`，服务端/上游错误 `502`。
 | `POSTGRES_URL` | analyze 成功时可写 `image_records` |
 | `BLOB_READ_WRITE_TOKEN` | 与 Postgres 同时配置时，embed 成品存 Blob |
 
-仅 `GEMINI_API_KEY` 即可完成识图 + 元数据写入。
+仅配置识图 Key 即可完成识图 + 元数据写入；`POSTGRES_URL` / `BLOB_READ_WRITE_TOKEN` 为可选持久化。
+
+## Web UI
+
+| 环境 | URL |
+|------|-----|
+| 本地 | `http://localhost:3000/`（`npm run dev`） |
+| 生产 | **https://image-altflow.vercel.app/** |
+
+单张流程：上传 → `/api/analyze` → 中英对照编辑 → `/api/embed` → 下载。
+
+生产环境 `curl` 示例：
+
+```bash
+curl -X POST https://image-altflow.vercel.app/api/analyze \
+  -F "image=@./product.jpg"
+```
+
+- **批量 Tab**：占位，尚未实现
+- **`/review`**：旧审核 UI，未接当前两步 API
 
 ## 限制说明
 
 - 浏览器 `<img alt="...">` **不会**读取文件内 EXIF Alt；元数据供桌面工具、素材库、部分 CMS 导入。
 - Shopify 商品 Alt 通常需 **Admin API** 单独设置，不能仅靠文件元数据。
-- 现有 Web 页面（`/`、`/review`）为旧版 UI，**未接上述 API**；请用 CLI 或自行调 API。
 
 ## Legacy 文档
 
