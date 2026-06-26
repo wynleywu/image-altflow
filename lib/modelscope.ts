@@ -21,13 +21,16 @@ function stripMarkdownFence(text: string): string {
 }
 
 export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): Promise<AiImageResult> {
-  // strip BOM (U+FEFF) that Windows editors may prepend to env file values
-  const apiKey = process.env.MODELSCOPE_API_KEY?.replace(/^﻿/, "").trim();
+  const rawKey = process.env.MODELSCOPE_API_KEY ?? "";
+  // U+FEFF BOM may appear when .env.local is saved with BOM encoding on Windows
+  const apiKey = (rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey).trim();
   if (!apiKey) {
     throw new Error("MODELSCOPE_API_KEY is not configured");
   }
 
-  const model = process.env.MODELSCOPE_MODEL || "Qwen/Qwen2.5-VL-72B-Instruct";
+  const rawModel = process.env.MODELSCOPE_MODEL ?? "";
+  const model = (rawModel.charCodeAt(0) === 0xFEFF ? rawModel.slice(1) : rawModel).trim()
+    || "Qwen/Qwen2.5-VL-72B-Instruct";
   const dataUrl = `data:${mimeType};base64,${buffer.toString("base64")}`;
 
   const response = await fetch(`${MODELSCOPE_BASE_URL}/chat/completions`, {
