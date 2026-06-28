@@ -1,12 +1,12 @@
 # Integration Guide
 
-> 最后更新：2026-06-26  
+> 最后更新：2026-06-27
 > 面向：第一次接入 Image Altflow 的开发者（CLI 或 HTTP）。
 
 ## 前置条件
 
 - Node.js 18+
-- 识图 API Key（二选一，见下方环境变量）
+- 识图 API Key（三选一，见下方环境变量）
 - 推荐图片格式：**JPEG**
 
 ### 识图提供方
@@ -15,6 +15,7 @@
 |---------------|----------|------|
 | `gemini` | `GEMINI_API_KEY` | [Google AI Studio](https://aistudio.google.com/apikey) |
 | `modelscope` | `MODELSCOPE_API_KEY` | [ModelScope 令牌](https://modelscope.cn/my/myaccesstoken) |
+| `cloudflare` | `CLOUDFLARE_ACCOUNT_ID`、`CLOUDFLARE_API_TOKEN` | Workers AI REST API；默认视觉模型需先运行 `npm run cf:agree` |
 | 未设置 | `MODELSCOPE_API_KEY`；可选 `GEMINI_API_KEY` 作回退 | 代码默认 `modelscope`；失败且已配 Gemini 时自动回退 |
 
 **ModelScope 模型**：`api-inference.modelscope.cn` 仅部分模型可推理。已验证可用：`Qwen/Qwen3-VL-30B-A3B-Instruct`、`Qwen/Qwen3-VL-8B-Instruct`。`Qwen/Qwen2.5-VL-72B-Instruct`、`google/diffusiongemma-26B-A4B-it` 等返回 `has no provider supported`。

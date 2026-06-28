@@ -1,16 +1,19 @@
 # Runbook
 
-> 最后更新：2026-06-26
+> 最后更新：2026-06-27
 
 ## 环境变量
 
 | 变量 | 必填 | 来源 | 说明 |
 |------|------|------|------|
-| `AI_PROVIDER` | 否 | 手动 | `gemini` 或 `modelscope`；未设置默认 `modelscope` |
+| `AI_PROVIDER` | 否 | 手动 | `gemini`、`modelscope` 或 `cloudflare`；未设置默认 `modelscope` |
 | `GEMINI_API_KEY` | `AI_PROVIDER=gemini` 时 | Google AI Studio | Gemini 识图 |
 | `GEMINI_MODEL` | 否 | 手动 | 默认 `gemini-3.1-flash-lite` |
 | `MODELSCOPE_API_KEY` | `AI_PROVIDER=modelscope` 或未设 provider 时 | ModelScope 控制台 | ModelScope 识图 |
 | `MODELSCOPE_MODEL` | 否 | 手动 | 推荐 `Qwen/Qwen3-VL-30B-A3B-Instruct` |
+| `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Dashboard | Account ID |
+| `CLOUDFLARE_API_TOKEN` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Dashboard | Workers AI API Token |
+| `CLOUDFLARE_MODEL` | 否 | 手动 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
 | `POSTGRES_URL` | 否 | Vercel Neon / Neon 控制台 | 历史记录 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | Vercel Blob | 成品图 URL |
 
@@ -22,6 +25,7 @@
 npm install
 npm run dev          # 开发服务器 :3000
 npm run build        # 生产构建（含类型检查）
+npm run cf:agree     # 默认 Meta 模型首次使用前接受协议
 npm run process -- ./in.jpg ./out.jpg
 ```
 
@@ -86,9 +90,12 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 |------|----------|------|
 | `GEMINI_API_KEY is not configured` | `AI_PROVIDER=gemini` 但未配 Key | 设置 `GEMINI_API_KEY` 或改 `AI_PROVIDER=modelscope` |
 | `MODELSCOPE_API_KEY is not configured` | 默认 ModelScope 路径无 Key | 设置 `MODELSCOPE_API_KEY` 或 `AI_PROVIDER=gemini` |
+| `CLOUDFLARE_ACCOUNT_ID is not configured` | Cloudflare 配置缺失 | 检查 `.env.local` 中的 Account ID |
+| `CLOUDFLARE_API_TOKEN is not configured` | Cloudflare 配置缺失 | 创建具有 Workers AI 权限的 Token 并写入 `.env.local` |
+| Cloudflare 模型要求接受协议 | 默认 Meta 模型尚未授权 | 运行 `npm run cf:agree`；脚本会自动读取 `.env.local` |
 | `ModelScope API error 400` | 模型未上架推理 | 换 `Qwen/Qwen3-VL-*`；勿用 `Qwen2.5-VL-72B` / `diffusiongemma` |
 | `ModelScope API error 429` | 免费额度限流 | 降频重试；或 `AI_PROVIDER=gemini` |
-| `ai_parse_error` | 模型返回非 JSON | 换图重试；检查 `GEMINI_MODEL` / `MODELSCOPE_MODEL` |
+| `ai_parse_error` | 模型连续返回不足 6 个可用字段 | Cloudflare 已逐字段解析并重试一次；Web 页面可点“重新分析”，仍失败时检查对应模型配置 |
 | `Corrupted JPEG` / embed 失败 | 输入非有效图片 | 换 JPEG；用 ExifTool 检查原图 |
 | CLI 找不到模块 | 未 install | `npm install` |
 | Caption 在 exiftool 中为空 | 工具字段名差异 | `ImageDescription` / `Keywords` 仍应存在 |
@@ -96,7 +103,7 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 
 ## 安全
 
-- 公开部署的 `/api/analyze` 会消耗识图 API 额度（ModelScope / Gemini）；建议 Vercel **Password Protection**。
+- 公开部署的 `/api/analyze` 会消耗识图 API 额度（ModelScope / Gemini / Cloudflare）；建议 Vercel **Password Protection**。
 - 勿将 `.env.local` 提交到 Git（已在 `.gitignore`）。
 
 ## 日志

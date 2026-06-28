@@ -6,7 +6,7 @@
   --bg-gray: #F5F5F3;
   --ink: #0D0D0D;
   --muted: #777777;
-  --muted-light: #AAAAAA;
+  --muted-light: #767676;
   --line: #E5E5E2;
   --accent: #C9F178;
   --accent-ink: #4A5520;
@@ -154,6 +154,11 @@ a { color: inherit; text-decoration: none; }
   border-color: #B0B0AA;
   background: var(--bg-soft);
 }
+.drop-zone:focus-within {
+  border-color: var(--ink);
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
 .drop-zone input[type="file"] {
   position: absolute;
   width: 1px;
@@ -230,6 +235,21 @@ a { color: inherit; text-decoration: none; }
   color: var(--bad);
   font-size: 14px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.upload-error button {
+  border: 1px solid currentColor;
+  border-radius: 999px;
+  padding: 5px 12px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
 }
 
 /* ─── Analyzing split ─── */
@@ -255,18 +275,14 @@ a { color: inherit; text-decoration: none; }
 }
 .analyze-preview {
   width: 100%;
-  aspect-ratio: 4 / 3;
   border-radius: 16px;
   overflow: hidden;
-  background: #EAEAE8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .analyze-preview img {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
 .analyze-file-meta {
   display: flex;
@@ -373,6 +389,11 @@ a { color: inherit; text-decoration: none; }
   font-size: 13px;
 }
 .analyze-step.is-pending { color: #888; }
+.analyze-step svg { flex-shrink: 0; }
+.analyze-step { animation: step-in 0.3s ease both; }
+.analyze-step:nth-of-type(1) { animation-delay: 0.1s; }
+.analyze-step:nth-of-type(2) { animation-delay: 0.75s; }
+.analyze-step:nth-of-type(3) { animation-delay: 1.4s; }
 .analyze-step-spin {
   animation: spin-ring 1s linear infinite;
   flex-shrink: 0;
@@ -396,18 +417,14 @@ a { color: inherit; text-decoration: none; }
 }
 .sidebar-preview {
   width: 100%;
-  aspect-ratio: 4 / 3;
   border-radius: 14px;
   overflow: hidden;
-  background: #EAEAE8;
-  display: flex;
-  align-items: center;
-  justify-content: center;
 }
 .sidebar-preview img {
   width: 100%;
-  height: 100%;
-  object-fit: contain;
+  height: auto;
+  display: block;
+  object-fit: cover;
 }
 .sidebar-info {
   display: flex;
@@ -561,6 +578,11 @@ a { color: inherit; text-decoration: none; }
   font-size: 14px;
   font-weight: 400;
 }
+.field-pair {
+  display: flex;
+  gap: 8px;
+}
+.field-pair .field-input { flex: 1; }
 .field-input:focus { border-color: #B8B8B4; }
 
 .field-textarea {
@@ -701,6 +723,85 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* ─── Confirm step ─── */
+.confirm-preview-wrap {
+  width: 100%;
+  height: 320px;
+  margin: 0 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.confirm-preview-img {
+  height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+  border-radius: 12px;
+}
+.confirm-meta {
+  text-align: center;
+  margin-bottom: 28px;
+}
+.confirm-filename {
+  font-size: 15px;
+  font-weight: 500;
+  color: var(--ink);
+  margin: 0 0 4px;
+  word-break: break-all;
+}
+.confirm-filesize {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+}
+.confirm-compressed {
+  font-size: 12px;
+  color: var(--ok);
+  margin: 6px 0 0;
+}
+.confirm-fields {
+  width: 100%;
+  max-width: 480px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 auto 20px;
+}
+.confirm-field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+}
+.confirm-field-optional {
+  font-weight: 400;
+  color: var(--muted);
+  margin-left: 4px;
+}
+.confirm-field-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  font-size: 14px;
+  color: var(--ink);
+  background: var(--bg);
+  outline: none;
+}
+.confirm-field-input:focus {
+  border-color: var(--ink);
+}
+.confirm-field-input::placeholder {
+  color: var(--muted-light);
+}
+.confirm-actions {
+  display: flex;
+  gap: 12px;
   justify-content: center;
 }
 

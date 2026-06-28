@@ -31,6 +31,8 @@ async function embedWithExiftool(buffer: Buffer, mimeType: string, ai: AiImageRe
     if (ai.tags_en.length > 0) {
       tags["IPTC:Keywords"] = ai.tags_en;
     }
+    if (ai.brand) tags["IPTC:Credit"] = ai.brand;
+    if (ai.model) tags["EXIF:Model"] = ai.model;
 
     await exiftool.write(inputPath, tags, ["-overwrite_original"]);
     return await readFile(inputPath);

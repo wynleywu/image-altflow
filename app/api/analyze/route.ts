@@ -25,10 +25,20 @@ export async function POST(request: Request) {
         );
       }
 
+      const MAX_SIZE = 5 * 1024 * 1024;
+      if (file.size > MAX_SIZE) {
+        return NextResponse.json(
+          { ok: false, error: "图片超过 5 MB，请压缩后重试", error_type: "file_too_large" },
+          { status: 413 },
+        );
+      }
+
       const buffer = Buffer.from(await file.arrayBuffer());
       const mimeType = file.type || "image/jpeg";
       const originalFileName = file.name || "upload.jpg";
-      const { ai } = await analyzeImageBuffer(buffer, mimeType, originalFileName);
+      const brand = String(form.get("brand") || "").trim() || undefined;
+      const model = String(form.get("model") || "").trim() || undefined;
+      const { ai } = await analyzeImageBuffer(buffer, mimeType, originalFileName, { brand, model });
 
       let record;
       if (canPersistRecords()) {

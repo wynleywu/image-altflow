@@ -19,6 +19,8 @@ export interface AiImageResult {
   scene_en: string;
   scene_zh: string;
   confidence_note: "certain" | "uncertain";
+  brand?: string;
+  model?: string;
 }
 
 export interface ImageRecord {

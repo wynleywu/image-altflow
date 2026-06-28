@@ -3,12 +3,42 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { AiImageResult, EmbedApiResponse, AnalyzeApiResponse } from "@/lib/types";
 
-type Step = "upload" | "analyzing" | "edit" | "done";
+type Step = "upload" | "confirm" | "analyzing" | "edit" | "done";
 
 function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+async function compressImage(file: File, maxBytes = 5 * 1024 * 1024): Promise<File> {
+  if (file.size <= maxBytes) return file;
+
+  const bitmap = await createImageBitmap(file);
+  const MAX_SIDE = 2048;
+  const scale = Math.min(1, MAX_SIDE / Math.max(bitmap.width, bitmap.height));
+  const w = Math.round(bitmap.width * scale);
+  const h = Math.round(bitmap.height * scale);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = w;
+  canvas.height = h;
+  canvas.getContext("2d")!.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+
+  let quality = 0.85;
+  let blob!: Blob;
+  do {
+    blob = await new Promise<Blob>((res) =>
+      canvas.toBlob((b) => res(b!), "image/jpeg", quality)
+    );
+    quality -= 0.1;
+  } while (blob.size > maxBytes && quality >= 0.4);
+
+  canvas.width = 0;
+  canvas.height = 0;
+
+  return new File([blob], file.name.replace(/\.[^.]+$/, ".jpg"), { type: "image/jpeg" });
 }
 
 function downloadBase64(base64: string, fileName: string, mimeType: string) {
@@ -26,16 +56,31 @@ function downloadBase64(base64: string, fileName: string, mimeType: string) {
   URL.revokeObjectURL(url);
 }
 
+function BrandLink({ className = "page-logo" }: { className?: string }) {
+  return (
+    <a href="/" className={`nav-logo ${className}`.trim()} aria-label="altflow 首页">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect width="24" height="24" rx="6" fill="#0D0D0D" />
+        <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+        <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
+      </svg>
+      altflow
+    </a>
+  );
+}
+
 export default function HomePage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<Step>("upload");
   const [tab, setTab] = useState<"single" | "batch">("single");
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
+  const [wasCompressed, setWasCompressed] = useState(false);
+  const [brand, setBrand] = useState("");
+  const [model, setModel] = useState("");
   const [previewUrl, setPreviewUrl] = useState("");
   const [ai, setAi] = useState<AiImageResult | null>(null);
-  const [originalBase64, setOriginalBase64] = useState("");
-  const [mimeType, setMimeType] = useState("image/jpeg");
+  const [download, setDownload] = useState<EmbedApiResponse["download"] | null>(null);
   const [doneFileName, setDoneFileName] = useState("");
   const [error, setError] = useState("");
   const [embedding, setEmbedding] = useState(false);
@@ -57,24 +102,28 @@ export default function HomePage() {
     setFile(null);
     setPreviewUrl("");
     setAi(null);
-    setOriginalBase64("");
-    setMimeType("image/jpeg");
+    setDownload(null);
     setDoneFileName("");
     setError("");
     setEmbedding(false);
+    setWasCompressed(false);
+    setBrand("");
+    setModel("");
     if (inputRef.current) inputRef.current.value = "";
   }
 
-  function pickFile(next: File | null) {
+  async function pickFile(next: File | null) {
     if (!next || !next.type.startsWith("image/")) {
       setError("请选择图片文件（JPEG / PNG 推荐）");
       return;
     }
     if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setFile(next);
-    setPreviewUrl(URL.createObjectURL(next));
+    const compressed = await compressImage(next);
+    setWasCompressed(compressed !== next);
+    setFile(compressed);
+    setPreviewUrl(URL.createObjectURL(compressed));
     setError("");
-    void startAnalyze(next);
+    setStep("confirm");
   }
 
   async function startAnalyze(selected: File) {
@@ -84,6 +133,12 @@ export default function HomePage() {
     try {
       const form = new FormData();
       form.append("image", selected);
+      // 用户手填优先：重新分析时以编辑区的实时值为准（含被清空的空串），
+      // 首次分析时用确认页输入。不能用 `??`，否则清空字段会被旧值覆盖。
+      const effectiveBrand = (ai ? ai.brand : brand)?.trim();
+      const effectiveModel = (ai ? ai.model : model)?.trim();
+      if (effectiveBrand) form.append("brand", effectiveBrand);
+      if (effectiveModel) form.append("model", effectiveModel);
 
       let response: Response;
       try {
@@ -99,7 +154,7 @@ export default function HomePage() {
         throw new Error(`分析接口返回异常（HTTP ${response.status}）`);
       }
 
-      if (!response.ok || !data.ok || !data.ai || !data.originalImageBase64) {
+      if (!response.ok || !data.ok || !data.ai) {
         const message = data.error || "识图失败";
         if (message.includes("GEMINI_API_KEY")) {
           throw new Error("未配置 GEMINI_API_KEY，请在 .env.local 中设置后重启 dev server");
@@ -108,8 +163,7 @@ export default function HomePage() {
       }
 
       setAi(data.ai);
-      setOriginalBase64(data.originalImageBase64);
-      setMimeType(data.mimeType || selected.type || "image/jpeg");
+      setDownload(null);
       setStep("edit");
     } catch (analyzeError) {
       setError(analyzeError instanceof Error ? analyzeError.message : "识图失败");
@@ -118,27 +172,24 @@ export default function HomePage() {
   }
 
   async function handleEmbedDownload() {
-    if (!ai || !originalBase64) return;
+    if (!ai || !file) return;
     setEmbedding(true);
     setError("");
 
     try {
-      const response = await fetch("/api/embed", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          imageBase64: originalBase64,
-          mimeType,
-          ai,
-          originalFileName: file?.name,
-        }),
-      });
+      const form = new FormData();
+      form.append("image", file);
+      form.append("ai", JSON.stringify(ai));
+      form.append("originalFileName", file.name);
+
+      const response = await fetch("/api/embed", { method: "POST", body: form });
       const data = (await response.json()) as EmbedApiResponse;
       if (!response.ok || !data.ok || !data.download) {
         throw new Error(data.error || "写入失败");
       }
 
       downloadBase64(data.download.base64, data.download.fileName, data.download.mimeType);
+      setDownload(data.download);
       setDoneFileName(data.download.fileName);
       setStep("done");
     } catch (embedError) {
@@ -146,6 +197,11 @@ export default function HomePage() {
     } finally {
       setEmbedding(false);
     }
+  }
+
+  function redownload() {
+    if (!download) return;
+    downloadBase64(download.base64, download.fileName, download.mimeType);
   }
 
   function updateAi(patch: Partial<AiImageResult>) {
@@ -156,14 +212,7 @@ export default function HomePage() {
   if (step === "upload") {
     return (
       <div className="upload-page">
-        <a href="/" className="nav-logo page-logo">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <rect width="24" height="24" rx="6" fill="#0D0D0D" />
-            <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-          altflow
-        </a>
+        <BrandLink />
         <div className="mode-tabs">
           <button
             type="button"
@@ -186,14 +235,15 @@ export default function HomePage() {
           onDrop={(e) => {
             e.preventDefault();
             setDragOver(false);
-            pickFile(e.dataTransfer.files?.[0] ?? null);
+            void pickFile(e.dataTransfer.files?.[0] ?? null);
           }}
         >
           <input
             ref={inputRef}
             type="file"
+            aria-label="选择要上传的产品图片"
             accept="image/jpeg,image/png,image/webp,image/*"
-            onChange={(e) => pickFile(e.target.files?.[0] ?? null)}
+            onChange={(e) => void pickFile(e.target.files?.[0] ?? null)}
           />
           <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
             <rect x="1" y="1" width="54" height="54" rx="14" stroke="#D2D2CC" strokeWidth="1.5" strokeDasharray="5 3.5" />
@@ -210,7 +260,16 @@ export default function HomePage() {
           <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF</p>
         </label>
 
-        {error ? <div className="upload-error">{error}</div> : null}
+        {error ? (
+          <div className="upload-error">
+            <span>{error}</span>
+            {file ? (
+              <button type="button" onClick={() => void startAnalyze(file)}>
+                重新分析
+              </button>
+            ) : null}
+          </div>
+        ) : null}
 
         <div className="steps-strip">
           <div className="steps-strip-item">
@@ -218,7 +277,7 @@ export default function HomePage() {
             <p>产品图片</p>
           </div>
           <div className="steps-strip-item">
-            <p>② Gemini</p>
+            <p>② AI 视觉</p>
             <p>双语分析</p>
           </div>
           <div className="steps-strip-item">
@@ -230,22 +289,76 @@ export default function HomePage() {
     );
   }
 
+  /* ─── CONFIRM ─── */
+  if (step === "confirm" && file) {
+    return (
+      <div className="upload-page fade-up">
+        <BrandLink />
+
+        <div className="confirm-preview-wrap">
+          {previewUrl ? (
+            <img
+              src={previewUrl}
+              alt={fileMeta?.name ? `产品预览：${fileMeta.name}` : "已上传的产品图片预览"}
+              className="confirm-preview-img"
+            />
+          ) : null}
+        </div>
+
+        <div className="confirm-meta">
+          <p className="confirm-filename">{fileMeta?.name}</p>
+          <p className="confirm-filesize">{fileMeta?.size}</p>
+          {wasCompressed ? (
+            <p className="confirm-compressed">图片已自动压缩至 {fileMeta?.size}</p>
+          ) : null}
+        </div>
+
+        <div className="confirm-fields">
+          <label className="confirm-field-label">
+            品牌<span className="confirm-field-optional">（可选）</span>
+            <input
+              className="confirm-field-input"
+              value={brand}
+              onChange={(e) => setBrand(e.target.value)}
+              placeholder="如：Apple"
+            />
+          </label>
+          <label className="confirm-field-label">
+            型号<span className="confirm-field-optional">（可选）</span>
+            <input
+              className="confirm-field-input"
+              value={model}
+              onChange={(e) => setModel(e.target.value)}
+              placeholder="如：iPhone 16 Pro"
+            />
+          </label>
+        </div>
+
+        {error ? <div className="upload-error"><span>{error}</span></div> : null}
+
+        <div className="confirm-actions">
+          <button type="button" className="btn-ghost" onClick={resetAll}>
+            ← 重新选择
+          </button>
+          <button type="button" className="btn" onClick={() => void startAnalyze(file)}>
+            开始分析
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   /* ─── ANALYZING ─── */
   if (step === "analyzing") {
     return (
       <div className="analyze-split fade-up">
         <div className="analyze-left">
           <div className="analyze-left-inner">
-            <a href="/" className="nav-logo">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-                <rect width="24" height="24" rx="6" fill="#0D0D0D" />
-                <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
-              </svg>
-              altflow
-            </a>
+            <BrandLink className="" />
             <div className="analyze-preview">
-              {previewUrl ? <img src={previewUrl} alt="" /> : null}
+              {previewUrl ? (
+                <img src={previewUrl} alt={fileMeta?.name ? `产品预览：${fileMeta.name}` : "已上传的产品图片预览"} />
+              ) : null}
             </div>
             <div className="analyze-file-meta">
               <span className="analyze-file-name">{fileMeta?.name}</span>
@@ -266,7 +379,7 @@ export default function HomePage() {
 
           <div className="analyze-heading">
             <h2>分析中…</h2>
-            <p>Gemini 正在识别产品内容</p>
+            <p>AI 模型正在识别产品内容</p>
             <p>生成中英双语 SEO 元数据</p>
           </div>
 
@@ -278,27 +391,26 @@ export default function HomePage() {
 
           <div className="analyze-steps-box">
             <p className="analyze-steps-label">处理步骤</p>
-            <div className="analyze-step" style={{ animation: "step-in 0.3s ease 0.1s both" }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0 }}>
+            <div className="analyze-step">
+              <svg width="16" height="16" viewBox="0 0 16 16">
                 <circle cx="8" cy="8" r="7" fill="#16A34A" />
                 <path d="M5 8l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               已接收图片
             </div>
-            <div className="analyze-step" style={{ animation: "step-in 0.3s ease 0.75s both" }}>
-              <svg width="16" height="16" viewBox="0 0 16 16" style={{ flexShrink: 0 }}>
+            <div className="analyze-step">
+              <svg width="16" height="16" viewBox="0 0 16 16">
                 <circle cx="8" cy="8" r="7" fill="#16A34A" />
                 <path d="M5 8l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
               产品类型已识别
             </div>
-            <div className="analyze-step is-pending" style={{ animation: "step-in 0.3s ease 1.4s both" }}>
+            <div className="analyze-step is-pending">
               <svg
                 className="analyze-step-spin"
                 width="16"
                 height="16"
                 viewBox="0 0 16 16"
-                style={{ flexShrink: 0 }}
               >
                 <circle
                   cx="8" cy="8" r="6"
@@ -319,14 +431,7 @@ export default function HomePage() {
     return (
       <div className="meta-split fade-up">
         <aside className="meta-sidebar">
-          <a href="/" className="nav-logo sidebar-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-              <rect width="24" height="24" rx="6" fill="#0D0D0D" />
-              <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
-            </svg>
-            altflow
-          </a>
+          <BrandLink className="sidebar-logo" />
           <div className="sidebar-preview">
             {previewUrl ? <img src={previewUrl} alt="" /> : null}
           </div>
@@ -359,6 +464,11 @@ export default function HomePage() {
               <p className="meta-content-sub">英文字段将写入图片 EXIF / XMP / IPTC。</p>
             </div>
             <div className="meta-header-actions">
+              {file ? (
+                <button type="button" className="btn-ghost" onClick={() => void startAnalyze(file)}>
+                  重新分析
+                </button>
+              ) : null}
               <button type="button" className="btn-ghost" onClick={resetAll}>
                 ← 重新选择
               </button>
@@ -369,6 +479,28 @@ export default function HomePage() {
           </div>
 
           <div className="fields-card">
+            {/* Brand / Model */}
+            <div className="field-row">
+              <div className="field-label-row">
+                <span className="field-key">品牌 / 型号</span>
+                <span className="field-badge">IPTC · XMP</span>
+              </div>
+              <div className="field-pair">
+                <input
+                  className="field-input sm"
+                  value={ai.brand ?? ""}
+                  onChange={(e) => updateAi({ brand: e.target.value })}
+                  placeholder="品牌"
+                />
+                <input
+                  className="field-input sm"
+                  value={ai.model ?? ""}
+                  onChange={(e) => updateAi({ model: e.target.value })}
+                  placeholder="型号"
+                />
+              </div>
+            </div>
+
             {/* Filename */}
             <div className="field-row">
               <div className="field-label-row">
@@ -516,8 +648,8 @@ export default function HomePage() {
       </div>
 
       <div className="done-action-row">
-        <button type="button" className="btn" onClick={handleEmbedDownload} disabled={embedding}>
-          {embedding ? "写入中…" : "再次下载"}
+        <button type="button" className="btn" onClick={redownload} disabled={!download}>
+          再次下载
         </button>
         <button type="button" className="btn-ghost" onClick={resetAll}>
           处理下一张图片

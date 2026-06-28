@@ -12,9 +12,33 @@ const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains",
 });
 
+const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://image-altflow.vercel.app";
+const siteTitle = "Image Altflow — AI 图片 SEO 元数据";
+const siteDescription =
+  "上传产品图片，AI 视觉自动生成中英双语 SEO 元数据，并写入图片 EXIF / XMP / IPTC，一键下载。";
+
 export const metadata: Metadata = {
-  title: "Image Altflow",
-  description: "AI image SEO — bilingual analysis and English metadata embed",
+  metadataBase: new URL(siteUrl),
+  title: {
+    default: siteTitle,
+    template: "%s · Image Altflow",
+  },
+  description: siteDescription,
+  keywords: ["图片 SEO", "alt text", "EXIF", "IPTC", "XMP", "AI 识图", "image metadata"],
+  applicationName: "Image Altflow",
+  openGraph: {
+    type: "website",
+    url: siteUrl,
+    siteName: "Image Altflow",
+    title: siteTitle,
+    description: siteDescription,
+    locale: "zh_CN",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteTitle,
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

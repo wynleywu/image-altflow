@@ -1,6 +1,6 @@
 # Image Altflow
 
-AI 图片 SEO 助手：本地上传 → 视觉模型双语识图（Gemini 或 ModelScope）→ **英文元数据写入图片** → 下载成品。
+AI 图片 SEO 助手：本地上传 → 视觉模型双语识图（Gemini、ModelScope 或 Cloudflare Workers AI）→ **英文元数据写入图片** → 下载成品。
 
 提供 **CLI + HTTP API + Web 单张流程**（`/`）。生产环境：**https://image-altflow.vercel.app**
 
@@ -86,11 +86,14 @@ exiftool -G1 -a ./output.jpg
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
-| `AI_PROVIDER` | 否 | `gemini` 或 `modelscope`；未设置时走 ModelScope（失败且已配 `GEMINI_API_KEY` 时回退 Gemini） |
+| `AI_PROVIDER` | 否 | `gemini`、`modelscope` 或 `cloudflare`；未设置时走 ModelScope（失败且已配 `GEMINI_API_KEY` 时回退 Gemini） |
 | `GEMINI_API_KEY` | `AI_PROVIDER=gemini` 时 | Google AI Studio |
 | `GEMINI_MODEL` | 否 | 默认 `gemini-3.1-flash-lite` |
 | `MODELSCOPE_API_KEY` | `AI_PROVIDER=modelscope` 或未设 provider 时 | [ModelScope 令牌](https://modelscope.cn/my/myaccesstoken) |
 | `MODELSCOPE_MODEL` | 否 | 推荐 `Qwen/Qwen3-VL-30B-A3B-Instruct` |
+| `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Account ID |
+| `CLOUDFLARE_API_TOKEN` | `AI_PROVIDER=cloudflare` 时 | 具有 Workers AI 权限的 API Token |
+| `CLOUDFLARE_MODEL` | 否 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
 | `POSTGRES_URL` | 否 | 历史记录 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储 |
 
@@ -99,7 +102,7 @@ exiftool -G1 -a ./output.jpg
 ```text
 CLI / API / Web
   → lib/pipeline.ts（analyze → embed）
-  → lib/ai.ts（Gemini 或 ModelScope）
+  → lib/ai.ts（Gemini、ModelScope 或 Cloudflare Workers AI）
   → lib/embed-metadata.ts（ExifTool 写英文元数据）
   → 可选 Neon + Blob
 ```
@@ -117,6 +120,7 @@ CLI / API / Web
 | [docs/integration-guide.md](docs/integration-guide.md) | 接入方 | CLI、API、curl 示例 |
 | [docs/architecture.md](docs/architecture.md) | 开发者 | 模块、数据流、数据模型 |
 | [docs/runbook.md](docs/runbook.md) | 运维 | 环境变量、冒烟、排障 |
+| [docs/cloudflare-workers-ai.md](docs/cloudflare-workers-ai.md) | Cloudflare 接入 | Workers AI 配置、模型协议与本地测试 |
 | [docs/handoff.md](docs/handoff.md) | 接手人 | 阶段进度与历史决策 |
 | [docs/figma-design-system.md](docs/figma-design-system.md) | 前端 | 首页设计 token 参考 |
 | [AGENTS.md](AGENTS.md) | AI Agent | 仓库约定与红线 |

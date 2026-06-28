@@ -1,12 +1,12 @@
 # Handoff & Changelog
 
-> 最后更新：2026-06-26
+> 最后更新：2026-06-27
 
 ## 当前状态
 
 | 能力 | 状态 |
 |------|------|
-| 双语识图（`_en` / `_zh`） | 完成（Gemini + ModelScope，`lib/ai.ts`） |
+| 双语识图（`_en` / `_zh`） | 完成（Gemini + ModelScope + Cloudflare，`lib/ai.ts`） |
 | 英文元数据写入图片（ExifTool） | 完成 |
 | 本地 CLI `npm run process` | 完成 |
 | `POST /api/analyze` | 完成 |
@@ -40,6 +40,7 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 
 | 日期 | 决策 |
 |------|------|
+| 2026-06-27 | 新增 Cloudflare Workers AI REST 提供商；三个提供商共用 `lib/prompt.ts`，默认 Cloudflare 模型为 Llama 3.2 11B Vision |
 | 2026-06-26 | Vercel 生产部署；识图主路径 `AI_PROVIDER=modelscope` + `Qwen/Qwen3-VL-30B-A3B-Instruct` |
 | 2026-06-26 | 识图支持 ModelScope；`lib/ai.ts` 统一路由，默认 ModelScope、失败可回退 Gemini |
 | 2026-06-25 | 首页单张流程 UI 落地，接 analyze/embed API |

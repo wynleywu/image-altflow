@@ -1,5 +1,5 @@
 import type { AiImageResult } from "./types";
-import { AI_PROMPT } from "./prompt";
+import { buildPrompt } from "./prompt";
 import { normalizeAiResult, stripMarkdownFence } from "./gemini";
 
 const MODELSCOPE_BASE_URL = "https://api-inference.modelscope.cn/v1";
@@ -12,7 +12,7 @@ function readEnv(key: string): string {
 const apiKey = readEnv("MODELSCOPE_API_KEY");
 const model = readEnv("MODELSCOPE_MODEL") || "Qwen/Qwen3-VL-30B-A3B-Instruct";
 
-export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): Promise<AiImageResult> {
+export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
   if (!apiKey) {
     throw new Error("MODELSCOPE_API_KEY is not configured");
   }
@@ -31,7 +31,7 @@ export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): 
         {
           role: "user",
           content: [
-            { type: "text", text: AI_PROMPT },
+            { type: "text", text: buildPrompt(opts) },
             { type: "image_url", image_url: { url: dataUrl } },
           ],
         },

@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import type { AiImageResult } from "./types";
-import { AI_PROMPT } from "./prompt";
+import { buildPrompt } from "./prompt";
 
 const REQUIRED_FIELDS: (keyof AiImageResult)[] = [
   "image_description_en",
@@ -30,7 +30,7 @@ function parseTags(value: unknown): string[] {
     return value.map(String).filter(Boolean);
   }
   if (typeof value === "string" && value.trim()) {
-    return value.split(/[,，]/).map((t) => t.trim()).filter(Boolean);
+    return value.split(/[,/\uFF0C\u3001]/).map((tag) => tag.trim()).filter(Boolean);
   }
   return [];
 }
@@ -61,15 +61,16 @@ export function normalizeAiResult(raw: Partial<AiImageResult> & Record<string, u
   };
 }
 
-async function callGeminiWithInlineData(data: string, mimeType: string): Promise<AiImageResult> {
+async function callGeminiWithInlineData(data: string, mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
   const rawKey = process.env.GEMINI_API_KEY ?? "";
-  const apiKey = (rawKey.charCodeAt(0) === 0xFEFF ? rawKey.slice(1) : rawKey).trim();
+  const apiKey = (rawKey.charCodeAt(0) === 0xfeff ? rawKey.slice(1) : rawKey).trim();
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
   const rawModel = process.env.GEMINI_MODEL ?? "";
-  const modelName = (rawModel.charCodeAt(0) === 0xFEFF ? rawModel.slice(1) : rawModel).trim() || "gemini-3.1-flash-lite";
+  const modelName = (rawModel.charCodeAt(0) === 0xfeff ? rawModel.slice(1) : rawModel).trim()
+    || "gemini-3.1-flash-lite";
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,
@@ -80,7 +81,7 @@ async function callGeminiWithInlineData(data: string, mimeType: string): Promise
   });
 
   const result = await model.generateContent([
-    AI_PROMPT,
+    buildPrompt(opts),
     { inlineData: { data, mimeType } },
   ]);
 
@@ -111,8 +112,8 @@ export async function fetchImageAsBase64(imageUrl: string): Promise<{ data: stri
   return { data: buffer.toString("base64"), mimeType };
 }
 
-export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string): Promise<AiImageResult> {
-  return callGeminiWithInlineData(buffer.toString("base64"), mimeType || "image/jpeg");
+export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
+  return callGeminiWithInlineData(buffer.toString("base64"), mimeType || "image/jpeg", opts);
 }
 
 export async function analyzeImage(imageUrl: string): Promise<AiImageResult> {

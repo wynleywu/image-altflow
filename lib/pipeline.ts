@@ -18,9 +18,12 @@ export async function analyzeImageBuffer(
   buffer: Buffer,
   mimeType: string,
   originalFileName: string,
+  opts?: { brand?: string; model?: string },
 ): Promise<PipelineAnalyzeResult> {
   const resolvedMime = resolveMimeType(mimeType, originalFileName);
-  const ai = await analyzeImageFromBuffer(buffer, resolvedMime);
+  const ai = await analyzeImageFromBuffer(buffer, resolvedMime, opts);
+  if (opts?.brand) ai.brand = opts.brand;
+  if (opts?.model) ai.model = opts.model;
   return { ai, buffer, mimeType: resolvedMime, originalFileName };
 }
 
