@@ -11,6 +11,8 @@ const REQUIRED_FIELDS: (keyof AiImageResult)[] = [
 
 export function stripMarkdownFence(text: string): string {
   let cleaned = text.trim();
+  // Strip Qwen3 / reasoning-model <think>...</think> blocks
+  cleaned = cleaned.replace(/<think>[\s\S]*?<\/think>/gi, "").trim();
   const fence = "```";
   if (cleaned.startsWith(fence)) {
     cleaned = cleaned.slice(fence.length);

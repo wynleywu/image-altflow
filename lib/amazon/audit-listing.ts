@@ -105,11 +105,25 @@ export async function auditListing(
   }
 
   const text = await callTextLlm(prompt);
+  const cleaned = stripMarkdownFence(text);
   let parsed: Record<string, unknown>;
   try {
-    parsed = JSON.parse(stripMarkdownFence(text));
+    parsed = JSON.parse(cleaned);
   } catch {
-    throw new Error("ai_parse_error: audit returned invalid JSON");
+    // Fallback: extract outermost {...} from the response
+    const start = cleaned.indexOf("{");
+    const end = cleaned.lastIndexOf("}");
+    if (start !== -1 && end > start) {
+      try {
+        parsed = JSON.parse(cleaned.slice(start, end + 1));
+      } catch {
+        console.error("[audit] raw LLM output:", text.slice(0, 500));
+        throw new Error("ai_parse_error: audit returned invalid JSON");
+      }
+    } else {
+      console.error("[audit] raw LLM output:", text.slice(0, 500));
+      throw new Error("ai_parse_error: audit returned invalid JSON");
+    }
   }
 
   return normalizeAuditResult(parsed, snapshot);

@@ -36,6 +36,8 @@ async function callModelScopeText(prompt: string): Promise<string> {
       messages: [{ role: "user", content: prompt }],
       max_tokens: 4096,
       temperature: 0.2,
+      // Qwen3 defaults to thinking mode; disable it for JSON-only tasks
+      enable_thinking: false,
     }),
   });
 
