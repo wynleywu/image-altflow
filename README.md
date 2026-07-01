@@ -2,13 +2,15 @@
 
 AI 图片 SEO 助手：本地上传 → 视觉模型双语识图（Gemini、ModelScope 或 Cloudflare Workers AI）→ **英文元数据写入图片** → 下载成品。
 
-提供 **CLI + HTTP API + Web 单张流程**（`/`）。生产环境：**https://image-altflow.vercel.app**
+提供 **CLI + HTTP API + Web 单张/批量流程**（`/`）及 **Amazon Listing 审查工作台**（`/amazon`）。生产环境：**https://image-altflow.vercel.app**
 
 ## 功能
 
 - 识别产品图，生成中英双语：文件名、Alt Text、Caption、Tags 等
 - 将 **英文** Alt/Caption/Tags/Description 写入图片 EXIF/XMP/IPTC
 - 本地 CLI 一键处理；HTTP API；Web 单张上传流程
+- Web 批量串行分析、失败重试与 ZIP 下载
+- Amazon Listing V2 诊断、可编辑建议稿、确认状态、最终稿汇总与浏览器长期保存
 - 可选：配置 Postgres + Blob 后自动存历史与成品图
 
 ## 快速开始（CLI）
@@ -68,6 +70,10 @@ exiftool -G1 -a ./output.jpg
   "ai": { "new_file_name": "...", "alt_text_en": "...", ... }
 }
 ```
+
+### `POST /api/amazon/audit`
+
+提交 `{ "asin": "B0XXXXXXXX", "marketplace": "US" }`，或提交含 `title`、`bullets` 等字段的 `manual` 对象。返回商品快照与 V2 审查结果；浏览器工作台在本地保存编辑稿，不写入云端数据库。
 
 响应：
 
@@ -129,6 +135,6 @@ CLI / API / Web
 
 ## 遗留
 
-- 批量上传 Tab（占位）
 - `/review` 旧审核 UI 清理
 - Shopify Admin API 回写
+- Amazon 多版本生成、云端历史与 SP-API 回写

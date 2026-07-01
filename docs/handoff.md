@@ -15,7 +15,7 @@
 | Vercel 生产部署 | 完成（2026-06-26，`image-altflow.vercel.app`） |
 | Web UI 单张流程（`app/page.tsx`） | 完成（2026-06-25） |
 | Web UI 批量 Tab | 完成（2026-07-01，串行处理 + 重试 + ZIP 下载） |
-| Amazon Listing 审查 (`/amazon`) | 完成（2026-07-01，Rainforest 抓取 + AI 审查 + 手动降级） |
+| Amazon Listing 审查 (`/amazon`) | 完成 V2 首批闭环（2026-07-01，诊断证据 + 编辑确认 + 最终稿 + localStorage） |
 | `/review` 旧审核 UI | 未清理 |
 | Shopify 回写 | 未开始 |
 
@@ -35,12 +35,13 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 
 - [ ] 移除或隐藏 `/review` 旧审核流 UI
 - [ ] Vercel Password Protection（若公开部署）
-- [ ] Amazon 审查：应用建议生成改写稿、Sanity 同步、SP-API
+- [ ] Amazon 审查：多策略版本、单章节重新生成、云端历史、Sanity/SP-API
 
 ## 历史决策
 
 | 日期 | 决策 |
 |------|------|
+| 2026-07-01 | Amazon 审查升级为 V2：规则与建议分级，结果按 `auditId` 保存在浏览器，属性建议不自动进入最终稿 |
 | 2026-06-27 | 新增 Cloudflare Workers AI REST 提供商；三个提供商共用 `lib/prompt.ts`，默认 Cloudflare 模型为 Llama 3.2 11B Vision |
 | 2026-06-26 | Vercel 生产部署；识图主路径 `AI_PROVIDER=modelscope` + `Qwen/Qwen3-VL-30B-A3B-Instruct` |
 | 2026-06-26 | 识图支持 ModelScope；`lib/ai.ts` 统一路由，默认 ModelScope、失败可回退 Gemini |

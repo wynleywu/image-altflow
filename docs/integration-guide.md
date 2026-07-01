@@ -1,6 +1,6 @@
 # Integration Guide
 
-> 最后更新：2026-06-27
+> 最后更新：2026-07-01
 > 面向：第一次接入 Image Altflow 的开发者（CLI 或 HTTP）。
 
 ## 前置条件
@@ -167,7 +167,8 @@ curl -X POST https://image-altflow.vercel.app/api/analyze \
   -F "image=@./product.jpg"
 ```
 
-- **批量 Tab**：占位，尚未实现
+- **批量 Tab**：串行调用 analyze/embed，失败自动重试，完成后下载 ZIP
+- **Amazon 审查**：`/amazon` 支持 ASIN/URL 与手动 Listing；结果页可编辑、确认并汇总最终 Listing，草稿保存在当前浏览器 localStorage
 - **`/review`**：旧审核 UI，未接当前两步 API
 
 ## 限制说明

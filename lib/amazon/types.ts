@@ -22,14 +22,33 @@ export type ListingAuditArea =
   | "aPlus"
   | "conversion";
 
+export type ListingAuditImpact = "compliance" | "discoverability" | "conversion" | "completeness" | "readability";
+export type ListingAuditBasisType = "confirmed_rule" | "listing_evidence" | "category_guidance" | "heuristic";
+
 export interface ListingAuditIssue {
+  id: string;
   severity: "high" | "medium" | "low";
   area: ListingAuditArea;
   message: string;
+  impact: ListingAuditImpact;
+  reason: string;
+  evidence: string[];
+  basisType: ListingAuditBasisType;
+  confidence: number;
+}
+
+export interface ListingAuditScoreBreakdown {
+  compliance: number;
+  discoverability: number;
+  conversion: number;
+  completeness: number;
+  readability: number;
 }
 
 export interface ListingAuditResult {
+  schemaVersion: 2;
   overallScore: number;
+  scoreBreakdown: ListingAuditScoreBreakdown;
   summary: string;
   title: {
     current: string;
@@ -56,7 +75,34 @@ export interface ListingAuditResult {
     suggested: Record<string, string>;
   };
   aPlusOutline: string[];
-  priorities: { rank: number; item: string; reason: string }[];
+  priorities: {
+    rank: number;
+    item: string;
+    reason: string;
+    issueIds: string[];
+    impact: "high" | "medium" | "low";
+    area: ListingAuditArea;
+  }[];
+}
+
+export type AmazonAuditEditableSection = "title" | "highlights" | "bullets" | "searchTerms";
+
+export interface AmazonAuditDraft {
+  title: string;
+  itemHighlights: string;
+  bullets: string[];
+  searchTerms: string;
+}
+
+export interface AmazonAuditWorkspace {
+  version: 1;
+  auditId: string;
+  snapshot: AmazonListingSnapshot;
+  audit: ListingAuditResult;
+  draft: AmazonAuditDraft;
+  accepted: Record<AmazonAuditEditableSection, boolean>;
+  createdAt: number;
+  updatedAt: number;
 }
 
 export type AmazonMarketplace = "US" | "UK" | "DE" | "CA" | "AU";

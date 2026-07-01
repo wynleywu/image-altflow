@@ -1,11 +1,11 @@
 # Image Altflow — Agent 指南
 
-> 最后对齐：2026-06-27。面向在本仓库内协作的 AI。
+> 最后对齐：2026-07-01。面向在本仓库内协作的 AI。
 
 ## 当前阶段
 
 - **阶段一（已完成）**：CLI + HTTP API + 核心库；双语识图（Gemini / ModelScope / Cloudflare Workers AI）；英文元数据写入图片（ExifTool）。
-- **阶段二（进行中）**：首页单张流程已接 API；**Vercel 生产已部署**（2026-06-26）；批量 Tab 占位；`app/review` 仍为旧版。
+- **阶段二（进行中）**：首页单张/批量流程已接 API；**Vercel 生产已部署**（2026-06-26）；Amazon Listing 审查已升级为本地持久化编辑工作台；`app/review` 仍为旧版。
 - **Legacy**：`docs/mvp-test-plan.md`、`docs/workflow-spec.md`、`n8n/` 描述早期飞书/n8n 方案，勿按其实现。
 
 ## 技术栈
@@ -29,6 +29,7 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `/api/embed` | POST | JSON：`imageBase64`, `mimeType`, `ai`；返回 `download` |
 | `/api/records` | GET | 可选历史（需 `POSTGRES_URL`） |
 | `/api/records/[recordId]` | PATCH | 可选审核字段更新（旧 UI 用） |
+| `/api/amazon/audit` | POST | ASIN/URL 抓取或手动 Listing；返回 V2 诊断与建议稿 |
 
 ## 环境变量
 
@@ -56,6 +57,9 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `lib/embed-metadata.ts` | `embedMetadataIntoImage`（只写 `_en`） |
 | `lib/pipeline.ts` | `analyzeLocalImage`, `embedImageBuffer`, `parseAiFromJson` |
 | `scripts/process-image.ts` | 本地 CLI：`npm run process --` |
+| `lib/amazon/normalize-audit.ts` | V2 审查结果标准化与旧结果兼容 |
+| `lib/amazon/workspace.ts` | 浏览器 localStorage 工作区、恢复与最近 10 条清理 |
+| `app/amazon/_components/audit-report.tsx` | 可编辑审查工作台与最终 Listing |
 
 ## 本地命令
 
@@ -64,6 +68,7 @@ npm run process -- ./input.jpg ./output.jpg
 npm run process -- ./input.jpg --analyze-only
 npm run process -- ./input.jpg ./output.jpg --ai ./input.ai.json
 npm run build
+npm test
 ```
 
 ## 红线
@@ -71,6 +76,7 @@ npm run build
 - 写入图片元数据**只用英文字段**（`alt_text_en` 等）。
 - 单张流程 UI 已在 `app/page.tsx`；勿随意改 `app/review/*` 或批量 Tab，除非用户明确要求。
 - 不要恢复飞书依赖；`lib/feishu.ts` 已删除。
+- Amazon 规则必须区分“已确认规则”和“优化建议”；不得把类目建议写成平台违规结论。
 
 ## 文档索引
 

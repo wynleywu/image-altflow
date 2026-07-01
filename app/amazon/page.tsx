@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AmazonMarketplace } from "@/lib/amazon/types";
-import { AuditReport } from "./_components/audit-report";
+import { createAuditWorkspace, saveAuditWorkspace } from "@/lib/amazon/workspace";
 
 function BrandLink() {
   return (
@@ -18,8 +18,6 @@ function BrandLink() {
     </Link>
   );
 }
-
-const STORAGE_KEY = "amazon_audit_result";
 
 export default function AmazonAuditPage() {
   const router = useRouter();
@@ -51,11 +49,9 @@ export default function AmazonAuditPage() {
         }
         throw new Error(data.error || "审查失败");
       }
-      sessionStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({ snapshot: data.snapshot, audit: data.audit, storedAt: Date.now() })
-      );
-      router.push("/amazon/result");
+      const auditId = crypto.randomUUID();
+      saveAuditWorkspace(createAuditWorkspace(auditId, data.snapshot, data.audit));
+      router.push(`/amazon/result?id=${encodeURIComponent(auditId)}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : "审查失败");
     } finally {

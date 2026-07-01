@@ -1,78 +1,84 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import type { AmazonListingSnapshot, ListingAuditResult } from "@/lib/amazon/types";
+import type { AmazonAuditWorkspace } from "@/lib/amazon/types";
+import { loadAuditWorkspace, migrateLegacyWorkspace, saveAuditWorkspace } from "@/lib/amazon/workspace";
 import { AuditReport } from "../_components/audit-report";
 
-const MARKETPLACE_LABELS: Record<string, string> = {
-  US: "amazon.com",
-  UK: "amazon.co.uk",
-  DE: "amazon.de",
-  CA: "amazon.ca",
-  AU: "amazon.com.au",
-};
-
-interface StoredAuditResult {
-  snapshot: AmazonListingSnapshot;
-  audit: ListingAuditResult;
-  storedAt: number;
+function BrandBar() {
+  return (
+    <div className="audit-result-topbar">
+      <Link href="/" className="nav-logo" aria-label="altflow 首页">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <rect width="24" height="24" rx="6" fill="#0D0D0D" />
+          <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+        altflow
+      </Link>
+      <span className="audit-topbar-title">Amazon 审查工作台</span>
+    </div>
+  );
 }
 
-const STORAGE_KEY = "amazon_audit_result";
-const EXPIRY_MS = 30 * 60 * 1000;
-
-export default function AmazonResultPage() {
+function ResultContent() {
   const router = useRouter();
-  const [snapshot, setSnapshot] = useState<AmazonListingSnapshot | null>(null);
-  const [audit, setAudit] = useState<ListingAuditResult | null>(null);
+  const searchParams = useSearchParams();
+  const [workspace, setWorkspace] = useState<AmazonAuditWorkspace | null>(null);
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    const raw = sessionStorage.getItem(STORAGE_KEY);
-    if (!raw) {
-      router.replace("/amazon");
+    let auditId = searchParams.get("id");
+    if (!auditId) {
+      auditId = crypto.randomUUID();
+      const migrated = migrateLegacyWorkspace(auditId);
+      if (migrated) {
+        setWorkspace(migrated);
+        router.replace(`/amazon/result?id=${encodeURIComponent(auditId)}`);
+      }
+      setReady(true);
       return;
     }
-    try {
-      const stored = JSON.parse(raw) as StoredAuditResult;
-      if (Date.now() - stored.storedAt > EXPIRY_MS) {
-        sessionStorage.removeItem(STORAGE_KEY);
-        router.replace("/amazon");
-        return;
-      }
-      setSnapshot(stored.snapshot);
-      setAudit(stored.audit);
-      setReady(true);
-    } catch {
-      router.replace("/amazon");
-    }
-  }, [router]);
+    setWorkspace(loadAuditWorkspace(auditId));
+    setReady(true);
+  }, [router, searchParams]);
 
-  if (!ready || !snapshot || !audit) {
+  const updateWorkspace = useCallback((next: AmazonAuditWorkspace) => {
+    const saved = saveAuditWorkspace(next);
+    setWorkspace(saved);
+  }, []);
+
+  if (!ready) return <div style={{ minHeight: "100dvh" }} aria-busy="true" />;
+
+  if (!workspace) {
     return (
-      <div style={{ minHeight: "100dvh" }} aria-busy="true" />
+      <main className="audit-empty-state">
+        <p className="audit-empty-kicker">无法恢复报告</p>
+        <h1>这份审查记录不存在或已损坏</h1>
+        <p>本地工作区可能被清理，或链接来自另一台设备。请重新发起审查。</p>
+        <Link href="/amazon" className="btn">重新审查</Link>
+      </main>
     );
   }
 
-  const marketplaceLabel = MARKETPLACE_LABELS[snapshot.marketplace] ?? snapshot.marketplace;
+  return (
+    <AuditReport
+      workspace={workspace}
+      onChange={updateWorkspace}
+      onBack={() => router.push("/amazon")}
+    />
+  );
+}
 
+export default function AmazonResultPage() {
   return (
     <>
-      <div className="audit-result-topbar">
-        <Link href="/" className="nav-logo" aria-label="altflow 首页">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-            <rect width="24" height="24" rx="6" fill="#0D0D0D" />
-            <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
-          </svg>
-          altflow
-        </Link>
-        <span className="audit-topbar-title">Amazon 审查报告</span>
-      </div>
-
-      <AuditReport snapshot={snapshot} audit={audit} onBack={() => router.push("/amazon")} />
+      <BrandBar />
+      <Suspense fallback={<div style={{ minHeight: "100dvh" }} aria-busy="true" />}>
+        <ResultContent />
+      </Suspense>
     </>
   );
 }

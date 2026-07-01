@@ -1,6 +1,6 @@
 # Runbook
 
-> 最后更新：2026-06-27
+> 最后更新：2026-07-01
 
 ## 环境变量
 
@@ -25,6 +25,7 @@
 npm install
 npm run dev          # 开发服务器 :3000
 npm run build        # 生产构建（含类型检查）
+npm test             # Amazon V2 标准化与本地工作区测试
 npm run cf:agree     # 默认 Meta 模型首次使用前接受协议
 npm run process -- ./in.jpg ./out.jpg
 ```
@@ -61,6 +62,13 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 ```
 
 识图约 30–90 秒（ModelScope 30B + Serverless）。HTTP 200 且响应含 `"ok":true` 即通过。
+
+### 5. Amazon 审查工作台
+
+1. 打开 `http://localhost:3000/amazon`，使用 ASIN 或手动 Listing 发起审查。
+2. 确认跳转到 `/amazon/result?id=<auditId>`。
+3. 编辑并确认标题，刷新页面；编辑稿与状态应恢复。
+4. “最终 Listing”应显示未确认内容数，属性建议应保持“待核验”。
 
 ## Vercel 部署
 
@@ -99,7 +107,9 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 | `Corrupted JPEG` / embed 失败 | 输入非有效图片 | 换 JPEG；用 ExifTool 检查原图 |
 | CLI 找不到模块 | 未 install | `npm install` |
 | Caption 在 exiftool 中为空 | 工具字段名差异 | `ImageDescription` / `Keywords` 仍应存在 |
-| 前端提交失败 | 批量 Tab 未实现或 `/review` 旧 UI | 使用首页单张流程、CLI 或 curl |
+| Amazon 结果提示无法恢复 | URL 缺少/包含失效 `auditId`，或浏览器 localStorage 被清理 | 返回 `/amazon` 重新审查；工作区仅保存在当前浏览器 |
+| Amazon 建议缺少 V2 字段 | 上游模型返回旧结构或部分字段 | `normalize-audit.ts` 会补默认值；检查服务端日志与 Prompt 输出 |
+| 前端提交失败 | API Key、网络或 `/review` 旧 UI 问题 | 使用首页流程、`/amazon`、CLI 或 curl；勿依赖旧 `/review` |
 
 ## 安全
 
@@ -109,4 +119,4 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 ## 日志
 
 - 本地：CLI 直接 stdout/stderr
-- Vercel：Dashboard → Functions → `/api/analyze` / `/api/embed`
+- Vercel：Dashboard → Functions → `/api/analyze` / `/api/embed` / `/api/amazon/audit`
