@@ -1,6 +1,6 @@
 # Handoff & Changelog
 
-> 最后更新：2026-06-27
+> 最后更新：2026-07-01
 
 ## 当前状态
 
@@ -15,6 +15,7 @@
 | Vercel 生产部署 | 完成（2026-06-26，`image-altflow.vercel.app`） |
 | Web UI 单张流程（`app/page.tsx`） | 完成（2026-06-25） |
 | Web UI 批量 Tab | 完成（2026-07-01，串行处理 + 重试 + ZIP 下载） |
+| Amazon Listing 审查 (`/amazon`) | 完成（2026-07-01，Rainforest 抓取 + AI 审查 + 手动降级） |
 | `/review` 旧审核 UI | 未清理 |
 | Shopify 回写 | 未开始 |
 
@@ -34,6 +35,7 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 
 - [ ] 移除或隐藏 `/review` 旧审核流 UI
 - [ ] Vercel Password Protection（若公开部署）
+- [ ] Amazon 审查：应用建议生成改写稿、Sanity 同步、SP-API
 
 ## 历史决策
 

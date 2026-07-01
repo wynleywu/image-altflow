@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import JSZip from "jszip";
 import type { AiImageResult, EmbedApiResponse, AnalyzeApiResponse } from "@/lib/types";
@@ -1068,6 +1069,9 @@ export default function HomePage() {
           >
             批量处理
           </button>
+          <Link href="/amazon" className="mode-tab mode-tab-link">
+            Amazon 审查
+          </Link>
         </div>
 
         {tab === "batch" ? (
