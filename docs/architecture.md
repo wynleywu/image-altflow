@@ -6,7 +6,7 @@
 
 Image Altflow 将产品图经视觉模型识图后，把 **英文** SEO 文案（Alt、Caption、Tags、Description）写入图片 EXIF/XMP/IPTC，供素材库与 CMS 使用。中文文案仅用于对照与校对，不写入二进制。
 
-当前交付形态：**CLI + HTTP API + Web 单张流程**（`app/page.tsx`）；批量 Tab 与 `/review` 为占位或旧版。
+当前交付形态：**CLI + HTTP API + Web 单张/批量流程**（`app/page.tsx`）；`/review` 为旧版占位。批量 Tab 在浏览器端串行调用既有 `/api/analyze`、`/api/embed`（并发=1，失败自动重试），完成后打包 ZIP 下载，未新增服务端接口。
 
 ## 数据流
 
@@ -106,7 +106,6 @@ Gemini、ModelScope 或 Cloudflare 返回字段示例：
 
 ## 未实现
 
-- 批量上传（首页 Batch Tab 占位）
 - `/review` 旧审核流清理
 - Shopify Admin API 回写 Alt
-- 批量目录处理
+- 批量目录（CLI 侧）处理

@@ -14,7 +14,7 @@
 | 可选 Neon + Blob 持久化 | 完成 |
 | Vercel 生产部署 | 完成（2026-06-26，`image-altflow.vercel.app`） |
 | Web UI 单张流程（`app/page.tsx`） | 完成（2026-06-25） |
-| Web UI 批量 Tab | 占位 |
+| Web UI 批量 Tab | 完成（2026-07-01，串行处理 + 重试 + ZIP 下载） |
 | `/review` 旧审核 UI | 未清理 |
 | Shopify 回写 | 未开始 |
 
@@ -32,7 +32,6 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 
 ## 阶段二待办
 
-- [ ] 批量上传（首页 Batch Tab）
 - [ ] 移除或隐藏 `/review` 旧审核流 UI
 - [ ] Vercel Password Protection（若公开部署）
 
