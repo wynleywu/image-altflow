@@ -719,7 +719,8 @@ function BatchPanel({
 export default function HomePage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<Step>("upload");
-  const [tab, setTab] = useState<"single" | "batch">("single");
+  type Mode = "idle" | "single" | "batch";
+  const [mode, setMode] = useState<Mode>("idle");
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState<File | null>(null);
   const [wasCompressed, setWasCompressed] = useState(false);
@@ -801,6 +802,7 @@ export default function HomePage() {
     setBrand("");
     setModel("");
     if (inputRef.current) inputRef.current.value = "";
+    setMode("idle");
   }
 
   async function pickFile(next: File | null) {
@@ -815,6 +817,22 @@ export default function HomePage() {
     setPreviewUrl(URL.createObjectURL(compressed));
     setError("");
     setStep("confirm");
+  }
+
+  async function pickFiles(files: FileList | File[] | null) {
+    const images = Array.from(files ?? []).filter((f) => f.type.startsWith("image/"));
+    if (images.length === 0) {
+      setError("请选择图片文件（JPEG / PNG 推荐）");
+      return;
+    }
+    if (images.length === 1) {
+      setMode("single");
+      await pickFile(images[0]);
+    } else {
+      setMode("batch");
+      await pickBatchFiles(images);
+      setBatchView("ready");
+    }
   }
 
   async function startAnalyze(selected: File) {
@@ -944,6 +962,7 @@ export default function HomePage() {
     setBatchModel("");
     setBatchView("ready");
     if (batchInputRef.current) batchInputRef.current.value = "";
+    setMode("idle");
   }
 
   async function processBatchItem(id: string) {
@@ -1027,7 +1046,7 @@ export default function HomePage() {
 
   /* ─── UPLOAD ─── */
   if (step === "upload") {
-    if (tab === "batch" && batchView === "processing") {
+    if (mode === "batch" && batchView === "processing") {
       return (
         <PageFrame lightbox={metadataLightbox} onCloseLightbox={closeMetadataLightbox}>
           <BatchAnalyzeSplit items={batchItems} onViewMetadata={openBatchItemMetadata} />
@@ -1035,7 +1054,7 @@ export default function HomePage() {
       );
     }
 
-    if (tab === "batch" && batchView === "complete" && batchItems.length > 0) {
+    if (mode === "batch" && batchView === "complete" && batchItems.length > 0) {
       return (
         <PageFrame lightbox={metadataLightbox} onCloseLightbox={closeMetadataLightbox}>
           <BatchDonePage
@@ -1052,29 +1071,16 @@ export default function HomePage() {
 
     return (
       <PageFrame lightbox={metadataLightbox} onCloseLightbox={closeMetadataLightbox}>
-      <div className={`upload-page${tab === "batch" && batchItems.length > 0 ? " upload-page-batch-ready" : ""}`}>
+      <div className={`upload-page upload-page-amazon${mode === "batch" && batchItems.length > 0 ? " upload-page-batch-ready" : ""}`}>
         <BrandLink />
         <div className="mode-tabs">
-          <button
-            type="button"
-            className={`mode-tab ${tab === "single" ? "is-active" : ""}`}
-            onClick={() => setTab("single")}
-          >
-            单张图片
-          </button>
-          <button
-            type="button"
-            className={`mode-tab ${tab === "batch" ? "is-active" : ""}`}
-            onClick={() => setTab("batch")}
-          >
-            批量处理
-          </button>
+          <span className="mode-tab is-active">图片 SEO</span>
           <Link href="/amazon" className="mode-tab mode-tab-link">
             Amazon 审查
           </Link>
         </div>
 
-        {tab === "batch" ? (
+        {mode === "batch" && batchItems.length > 0 ? (
           <BatchPanel
             items={batchItems}
             dragOver={batchDragOver}
@@ -1100,62 +1106,63 @@ export default function HomePage() {
             <h1 className="upload-h1">上传产品图片，获取嵌入式 SEO 元数据。</h1>
 
             <label
-          className={`drop-zone ${dragOver ? "is-dragover" : ""}`}
-          onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-          onDragLeave={() => setDragOver(false)}
-          onDrop={(e) => {
-            e.preventDefault();
-            setDragOver(false);
-            void pickFile(e.dataTransfer.files?.[0] ?? null);
-          }}
-        >
-          <input
-            ref={inputRef}
-            type="file"
-            aria-label="选择要上传的产品图片"
-            accept="image/jpeg,image/png,image/webp,image/*"
-            onChange={(e) => void pickFile(e.target.files?.[0] ?? null)}
-          />
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-            <rect x="1" y="1" width="54" height="54" rx="14" stroke="#D2D2CC" strokeWidth="1.5" strokeDasharray="5 3.5" />
-            <path d="M28 38V24" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" />
-            <path d="M21 30l7-7 7 7" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-            <path d="M19 41h18" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" opacity="0.18" />
-          </svg>
-          <div className="drop-zone-text">
-            <p className="drop-zone-main">拖拽图片到此处</p>
-            <p className="drop-zone-sub">
-              或 <span>点击浏览文件</span>
-            </p>
-          </div>
-          <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF</p>
-        </label>
+              className={`drop-zone ${dragOver ? "is-dragover" : ""}`}
+              onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+              onDragLeave={() => setDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setDragOver(false);
+                void pickFiles(e.dataTransfer.files);
+              }}
+            >
+              <input
+                ref={inputRef}
+                type="file"
+                multiple
+                aria-label="选择一张或多张产品图片"
+                accept="image/jpeg,image/png,image/webp,image/*"
+                onChange={(e) => void pickFiles(e.target.files)}
+              />
+              <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+                <rect x="1" y="1" width="54" height="54" rx="14" stroke="#D2D2CC" strokeWidth="1.5" strokeDasharray="5 3.5" />
+                <path d="M28 38V24" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M21 30l7-7 7 7" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M19 41h18" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" opacity="0.18" />
+              </svg>
+              <div className="drop-zone-text">
+                <p className="drop-zone-main">拖拽图片到此处</p>
+                <p className="drop-zone-sub">
+                  或 <span>点击浏览文件</span>（1 张单独处理，多张批量处理）
+                </p>
+              </div>
+              <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF · 最多 {BATCH_MAX_FILES} 张</p>
+            </label>
 
-        {error ? (
-          <div className="upload-error">
-            <span>{error}</span>
-            {file ? (
-              <button type="button" onClick={() => void startAnalyze(file)}>
-                重新分析
-              </button>
+            {error ? (
+              <div className="upload-error">
+                <span>{error}</span>
+                {file ? (
+                  <button type="button" onClick={() => void startAnalyze(file)}>
+                    重新分析
+                  </button>
+                ) : null}
+              </div>
             ) : null}
-          </div>
-        ) : null}
 
-        <div className="steps-strip">
-          <div className="steps-strip-item">
-            <p>① 上传</p>
-            <p>产品图片</p>
-          </div>
-          <div className="steps-strip-item">
-            <p>② AI 视觉</p>
-            <p>双语分析</p>
-          </div>
-          <div className="steps-strip-item">
-            <p>③ 下载</p>
-            <p>EXIF · XMP · IPTC</p>
-          </div>
-        </div>
+            <div className="steps-strip">
+              <div className="steps-strip-item">
+                <p>① 上传</p>
+                <p>1–{BATCH_MAX_FILES} 张图片</p>
+              </div>
+              <div className="steps-strip-item">
+                <p>② AI 视觉</p>
+                <p>双语分析</p>
+              </div>
+              <div className="steps-strip-item">
+                <p>③ 下载</p>
+                <p>EXIF · XMP · IPTC</p>
+              </div>
+            </div>
           </>
         )}
       </div>

@@ -267,27 +267,26 @@ export default function AmazonAuditPage() {
       <BrandLink />
 
       <nav className="mode-tabs amazon-nav-tabs">
-        <Link href="/" className="mode-tab mode-tab-link">单张图片</Link>
-        <Link href="/" className="mode-tab mode-tab-link">批量处理</Link>
+        <Link href="/" className="mode-tab mode-tab-link">图片 SEO</Link>
         <span className="mode-tab is-active">Amazon 审查</span>
       </nav>
 
       <div className="amazon-audit-content">
       <h1 className="upload-h1 amazon-audit-h1">Amazon Listing SEO 审查</h1>
       <p className="amazon-audit-lead">
-        输入 ASIN 或商品链接，AI 按 2026 规则审查标题、五点、Search Terms 与属性字段，并给出适老品类优化建议。
+        输入 ASIN，AI 审查 Listing SEO 合规性并给出优化建议。
       </p>
 
       <form className="amazon-audit-form fields-card" onSubmit={handleAsinSubmit}>
         <div className="field-row">
           <div className="field-label-row">
-            <span className="field-key">ASIN / 商品链接</span>
+            <span className="field-key">ASIN 或链接</span>
           </div>
           <input
             className="field-input"
             value={asinInput}
             onChange={(e) => setAsinInput(e.target.value)}
-            placeholder="B0XXXXXXXX 或 https://www.amazon.com/dp/..."
+            placeholder="B0XXXXXXXX 或商品链接"
             disabled={loading}
           />
         </div>
