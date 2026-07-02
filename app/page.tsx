@@ -1530,7 +1530,7 @@ export default function HomePage() {
         actions={(
           <>
             <button type="button" className="btn done-actions-btn" onClick={redownload} disabled={!download}>
-              再次下载
+              下载
             </button>
             <button type="button" className="btn-ghost done-actions-btn" onClick={resetAll}>
               处理下一张图片
