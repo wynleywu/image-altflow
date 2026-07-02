@@ -86,6 +86,27 @@ function downloadBlob(blob: Blob, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
+function RefreshCcwIcon({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
+      <path
+        d="M13 3.8V7h-3.2"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M12.4 7A5.4 5.4 0 1 1 10.9 3.7L13 5.3"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function BrandLink({ className = "page-logo" }: { className?: string }) {
   return (
     <a href="/" className={`nav-logo ${className}`.trim()} aria-label="altflow 首页">
@@ -880,7 +901,7 @@ export default function HomePage() {
     }
   }
 
-  async function handleEmbedDownload() {
+  async function handleEmbedProceed() {
     if (!ai || !file) return;
     setEmbedding(true);
     setError("");
@@ -897,7 +918,6 @@ export default function HomePage() {
         throw new Error(data.error || "写入失败");
       }
 
-      downloadBase64(data.download.base64, data.download.fileName, data.download.mimeType);
       setDownload(data.download);
       setDoneFileName(data.download.fileName);
       setStep("done");
@@ -1352,15 +1372,21 @@ export default function HomePage() {
             </div>
             <div className="meta-header-actions">
               {file ? (
-                <button type="button" className="btn-ghost" onClick={() => void startAnalyze(file)}>
-                  重新分析
+                <button
+                  type="button"
+                  className="btn-icon"
+                  onClick={() => void startAnalyze(file)}
+                  aria-label="重新分析"
+                  title="重新分析"
+                >
+                  <RefreshCcwIcon />
                 </button>
               ) : null}
               <button type="button" className="btn-ghost" onClick={resetAll}>
                 ← 重新选择
               </button>
-              <button type="button" className="btn" onClick={handleEmbedDownload} disabled={embedding}>
-                {embedding ? "写入中…" : "写入并下载"}
+              <button type="button" className="btn" onClick={handleEmbedProceed} disabled={embedding}>
+                {embedding ? "写入中…" : "写入并继续"}
               </button>
             </div>
           </div>
