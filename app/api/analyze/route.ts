@@ -38,7 +38,6 @@ export async function POST(request: Request) {
       const originalFileName = file.name || "upload.jpg";
       const brand = String(form.get("brand") || "").trim() || undefined;
       const model = String(form.get("model") || "").trim() || undefined;
-      const thumbnailDataUrl = String(form.get("thumbnail") || "").trim();
       const { ai } = await analyzeImageBuffer(buffer, mimeType, originalFileName, { brand, model });
 
       let record;
@@ -47,7 +46,6 @@ export async function POST(request: Request) {
           record = await createImageRecord({
             traceId,
             imageUrl: "",
-            thumbnailDataUrl,
             originalFileName,
             flowStatus: "success",
             ai,

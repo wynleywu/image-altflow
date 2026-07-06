@@ -9,6 +9,7 @@ import { runWithConcurrency, withRetry } from "@/lib/concurrency";
 import { MetadataHelpFab } from "@/app/metadata-help";
 import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
 import { addLocalHistoryRecord } from "@/lib/client/history-store";
+import { BrandLink } from "@/app/brand-link";
 
 type Step = "upload" | "confirm" | "analyzing" | "edit" | "done";
 
@@ -149,19 +150,6 @@ function RotateCwIcon({ size = 16 }: { size?: number }) {
   );
 }
 
-function BrandLink({ className = "page-logo" }: { className?: string }) {
-  return (
-    <a href="/" className={`nav-logo ${className}`.trim()} aria-label="altflow 首页">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect width="24" height="24" rx="6" fill="#0D0D0D" />
-        <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-      altflow
-    </a>
-  );
-}
-
 type DoneThumb = {
   id: string;
   imageUrl: string;
@@ -203,7 +191,7 @@ function DonePageLayout({
 
   return (
     <div className="done-page fade-up">
-      <BrandLink />
+      <BrandLink className="page-logo" />
 
       <div className="done-check-sm">
         <DoneCheckIcon size={28} />
@@ -829,13 +817,7 @@ export default function HomePage() {
       const effectiveModel = (ai ? ai.model : model)?.trim();
       if (effectiveBrand) form.append("brand", effectiveBrand);
       if (effectiveModel) form.append("model", effectiveModel);
-      let thumbnail = "";
-      try {
-        thumbnail = await makeThumbnailDataUrl(selected);
-        if (thumbnail) form.append("thumbnail", thumbnail);
-      } catch {
-        // thumbnail is best-effort; history list just won't show a preview
-      }
+      const thumbnailPromise = makeThumbnailDataUrl(selected).catch(() => "");
 
       let response: Response;
       try {
@@ -862,7 +844,7 @@ export default function HomePage() {
       setAi(data.ai);
       setDownload(null);
       setStep("edit");
-      void saveLocalHistory(data.ai, selected.name, thumbnail);
+      void thumbnailPromise.then((thumbnail) => saveLocalHistory(data.ai!, selected.name, thumbnail));
     } catch (analyzeError) {
       setError(analyzeError instanceof Error ? analyzeError.message : "识图失败");
       setStep("upload");
@@ -958,19 +940,13 @@ export default function HomePage() {
     if (!target) return;
 
     patchBatchItem(id, { status: "analyzing", errorMessage: undefined });
-    let thumbnail = "";
-    try {
-      thumbnail = await makeThumbnailDataUrl(target.file);
-    } catch {
-      // thumbnail is best-effort; history list just won't show a preview
-    }
+    const thumbnailPromise = makeThumbnailDataUrl(target.file).catch(() => "");
     try {
       const ai = await withRetry(async () => {
         const form = new FormData();
         form.append("image", target.file);
         if (batchBrand.trim()) form.append("brand", batchBrand.trim());
         if (batchModel.trim()) form.append("model", batchModel.trim());
-        if (thumbnail) form.append("thumbnail", thumbnail);
 
         const response = await fetch("/api/analyze", { method: "POST", body: form });
         const data = (await response.json()) as AnalyzeApiResponse;
@@ -981,7 +957,7 @@ export default function HomePage() {
       });
 
       patchBatchItem(id, { status: "embedding", ai });
-      void saveLocalHistory(ai, target.file.name, thumbnail);
+      void thumbnailPromise.then((thumbnail) => saveLocalHistory(ai, target.file.name, thumbnail));
 
       const download = await withRetry(async () => {
         const form = new FormData();
@@ -1068,7 +1044,7 @@ export default function HomePage() {
     return (
       <PageFrame lightbox={metadataLightbox} onCloseLightbox={closeMetadataLightbox}>
       <div className={`upload-page upload-page-amazon${mode === "batch" && batchItems.length > 0 ? " upload-page-batch-ready" : ""}`}>
-        <BrandLink />
+        <BrandLink className="page-logo" />
         <div className="mode-tabs">
           <span className="mode-tab is-active">图片 SEO</span>
           <Link href="/amazon" className="mode-tab mode-tab-link">
@@ -1172,7 +1148,7 @@ export default function HomePage() {
     return (
       <PageFrame lightbox={metadataLightbox} onCloseLightbox={closeMetadataLightbox}>
       <div className="upload-page fade-up">
-        <BrandLink />
+        <BrandLink className="page-logo" />
 
         <div className="confirm-preview-wrap">
           {previewUrl ? (

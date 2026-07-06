@@ -321,19 +321,6 @@ a { color: inherit; text-decoration: none; }
   gap: 6px;
   flex-shrink: 0;
 }
-.history-badge {
-  font-family: var(--font-mono);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  padding: 2px 9px;
-  border-radius: 999px;
-}
-.history-badge-success { background: var(--ok-soft); color: var(--ok); }
-.history-badge-failed { background: var(--bad-soft); color: var(--bad); }
-.history-badge-pending { background: var(--warn-soft); color: var(--warn); }
-.history-badge-approved { background: var(--ok-soft); color: var(--ok); }
-.history-badge-rejected { background: var(--bad-soft); color: var(--bad); }
 .history-time {
   font-family: var(--font-mono);
   font-size: 10px;
