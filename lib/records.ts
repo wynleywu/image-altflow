@@ -6,6 +6,7 @@ interface ImageRecordRow {
   trace_id: string;
   image_url: string;
   source_image_url: string;
+  thumbnail_data_url: string;
   original_file_name: string;
   source: string;
   image_description: string;
@@ -47,6 +48,7 @@ function mapRow(row: ImageRecordRow): ImageRecord {
     traceId: row.trace_id,
     imageUrl: row.image_url,
     sourceImageUrl: row.source_image_url || "",
+    thumbnailDataUrl: row.thumbnail_data_url || "",
     originalFileName: row.original_file_name,
     source: row.source,
     imageDescription: row.image_description,
@@ -71,6 +73,7 @@ export async function createImageRecord(input: {
   traceId: string;
   imageUrl: string;
   sourceImageUrl?: string;
+  thumbnailDataUrl?: string;
   originalFileName: string;
   source?: string;
   ai?: AiImageResult;
@@ -96,6 +99,7 @@ export async function createImageRecord(input: {
       trace_id,
       image_url,
       source_image_url,
+      thumbnail_data_url,
       original_file_name,
       source,
       image_description,
@@ -117,6 +121,7 @@ export async function createImageRecord(input: {
       ${input.traceId},
       ${input.imageUrl},
       ${input.sourceImageUrl ?? ""},
+      ${input.thumbnailDataUrl ?? ""},
       ${input.originalFileName},
       ${input.source ?? "web"},
       ${input.ai?.image_description_en ?? ""},

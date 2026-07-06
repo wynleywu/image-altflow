@@ -28,6 +28,7 @@ export interface ImageRecord {
   traceId: string;
   imageUrl: string;
   sourceImageUrl: string;
+  thumbnailDataUrl: string;
   originalFileName: string;
   source: string;
   imageDescription: string;

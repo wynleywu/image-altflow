@@ -77,6 +77,21 @@ function downloadBase64(base64: string, fileName: string, mimeType: string) {
   downloadBlob(blob, fileName);
 }
 
+async function makeThumbnailDataUrl(file: File, maxSize = 200, quality = 0.6): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
 function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -869,6 +884,12 @@ export default function HomePage() {
       const effectiveModel = (ai ? ai.model : model)?.trim();
       if (effectiveBrand) form.append("brand", effectiveBrand);
       if (effectiveModel) form.append("model", effectiveModel);
+      try {
+        const thumbnail = await makeThumbnailDataUrl(selected);
+        if (thumbnail) form.append("thumbnail", thumbnail);
+      } catch {
+        // thumbnail is best-effort; history list just won't show a preview
+      }
 
       let response: Response;
       try {
@@ -996,6 +1017,12 @@ export default function HomePage() {
         form.append("image", target.file);
         if (batchBrand.trim()) form.append("brand", batchBrand.trim());
         if (batchModel.trim()) form.append("model", batchModel.trim());
+        try {
+          const thumbnail = await makeThumbnailDataUrl(target.file);
+          if (thumbnail) form.append("thumbnail", thumbnail);
+        } catch {
+          // thumbnail is best-effort; history list just won't show a preview
+        }
 
         const response = await fetch("/api/analyze", { method: "POST", body: form });
         const data = (await response.json()) as AnalyzeApiResponse;
@@ -1097,6 +1124,9 @@ export default function HomePage() {
           <span className="mode-tab is-active">图片 SEO</span>
           <Link href="/amazon" className="mode-tab mode-tab-link">
             Amazon 审查
+          </Link>
+          <Link href="/history" className="mode-tab mode-tab-link">
+            历史记录
           </Link>
         </div>
 

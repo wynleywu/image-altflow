@@ -42,6 +42,7 @@ export async function ensureSchema(): Promise<void> {
       await sql`CREATE INDEX IF NOT EXISTS idx_image_records_review_status ON image_records (review_status)`;
       await sql`CREATE INDEX IF NOT EXISTS idx_image_records_created_at ON image_records (created_at DESC)`;
       await sql`ALTER TABLE image_records ADD COLUMN IF NOT EXISTS source_image_url TEXT NOT NULL DEFAULT ''`;
+      await sql`ALTER TABLE image_records ADD COLUMN IF NOT EXISTS thumbnail_data_url TEXT NOT NULL DEFAULT ''`;
     })();
   }
   await schemaReady;
