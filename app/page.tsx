@@ -8,6 +8,7 @@ import { buildEmbeddedImageUrl } from "@/lib/embedded-metadata-display";
 import { runWithConcurrency, withRetry } from "@/lib/concurrency";
 import { MetadataHelpFab } from "@/app/metadata-help";
 import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+import { addLocalHistoryRecord } from "@/lib/client/history-store";
 
 type Step = "upload" | "confirm" | "analyzing" | "edit" | "done";
 
@@ -85,6 +86,37 @@ async function makeThumbnailDataUrl(file: File, maxSize = 200, quality = 0.6): P
   if (!ctx) return "";
   ctx.drawImage(bitmap, 0, 0, width, height);
   return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function saveLocalHistory(ai: AiImageResult, originalFileName: string, thumbnailDataUrl: string) {
+  try {
+    await addLocalHistoryRecord({
+      recordId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      imageUrl: "",
+      sourceImageUrl: "",
+      thumbnailDataUrl,
+      originalFileName,
+      source: "web",
+      imageDescription: ai.image_description_en,
+      newFileName: ai.new_file_name,
+      altText: ai.alt_text_en,
+      caption: ai.caption_en,
+      tags: ai.tags_en,
+      productType: ai.product_type_en,
+      mainColor: ai.main_color_en,
+      scene: ai.scene_en,
+      confidenceNote: ai.confidence_note,
+      flowStatus: "success",
+      reviewStatus: "",
+      errorType: "",
+      errorMessage: "",
+      manualNote: JSON.stringify(ai),
+      createdAt: Date.now(),
+    });
+  } catch {
+    // local history is best-effort; ignore storage failures (e.g. private browsing)
+  }
 }
 
 function downloadBlob(blob: Blob, fileName: string) {
@@ -797,8 +829,9 @@ export default function HomePage() {
       const effectiveModel = (ai ? ai.model : model)?.trim();
       if (effectiveBrand) form.append("brand", effectiveBrand);
       if (effectiveModel) form.append("model", effectiveModel);
+      let thumbnail = "";
       try {
-        const thumbnail = await makeThumbnailDataUrl(selected);
+        thumbnail = await makeThumbnailDataUrl(selected);
         if (thumbnail) form.append("thumbnail", thumbnail);
       } catch {
         // thumbnail is best-effort; history list just won't show a preview
@@ -829,6 +862,7 @@ export default function HomePage() {
       setAi(data.ai);
       setDownload(null);
       setStep("edit");
+      void saveLocalHistory(data.ai, selected.name, thumbnail);
     } catch (analyzeError) {
       setError(analyzeError instanceof Error ? analyzeError.message : "识图失败");
       setStep("upload");
@@ -924,18 +958,19 @@ export default function HomePage() {
     if (!target) return;
 
     patchBatchItem(id, { status: "analyzing", errorMessage: undefined });
+    let thumbnail = "";
+    try {
+      thumbnail = await makeThumbnailDataUrl(target.file);
+    } catch {
+      // thumbnail is best-effort; history list just won't show a preview
+    }
     try {
       const ai = await withRetry(async () => {
         const form = new FormData();
         form.append("image", target.file);
         if (batchBrand.trim()) form.append("brand", batchBrand.trim());
         if (batchModel.trim()) form.append("model", batchModel.trim());
-        try {
-          const thumbnail = await makeThumbnailDataUrl(target.file);
-          if (thumbnail) form.append("thumbnail", thumbnail);
-        } catch {
-          // thumbnail is best-effort; history list just won't show a preview
-        }
+        if (thumbnail) form.append("thumbnail", thumbnail);
 
         const response = await fetch("/api/analyze", { method: "POST", body: form });
         const data = (await response.json()) as AnalyzeApiResponse;
@@ -946,6 +981,7 @@ export default function HomePage() {
       });
 
       patchBatchItem(id, { status: "embedding", ai });
+      void saveLocalHistory(ai, target.file.name, thumbnail);
 
       const download = await withRetry(async () => {
         const form = new FormData();

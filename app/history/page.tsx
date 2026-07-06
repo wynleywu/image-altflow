@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { AiImageResult, ImageRecord, ReviewStatus } from "@/lib/types";
 import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+import { listLocalHistoryRecords } from "@/lib/client/history-store";
 
 function BrandLink() {
   return (
@@ -59,11 +60,8 @@ export default function HistoryPage() {
     setError("");
     (async () => {
       try {
-        const qs = filter ? `?review_status=${encodeURIComponent(filter)}` : "";
-        const res = await fetch(`/api/records${qs}`);
-        const data = await res.json();
-        if (!data.ok) throw new Error(data.error || "加载历史记录失败");
-        if (!cancelled) setRecords(data.records as ImageRecord[]);
+        const records = await listLocalHistoryRecords(filter);
+        if (!cancelled) setRecords(records);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "加载历史记录失败");
       } finally {
