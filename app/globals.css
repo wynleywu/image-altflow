@@ -83,8 +83,11 @@ a { color: inherit; text-decoration: none; }
   left: 24px;
   font-size: 13px;
   color: var(--muted-light);
-  cursor: default;
+  text-decoration: none;
   z-index: 100;
+}
+.signin-corner:hover {
+  color: var(--ink);
 }
 
 

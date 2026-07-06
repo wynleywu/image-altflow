@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import Link from "next/link";
 import "./globals.css";
 
 const inter = Inter({
@@ -46,7 +47,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="zh-CN" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body>
         <main>{children}</main>
-        <span className="signin-corner">Sign in</span>
+        <Link href="/history" className="signin-corner">
+          历史记录
+        </Link>
       </body>
     </html>
   );
