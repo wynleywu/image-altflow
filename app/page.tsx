@@ -86,18 +86,18 @@ function downloadBlob(blob: Blob, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
-function RefreshCcwIcon({ size = 16 }: { size?: number }) {
+function RotateCwIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
-        d="M13 3.8V7h-3.2"
+        d="M14 2v3.5h-3.5"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M12.4 7A5.4 5.4 0 1 1 10.9 3.7L13 5.3"
+        d="M14 8a6 6 0 1 1-1.76-4.24"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
@@ -1379,7 +1379,7 @@ export default function HomePage() {
                   aria-label="重新分析"
                   title="重新分析"
                 >
-                  <RefreshCcwIcon />
+                  <RotateCwIcon />
                 </button>
               ) : null}
               <button type="button" className="btn-ghost" onClick={resetAll}>
