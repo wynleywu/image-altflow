@@ -123,39 +123,39 @@ export default function HistoryPage() {
             <p className="history-empty-desc">上传并分析图片后，记录会出现在这里。</p>
           </div>
         ) : (
-          <div className="history-grid">
+          <div className="history-list">
             {records.map((record) => {
               const clickable = Boolean(record.manualNote && record.thumbnailDataUrl);
               return (
                 <button
                   key={record.recordId}
                   type="button"
-                  className={`history-card${clickable ? "" : " is-static"}`}
+                  className={`history-row${clickable ? "" : " is-static"}`}
                   onClick={() => openRecord(record)}
                   disabled={!clickable}
                 >
-                  <div className="history-thumb">
+                  <div className="history-row-thumb">
                     {record.thumbnailDataUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img src={record.thumbnailDataUrl} alt={record.altText || record.originalFileName} />
                     ) : null}
                   </div>
-                  <div className="history-card-body">
+                  <div className="history-row-body">
                     <p className="history-filename">{record.newFileName || record.originalFileName}</p>
                     <p className="history-alt">{record.altText || "（无 Alt Text）"}</p>
-                    <div className="history-card-footer">
-                      <div className="history-badges">
-                        <span className={`history-badge history-badge-${record.flowStatus === "success" ? "success" : "failed"}`}>
-                          {record.flowStatus === "success" ? "成功" : "失败"}
+                  </div>
+                  <div className="history-row-meta">
+                    <div className="history-badges">
+                      <span className={`history-badge history-badge-${record.flowStatus === "success" ? "success" : "failed"}`}>
+                        {record.flowStatus === "success" ? "成功" : "失败"}
+                      </span>
+                      {record.reviewStatus ? (
+                        <span className={`history-badge ${REVIEW_BADGE_CLASS[record.reviewStatus] ?? ""}`}>
+                          {record.reviewStatus}
                         </span>
-                        {record.reviewStatus ? (
-                          <span className={`history-badge ${REVIEW_BADGE_CLASS[record.reviewStatus] ?? ""}`}>
-                            {record.reviewStatus}
-                          </span>
-                        ) : null}
-                      </div>
-                      <span className="history-time">{formatTime(record.createdAt)}</span>
+                      ) : null}
                     </div>
+                    <span className="history-time">{formatTime(record.createdAt)}</span>
                   </div>
                 </button>
               );
