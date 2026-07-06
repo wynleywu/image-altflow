@@ -90,12 +90,6 @@ export default function HistoryPage() {
       <div className="audit-result-topbar">
         <div className="audit-topbar-left">
           <BrandLink />
-          <div className="mode-tabs">
-            <Link href="/" className="mode-tab mode-tab-link">
-              图片 SEO
-            </Link>
-            <span className="mode-tab is-active">历史记录</span>
-          </div>
         </div>
       </div>
 
