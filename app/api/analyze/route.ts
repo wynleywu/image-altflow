@@ -106,7 +106,11 @@ export async function POST(request: Request) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Unexpected server error";
-    const errorType = message.startsWith("ai_parse_error") ? "ai_parse_error" : "analyze_failed";
+    const errorType = message.startsWith("ai_parse_error")
+      ? "ai_parse_error"
+      : message.startsWith("gemini_timeout")
+        ? "gemini_timeout"
+        : "analyze_failed";
     return NextResponse.json({ ok: false, error: message, error_type: errorType }, { status: 502 });
   }
 }

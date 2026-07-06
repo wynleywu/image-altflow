@@ -82,10 +82,16 @@ async function callGeminiWithInlineData(data: string, mimeType: string, opts?: {
     },
   });
 
-  const result = await model.generateContent([
-    buildPrompt(opts),
-    { inlineData: { data, mimeType } },
-  ]);
+  let result;
+  try {
+    result = await model.generateContent(
+      [buildPrompt(opts), { inlineData: { data, mimeType } }],
+      { timeout: 50_000 },
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    throw new Error(`gemini_timeout: Gemini 请求超时或失败 (${message})`);
+  }
 
   const text = result.response.text();
   let parsed: Partial<AiImageResult> & Record<string, unknown>;
