@@ -60,7 +60,7 @@ async function callGeminiText(prompt: string): Promise<string> {
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
-  const modelName = readAmazonEnv("GEMINI_MODEL") || "gemini-2.0-flash";
+  const modelName = readAmazonEnv("GEMINI_MODEL") || "gemini-3.5-flash";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   const response = await fetch(url, {

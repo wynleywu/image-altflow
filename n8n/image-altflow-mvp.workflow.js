@@ -146,7 +146,7 @@ const geminiAnalyze = node({
     parameters: {
       resource: 'image',
       operation: 'analyze',
-      modelId: { __rl: true, mode: 'id', value: 'gemini-2.0-flash-lite' },
+      modelId: { __rl: true, mode: 'id', value: 'gemini-3.5-flash' },
       text: AI_PROMPT,
       inputType: 'url',
       imageUrls: expr('{{ $("Validate Input").item.json.image_url }}'),

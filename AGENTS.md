@@ -37,7 +37,7 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 |------|------|------|
 | `AI_PROVIDER` | 否 | `gemini`、`modelscope` 或 `cloudflare`；未设置默认 `modelscope` |
 | `GEMINI_API_KEY` | `AI_PROVIDER=gemini` 时 | Gemini 识图 |
-| `GEMINI_MODEL` | 否 | 默认 `gemini-3.1-flash-lite` |
+| `GEMINI_MODEL` | 否 | 默认 `gemini-3.5-flash` |
 | `MODELSCOPE_API_KEY` | 默认 provider 路径时 | ModelScope 识图 |
 | `MODELSCOPE_MODEL` | 否 | 推荐 `Qwen/Qwen3-VL-30B-A3B-Instruct`（`.env.example`）；代码回退默认同左 |
 | `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Account ID |

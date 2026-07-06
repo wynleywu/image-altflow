@@ -94,7 +94,7 @@ exiftool -G1 -a ./output.jpg
 |------|------|------|
 | `AI_PROVIDER` | 否 | `gemini`、`modelscope` 或 `cloudflare`；未设置时走 ModelScope（失败且已配 `GEMINI_API_KEY` 时回退 Gemini） |
 | `GEMINI_API_KEY` | `AI_PROVIDER=gemini` 时 | Google AI Studio |
-| `GEMINI_MODEL` | 否 | 默认 `gemini-3.1-flash-lite` |
+| `GEMINI_MODEL` | 否 | 默认 `gemini-3.5-flash` |
 | `MODELSCOPE_API_KEY` | `AI_PROVIDER=modelscope` 或未设 provider 时 | [ModelScope 令牌](https://modelscope.cn/my/myaccesstoken) |
 | `MODELSCOPE_MODEL` | 否 | 推荐 `Qwen/Qwen3-VL-30B-A3B-Instruct` |
 | `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Account ID |
