@@ -1038,9 +1038,6 @@ export default function HomePage() {
           <Link href="/amazon" className="mode-tab mode-tab-link">
             Amazon 审查
           </Link>
-          <Link href="/history" className="mode-tab mode-tab-link">
-            历史记录
-          </Link>
         </div>
 
         {mode === "batch" && batchItems.length > 0 ? (
