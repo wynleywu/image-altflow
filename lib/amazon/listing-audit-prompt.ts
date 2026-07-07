@@ -22,6 +22,8 @@ export function buildListingAuditPrompt(snapshot: AmazonListingSnapshot): string
   return `You are an Amazon Listing SEO auditor specializing in mobility aids, bathroom safety, and senior living products.
 
 Audit the listing below and return ONE valid JSON object matching the schema exactly. No markdown.
+Return compact JSON only. Do not wrap in code fences. Do not add explanations before or after JSON.
+Do not repeat large input fields that the server already knows, including the current title, current bullets, current description, or character counts derived from them.
 
 ## Review constraints
 - Marketplace: ${snapshot.marketplace}.
@@ -54,18 +56,14 @@ ${listingJson}
   },
   "summary": string (2-3 sentences in Simplified Chinese),
   "title": {
-    "current": string,
-    "charCount": number,
     "issues": [{ "id": string, "severity": "high"|"medium"|"low", "area": "title", "message": string, "impact": "compliance"|"discoverability"|"conversion"|"completeness"|"readability", "reason": string, "evidence": string[], "basisType": "confirmed_rule"|"listing_evidence"|"category_guidance"|"heuristic", "confidence": number (0-1) }],
     "suggested": string (max 75 chars, English)
   },
   "itemHighlights": {
     "suggested": string (max 125 chars, English),
-    "charCount": number,
     "rationale": string (Simplified Chinese, brief)
   },
   "bullets": {
-    "current": string[],
     "suggested": string[] (exactly 5 bullets, English),
     "issues": [{ "severity", "area": "bullets", "message" }]
   },
@@ -82,5 +80,7 @@ ${listingJson}
 }
 
 Issue "area" must be one of: title, highlights, bullets, searchTerms, attributes, category, aPlus, conversion. Evidence must quote or precisely identify supplied listing content. Do not invent policy URLs, external sources, product facts, or confirmed rules.
+If unsure about a field, use an empty string, empty array, or empty object instead of prose.
+Before finishing, self-check that the response is valid parseable JSON.
 Return JSON only.`;
 }
