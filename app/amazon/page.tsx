@@ -7,6 +7,18 @@ import type { AmazonMarketplace } from "@/lib/amazon/types";
 import { createAuditWorkspace, saveAuditWorkspace } from "@/lib/amazon/workspace";
 import { BrandLink } from "@/app/brand-link";
 
+const FALLBACK_ERROR = "Audit failed. Please try again.";
+const DETAIL_LABELS: Record<string, string> = {
+  fetch_not_configured: "Setup",
+  fetch_blocked: "Blocked",
+  fetch_failed: "Fetch",
+  fetch_proxy_failed: "Proxy",
+  audit_chain_failed: "Pipeline",
+  ai_parse_error: "AI parse",
+  gemini_error: "Gemini",
+  modelscope_error: "ModelScope",
+};
+
 export default function AmazonAuditPage() {
   const router = useRouter();
   const [asinInput, setAsinInput] = useState("");
@@ -35,13 +47,18 @@ export default function AmazonAuditPage() {
         if (data.error_type === "fetch_not_configured") {
           setShowManual(true);
         }
-        throw new Error(data.error || "审查失败");
+        const detailLabel = DETAIL_LABELS[String(data.error_type ?? "")];
+        const detailText = typeof data.details === "string" ? data.details.trim() : "";
+        const message = detailLabel && detailText
+          ? `${data.error || FALLBACK_ERROR}\n${detailLabel}: ${detailText}`
+          : data.error || FALLBACK_ERROR;
+        throw new Error(message);
       }
       const auditId = crypto.randomUUID();
       saveAuditWorkspace(createAuditWorkspace(auditId, data.snapshot, data.audit));
       router.push(`/amazon/result?id=${encodeURIComponent(auditId)}`);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "审查失败");
+      setError(err instanceof Error ? err.message : FALLBACK_ERROR);
     } finally {
       setLoading(false);
     }
@@ -55,12 +72,12 @@ export default function AmazonAuditPage() {
   function handleManualSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!manualTitle.trim()) {
-      setError("请填写标题");
+      setError("Please enter a title for manual audit.");
       return;
     }
     const bullets = manualBullets
       .split("\n")
-      .map((l) => l.trim())
+      .map((line) => line.trim())
       .filter(Boolean);
     void runAudit({
       manual: {
@@ -76,8 +93,8 @@ export default function AmazonAuditPage() {
   }
 
   function parseAsinFromManual(input: string): string | null {
-    const m = input.trim().match(/\b([A-Z0-9]{10})\b/i);
-    return m?.[1]?.toUpperCase() ?? null;
+    const match = input.trim().match(/\b([A-Z0-9]{10})\b/i);
+    return match?.[1]?.toUpperCase() ?? null;
   }
 
   return (
@@ -85,32 +102,32 @@ export default function AmazonAuditPage() {
       <BrandLink className="page-logo" />
 
       <nav className="mode-tabs amazon-nav-tabs">
-        <Link href="/" className="mode-tab mode-tab-link">图片 SEO</Link>
-        <span className="mode-tab is-active">Amazon 审查</span>
+        <Link href="/" className="mode-tab mode-tab-link">Image SEO</Link>
+        <span className="mode-tab is-active">Amazon Audit</span>
       </nav>
 
       <div className="amazon-audit-content">
-        <h1 className="upload-h1 amazon-audit-h1">Amazon Listing SEO 审查</h1>
+        <h1 className="upload-h1 amazon-audit-h1">Amazon Listing SEO Audit</h1>
         <p className="amazon-audit-lead">
-          输入 ASIN，AI 审查 Listing SEO 合规性并给出优化建议。
+          Enter an ASIN and let AI review listing SEO and suggest improvements.
         </p>
 
         <form className="amazon-audit-form fields-card" onSubmit={handleAsinSubmit}>
           <div className="field-row">
             <div className="field-label-row">
-              <span className="field-key">ASIN 或链接</span>
+              <span className="field-key">ASIN or URL</span>
             </div>
             <input
               className="field-input"
               value={asinInput}
               onChange={(e) => setAsinInput(e.target.value)}
-              placeholder="B0XXXXXXXX 或商品链接"
+              placeholder="B0XXXXXXXX or Amazon product URL"
               disabled={loading}
             />
           </div>
           <div className="field-row">
             <div className="field-label-row">
-              <span className="field-key">站点</span>
+              <span className="field-key">Marketplace</span>
             </div>
             <select
               className="field-input sm"
@@ -118,15 +135,15 @@ export default function AmazonAuditPage() {
               onChange={(e) => setMarketplace(e.target.value as AmazonMarketplace)}
               disabled={loading}
             >
-              <option value="US">美国 (amazon.com)</option>
-              <option value="UK">英国 (amazon.co.uk)</option>
-              <option value="DE">德国 (amazon.de)</option>
-              <option value="CA">加拿大 (amazon.ca)</option>
-              <option value="AU">澳大利亚 (amazon.com.au)</option>
+              <option value="US">United States (amazon.com)</option>
+              <option value="UK">United Kingdom (amazon.co.uk)</option>
+              <option value="DE">Germany (amazon.de)</option>
+              <option value="CA">Canada (amazon.ca)</option>
+              <option value="AU">Australia (amazon.com.au)</option>
             </select>
           </div>
           <button type="submit" className="btn" disabled={loading || !asinInput.trim()}>
-            {loading ? "审查中…" : "开始审查"}
+            {loading ? "Auditing..." : "Start audit"}
           </button>
         </form>
 
@@ -135,36 +152,36 @@ export default function AmazonAuditPage() {
         {!showManual && error.includes("fetch_not_configured") ? null : (
           <div className="amazon-manual-toggle">
             <button type="button" className="btn-ghost" onClick={() => setShowManual((v) => !v)}>
-              {showManual ? "收起手动输入" : "抓取失败？手动粘贴 Listing"}
+              {showManual ? "Hide manual input" : "Fetch failed? Paste listing manually"}
             </button>
           </div>
         )}
 
         {showManual ? (
           <form className="amazon-audit-form fields-card" onSubmit={handleManualSubmit}>
-            <p className="audit-diff-label">手动粘贴（每行一条 Bullet）</p>
+            <p className="audit-diff-label">Manual paste (one bullet per line)</p>
             <div className="field-row">
-              <span className="field-key">标题</span>
+              <span className="field-key">Title</span>
               <input className="field-input" value={manualTitle} onChange={(e) => setManualTitle(e.target.value)} required />
             </div>
             <div className="field-row">
-              <span className="field-key">五点描述</span>
+              <span className="field-key">Bullets</span>
               <textarea className="field-textarea" rows={6} value={manualBullets} onChange={(e) => setManualBullets(e.target.value)} />
             </div>
             <div className="field-row">
-              <span className="field-key">后台 Search Terms（可选）</span>
+              <span className="field-key">Backend Search Terms (optional)</span>
               <input className="field-input" value={manualSearchTerms} onChange={(e) => setManualSearchTerms(e.target.value)} />
             </div>
             <div className="field-row">
-              <span className="field-key">类目路径（可选）</span>
+              <span className="field-key">Browse path (optional)</span>
               <input className="field-input" value={manualBrowsePath} onChange={(e) => setManualBrowsePath(e.target.value)} placeholder="Health > Medical > ..." />
             </div>
             <div className="field-row">
-              <span className="field-key">描述（可选）</span>
+              <span className="field-key">Description (optional)</span>
               <textarea className="field-textarea" rows={3} value={manualDescription} onChange={(e) => setManualDescription(e.target.value)} />
             </div>
             <button type="submit" className="btn" disabled={loading}>
-              {loading ? "审查中…" : "审查粘贴内容"}
+              {loading ? "Auditing..." : "Audit pasted listing"}
             </button>
           </form>
         ) : null}

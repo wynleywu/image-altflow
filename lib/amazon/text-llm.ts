@@ -8,6 +8,10 @@ export function readAmazonEnv(key: string): string {
 
 export type AmazonTextProvider = "gemini" | "modelscope";
 
+function withProviderPrefix(provider: AmazonTextProvider, message: string): Error {
+  return new Error(`${provider}_error: ${message}`);
+}
+
 export function getAmazonTextProvider(): AmazonTextProvider {
   const pref = readAmazonEnv("AMAZON_TEXT_PROVIDER").toLowerCase();
   if (pref === "modelscope" && readAmazonEnv("MODELSCOPE_API_KEY")) return "modelscope";
@@ -19,7 +23,7 @@ export function getAmazonTextProvider(): AmazonTextProvider {
 async function callModelScopeText(prompt: string): Promise<string> {
   const apiKey = readAmazonEnv("MODELSCOPE_API_KEY");
   if (!apiKey) {
-    throw new Error("MODELSCOPE_API_KEY is not configured");
+    throw withProviderPrefix("modelscope", "MODELSCOPE_API_KEY is not configured");
   }
 
   const configured = readAmazonEnv("MODELSCOPE_TEXT_MODEL") || readAmazonEnv("MODELSCOPE_MODEL");
@@ -43,7 +47,7 @@ async function callModelScopeText(prompt: string): Promise<string> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(`ModelScope text API error ${response.status}: ${body}`);
+    throw withProviderPrefix("modelscope", `text API ${response.status}: ${body}`);
   }
 
   const json = (await response.json()) as { choices?: { message?: { content?: string } }[] };
@@ -57,7 +61,7 @@ async function callModelScopeText(prompt: string): Promise<string> {
 async function callGeminiText(prompt: string): Promise<string> {
   const apiKey = readAmazonEnv("GEMINI_API_KEY");
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not configured");
+    throw withProviderPrefix("gemini", "GEMINI_API_KEY is not configured");
   }
 
   const modelName = readAmazonEnv("GEMINI_MODEL") || "gemini-3.5-flash";
@@ -78,7 +82,7 @@ async function callGeminiText(prompt: string): Promise<string> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(`Gemini text API error ${response.status}: ${body}`);
+    throw withProviderPrefix("gemini", `text API ${response.status}: ${body}`);
   }
 
   const json = (await response.json()) as {
@@ -91,7 +95,7 @@ async function callGeminiText(prompt: string): Promise<string> {
   return text;
 }
 
-/** Amazon Listing 文本任务：默认 Gemini，可由 AMAZON_TEXT_PROVIDER 切换。 */
+/** Amazon Listing text tasks default to Gemini and can switch via AMAZON_TEXT_PROVIDER. */
 export async function callTextLlm(prompt: string): Promise<string> {
   const primary = getAmazonTextProvider();
 
