@@ -103,11 +103,12 @@ Gemini、ModelScope 或 Cloudflare 返回字段示例：
 
 | 端点 | 职责 |
 |------|------|
-| `POST /api/analyze` | 识图；返回 base64 原图 + `ai` |
+| `POST /api/analyze` | 识图（仅 multipart）；返回 base64 原图 + `ai` |
 | `POST /api/embed` | 写元数据；返回 base64 成品 + `fileName` |
 | `POST /api/amazon/audit` | ASIN 抓取 + Listing SEO 审查（适老品类） |
+| `GET/PATCH /api/records*` | 可选历史；需 `RECORDS_API_SECRET` Bearer |
 
-两步设计与前端阶段二一致：先 analyze，用户编辑后再 embed。
+两步设计与前端阶段二一致：先 analyze，用户编辑后再 embed。不接受 `image_url` 代抓。
 
 ## 可选持久化
 

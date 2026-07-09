@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
+import { requireRecordsApiSecret } from "@/lib/api-auth";
 import { listImageRecords } from "@/lib/records";
 
 export async function GET(request: Request) {
+  const denied = requireRecordsApiSecret(request);
+  if (denied) return denied;
+
   try {
     const { searchParams } = new URL(request.url);
     const reviewStatus = searchParams.get("review_status") || undefined;

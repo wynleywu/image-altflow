@@ -96,7 +96,7 @@ curl -X POST http://localhost:3000/api/analyze \
 }
 ```
 
-也支持 JSON body：`{ "image_url": "https://..." }`（公开可访问 URL）。
+仅支持 `multipart/form-data` 上传；不再接受 `image_url`（避免服务端代抓任意 URL）。
 
 ### Step 2 — Embed
 
@@ -131,12 +131,15 @@ curl -X POST http://localhost:3000/api/embed \
 
 | 值 | 含义 |
 |----|------|
-| `missing_image` | 未提供图片文件或 URL |
+| `missing_image` | 未提供图片文件 |
+| `invalid_request` | Content-Type 非 multipart，或缺少必填字段 |
 | `ai_parse_error` | 上游返回非 JSON 或缺必填字段；换图重试，确认模型支持识图 |
 | `analyze_failed` | 识图过程失败 |
 | `invalid_ai_json` | embed 请求体 `ai` 无法解析 |
 | `embed_failed` | ExifTool 写入失败 |
-| `invalid_request` | embed 缺少必填字段 |
+| `embed_unavailable` | ExifTool 不可用且无 JS fallback（常见于非 JPEG） |
+| `file_too_large` | 图片超过 5 MB |
+| `invalid_request` | embed 缺少必填字段，或 analyze 非 multipart |
 
 HTTP 状态：客户端错误 `400`，服务端/上游错误 `502`。
 
@@ -148,8 +151,9 @@ HTTP 状态：客户端错误 `400`，服务端/上游错误 `502`。
 |------|------|
 | `POSTGRES_URL` | analyze 成功时可写 `image_records` |
 | `BLOB_READ_WRITE_TOKEN` | 与 Postgres 同时配置时，embed 成品存 Blob |
+| `RECORDS_API_SECRET` | 暴露 `GET/PATCH /api/records*` 时必填；未配置则 records HTTP API 返回 503 |
 
-仅配置识图 Key 即可完成识图 + 元数据写入；`POSTGRES_URL` / `BLOB_READ_WRITE_TOKEN` 为可选持久化。
+仅配置识图 Key 即可完成识图 + 元数据写入；`POSTGRES_URL` / `BLOB_READ_WRITE_TOKEN` 为可选持久化。HTTP 读写历史需额外配置 `RECORDS_API_SECRET`（`Authorization: Bearer …`）。
 
 ## Web UI
 

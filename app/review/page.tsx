@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { loadReviewRecords, saveReviewRecord } from "@/app/review/actions";
 import type { ImageRecord, ReviewStatus } from "@/lib/types";
 
 const FILTERS: Array<{ label: string; value: string }> = [
@@ -29,18 +30,14 @@ function ReviewEditor({ record, onSaved }: { record: ImageRecord; onSaved: (reco
     setSaving(true);
     setError("");
     try {
-      const response = await fetch(`/api/records/${record.recordId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          new_file_name: newFileName,
-          alt_text: altText,
-          caption,
-          review_status: reviewStatus,
-        }),
+      const data = await saveReviewRecord({
+        recordId: record.recordId,
+        newFileName,
+        altText,
+        caption,
+        reviewStatus,
       });
-      const data = await response.json();
-      if (!response.ok || !data.ok) {
+      if (!data.ok || !data.record) {
         throw new Error(data.error || "保存失败");
       }
       onSaved(data.record);
@@ -119,10 +116,8 @@ export default function ReviewPage() {
     setLoading(true);
     setError("");
     try {
-      const query = nextFilter ? `?review_status=${encodeURIComponent(nextFilter)}` : "";
-      const response = await fetch(`/api/records${query}`);
-      const data = await response.json();
-      if (!response.ok || !data.ok) {
+      const data = await loadReviewRecords(nextFilter || undefined);
+      if (!data.ok || !data.records) {
         throw new Error(data.error || "加载失败");
       }
       setRecords(data.records);

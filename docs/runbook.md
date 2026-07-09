@@ -16,6 +16,7 @@
 | `CLOUDFLARE_MODEL` | 否 | 手动 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
 | `POSTGRES_URL` | 否 | Vercel Neon / Neon 控制台 | 历史记录 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | Vercel Blob | 成品图 URL |
+| `RECORDS_API_SECRET` | 使用 `/api/records*` 时 | 手动 | Bearer 鉴权；未配置则 records HTTP API 503 |
 
 本地：复制 `.env.example` → `.env.local`。CLI 自动读取 `.env.local`。
 

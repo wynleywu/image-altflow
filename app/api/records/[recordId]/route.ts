@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { requireRecordsApiSecret } from "@/lib/api-auth";
 import { updateImageRecord } from "@/lib/records";
 import type { ReviewStatus } from "@/lib/types";
 
@@ -6,6 +7,9 @@ export async function PATCH(
   request: Request,
   context: { params: Promise<{ recordId: string }> },
 ) {
+  const denied = requireRecordsApiSecret(request);
+  if (denied) return denied;
+
   try {
     const { recordId } = await context.params;
     const body = await request.json();

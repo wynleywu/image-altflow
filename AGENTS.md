@@ -25,10 +25,10 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 
 | 路由 | 方法 | 用途 |
 |------|------|------|
-| `/api/analyze` | POST | `multipart` 字段 `image`；返回 `ai` + `originalImageBase64` |
+| `/api/analyze` | POST | `multipart` 字段 `image`；返回 `ai` + `originalImageBase64`（不支持 `image_url`） |
 | `/api/embed` | POST | JSON：`imageBase64`, `mimeType`, `ai`；返回 `download` |
-| `/api/records` | GET | 可选历史（需 `POSTGRES_URL`） |
-| `/api/records/[recordId]` | PATCH | 可选审核字段更新（旧 UI 用） |
+| `/api/records` | GET | 可选历史（需 `POSTGRES_URL` + `RECORDS_API_SECRET`） |
+| `/api/records/[recordId]` | PATCH | 可选审核字段更新（需 Bearer；旧 `/review` 走 server actions） |
 | `/api/amazon/audit` | POST | ASIN/URL 抓取或手动 Listing；返回 V2 诊断与建议稿 |
 
 ## 环境变量
@@ -45,6 +45,7 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `CLOUDFLARE_MODEL` | 否 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
 | `POSTGRES_URL` | 否 | Neon；仅 `canPersistRecords()` 时写库 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储；需与 Postgres 同时配置才在 embed 时持久化 |
+| `RECORDS_API_SECRET` | 使用 `/api/records*` 时 | Bearer 鉴权；未配置则 records HTTP API 503 |
 
 ## 关键文件
 

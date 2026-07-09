@@ -102,6 +102,7 @@ exiftool -G1 -a ./output.jpg
 | `CLOUDFLARE_MODEL` | 否 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
 | `POSTGRES_URL` | 否 | 历史记录 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储 |
+| `RECORDS_API_SECRET` | 使用 `/api/records*` 时 | Bearer 鉴权；未配置则 records HTTP API 503 |
 
 ## 架构
 

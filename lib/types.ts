@@ -48,13 +48,6 @@ export interface ImageRecord {
   createdAt: number | null;
 }
 
-export interface AnalyzeRequest {
-  image_url: string;
-  original_file_name?: string;
-  source?: string;
-  trace_id?: string;
-}
-
 export interface AnalyzeApiResponse {
   ok: boolean;
   ai?: AiImageResult;

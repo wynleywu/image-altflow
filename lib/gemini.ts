@@ -60,6 +60,12 @@ export function normalizeAiResult(raw: Partial<AiImageResult> & Record<string, u
     scene_en: String(raw.scene_en ?? raw.scene ?? "uncertain"),
     scene_zh: String(raw.scene_zh ?? ""),
     confidence_note: raw.confidence_note === "uncertain" ? "uncertain" : "certain",
+    ...(typeof raw.brand === "string" && raw.brand.trim()
+      ? { brand: raw.brand.trim() }
+      : {}),
+    ...(typeof raw.model === "string" && raw.model.trim()
+      ? { model: raw.model.trim() }
+      : {}),
   };
 }
 
@@ -101,30 +107,17 @@ async function callGeminiWithInlineData(data: string, mimeType: string, opts?: {
     throw new Error("ai_parse_error: Gemini returned invalid JSON");
   }
 
-  const normalized = normalizeAiResult(parsed);
-  const missing = REQUIRED_FIELDS.filter((field) => !normalized[field]);
-  if (missing.length === REQUIRED_FIELDS.length) {
-    throw new Error("ai_parse_error: AI response missing required fields");
-  }
-
-  return normalized;
+  return assertRequiredAiFields(normalizeAiResult(parsed));
 }
 
-export async function fetchImageAsBase64(imageUrl: string): Promise<{ data: string; mimeType: string }> {
-  const response = await fetch(imageUrl, { redirect: "follow" });
-  if (!response.ok) {
-    throw new Error(`Failed to fetch image (${response.status})`);
+export function assertRequiredAiFields(normalized: AiImageResult): AiImageResult {
+  const missing = REQUIRED_FIELDS.filter((field) => !String(normalized[field] ?? "").trim());
+  if (missing.length > 0) {
+    throw new Error(`ai_parse_error: AI response missing required fields: ${missing.join(", ")}`);
   }
-  const mimeType = response.headers.get("content-type")?.split(";")[0] || "image/jpeg";
-  const buffer = Buffer.from(await response.arrayBuffer());
-  return { data: buffer.toString("base64"), mimeType };
+  return normalized;
 }
 
 export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
   return callGeminiWithInlineData(buffer.toString("base64"), mimeType || "image/jpeg", opts);
-}
-
-export async function analyzeImage(imageUrl: string): Promise<AiImageResult> {
-  const { data, mimeType } = await fetchImageAsBase64(imageUrl);
-  return callGeminiWithInlineData(data, mimeType);
 }
