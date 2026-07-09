@@ -48,9 +48,8 @@ export default function AmazonAuditPage() {
           setShowManual(true);
         }
         const detailLabel = DETAIL_LABELS[String(data.error_type ?? "")];
-        const detailText = typeof data.details === "string" ? data.details.trim() : "";
-        const message = detailLabel && detailText
-          ? `${data.error || FALLBACK_ERROR}\n${detailLabel}: ${detailText}`
+        const message = detailLabel
+          ? `${data.error || FALLBACK_ERROR}\n${detailLabel}`
           : data.error || FALLBACK_ERROR;
         throw new Error(message);
       }

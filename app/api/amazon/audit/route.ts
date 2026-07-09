@@ -82,6 +82,6 @@ export async function POST(request: Request) {
         : 500;
     const publicMessage = USER_ERROR_MESSAGES[errorType] ?? USER_ERROR_MESSAGES.audit_error;
     console.error("[amazon/audit]", { errorType, details });
-    return NextResponse.json({ ok: false, error: publicMessage, error_type: errorType, details }, { status });
+    return NextResponse.json({ ok: false, error: publicMessage, error_type: errorType }, { status });
   }
 }

@@ -10,24 +10,47 @@ function seg(marker: number, payload: Buffer): Buffer {
   return Buffer.concat([hdr, payload]);
 }
 
-function exifSeg(altText: string): Buffer {
-  const desc = Buffer.from(altText.slice(0, 1000) + "\0", "ascii");
+function asciiExifValue(value: string, maxLen: number): Buffer {
+  // EXIF ASCII type is 7-bit; strip non-ASCII so we never emit invalid bytes.
+  const cleaned = value.replace(/[^\x20-\x7E]/g, " ").trim().slice(0, maxLen);
+  return Buffer.from(`${cleaned || " "}\0`, "ascii");
+}
+
+function exifSeg(altText: string, model?: string): Buffer {
+  const desc = asciiExifValue(altText, 1000);
+  const modelBuf = model ? asciiExifValue(model, 200) : null;
+  const entryCount = modelBuf ? 2 : 1;
   // Minimal TIFF: II + magic 42 + IFD0 offset 8
   const ifdOffset = 8;
-  const dataOffset = ifdOffset + 2 + 1 * 12 + 4; // count(2) + 1 entry(12) + next-IFD(4)
-  const tiff = Buffer.alloc(dataOffset + desc.length);
+  const dataOffset = ifdOffset + 2 + entryCount * 12 + 4;
+  const tiff = Buffer.alloc(dataOffset + desc.length + (modelBuf?.length ?? 0));
 
-  tiff.writeUInt16LE(0x4949, 0);          // little-endian
+  tiff.writeUInt16LE(0x4949, 0); // little-endian
   tiff.writeUInt16LE(42, 2);
   tiff.writeUInt32LE(ifdOffset, 4);
-  tiff.writeUInt16LE(1, 8);              // 1 IFD entry
-  tiff.writeUInt16LE(0x010E, 10);        // ImageDescription tag
-  tiff.writeUInt16LE(2, 12);             // ASCII
-  tiff.writeUInt32LE(desc.length, 14);
-  tiff.writeUInt32LE(dataOffset, 18);
-  tiff.writeUInt32LE(0, 22);             // next IFD = 0
-  desc.copy(tiff, dataOffset);
+  tiff.writeUInt16LE(entryCount, 8);
 
+  let entryPos = 10;
+  let valuePos = dataOffset;
+
+  tiff.writeUInt16LE(0x010E, entryPos); // ImageDescription
+  tiff.writeUInt16LE(2, entryPos + 2); // ASCII
+  tiff.writeUInt32LE(desc.length, entryPos + 4);
+  tiff.writeUInt32LE(valuePos, entryPos + 8);
+  desc.copy(tiff, valuePos);
+  valuePos += desc.length;
+  entryPos += 12;
+
+  if (modelBuf) {
+    tiff.writeUInt16LE(0x0110, entryPos); // Model
+    tiff.writeUInt16LE(2, entryPos + 2);
+    tiff.writeUInt32LE(modelBuf.length, entryPos + 4);
+    tiff.writeUInt32LE(valuePos, entryPos + 8);
+    modelBuf.copy(tiff, valuePos);
+    entryPos += 12;
+  }
+
+  tiff.writeUInt32LE(0, entryPos); // next IFD = 0
   return seg(0xE1, Buffer.concat([Buffer.from("Exif\0\0"), tiff]));
 }
 
@@ -64,6 +87,7 @@ function iptcSeg(ai: AiImageResult): Buffer {
 
   addRecord(0x78, ai.caption_en);
   for (const kw of ai.tags_en.slice(0, 20)) addRecord(0x19, kw);
+  if (ai.brand) addRecord(0x6e, ai.brand); // Credit
 
   if (records.length === 0) return Buffer.alloc(0);
 
@@ -92,7 +116,7 @@ export function injectJpegMetadata(buffer: Buffer, ai: AiImageResult): Buffer {
   const iptc = iptcSeg(ai);
   return Buffer.concat([
     buffer.slice(0, pos),
-    exifSeg(ai.alt_text_en),
+    exifSeg(ai.alt_text_en, ai.model),
     xmpSeg(ai),
     iptc.length > 0 ? iptc : Buffer.alloc(0),
     buffer.slice(pos),

@@ -53,10 +53,12 @@ export async function embedMetadataIntoImage(
     // ExifTool unavailable (no Perl on Linux serverless, or binary not found)
     if (msg.includes("Perl") || msg.includes("ENOENT") || msg.includes("spawn")) {
       if (mimeType.includes("jpeg") || mimeType.includes("jpg")) {
+        console.warn("[embed] ExifTool unavailable; using JPEG JS fallback");
         return injectJpegMetadata(buffer, ai);
       }
-      // Non-JPEG without ExifTool: return original rather than failing
-      return buffer;
+      throw new Error(
+        `embed_unavailable: ExifTool unavailable and no JS fallback for mimeType=${mimeType}`,
+      );
     }
     throw err;
   }

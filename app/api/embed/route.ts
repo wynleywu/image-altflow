@@ -8,6 +8,16 @@ import type { AiImageResult, EmbedRequest } from "@/lib/types";
 
 export const maxDuration = 60;
 
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_BASE64_CHARS = Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 8;
+
+function tooLargeResponse() {
+  return NextResponse.json(
+    { ok: false, error: "图片超过 5 MB，请压缩后重试", error_type: "file_too_large" },
+    { status: 413 },
+  );
+}
+
 export async function POST(request: Request) {
   try {
     const contentType = request.headers.get("content-type") || "";
@@ -30,6 +40,10 @@ export async function POST(request: Request) {
         );
       }
 
+      if (file.size > MAX_IMAGE_BYTES) {
+        return tooLargeResponse();
+      }
+
       inputBuffer = Buffer.from(await file.arrayBuffer());
       sourceMimeType = String(form.get("mimeType") || "") || file.type || "image/jpeg";
       ai = parseAiFromJson(JSON.parse(aiRaw));
@@ -46,7 +60,14 @@ export async function POST(request: Request) {
         );
       }
 
+      if (body.imageBase64.length > MAX_BASE64_CHARS) {
+        return tooLargeResponse();
+      }
+
       inputBuffer = Buffer.from(body.imageBase64, "base64");
+      if (inputBuffer.length > MAX_IMAGE_BYTES) {
+        return tooLargeResponse();
+      }
       sourceMimeType = body.mimeType;
       ai = parseAiFromJson(body.ai);
       traceId = body.traceId;
@@ -73,15 +94,23 @@ export async function POST(request: Request) {
           flowStatus: "success",
           ai,
         });
-      } catch {
-        // optional persistence
+      } catch (persistError) {
+        console.warn(
+          "[embed] optional persistence failed:",
+          persistError instanceof Error ? persistError.message : persistError,
+        );
       }
     }
 
     return NextResponse.json({ ok: true, download, record });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Embed failed";
-    const errorType = message.includes("Invalid AI JSON") ? "invalid_ai_json" : "embed_failed";
-    return NextResponse.json({ ok: false, error: message, error_type: errorType }, { status: 502 });
+    const errorType = message.includes("Invalid AI JSON")
+      ? "invalid_ai_json"
+      : message.startsWith("embed_unavailable")
+        ? "embed_unavailable"
+        : "embed_failed";
+    const status = errorType === "invalid_ai_json" ? 400 : errorType === "embed_unavailable" ? 503 : 502;
+    return NextResponse.json({ ok: false, error: message, error_type: errorType }, { status });
   }
 }

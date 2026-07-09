@@ -1005,8 +1005,20 @@ export default function HomePage() {
     setBatchZipping(true);
     try {
       const zip = new JSZip();
+      const usedNames = new Set<string>();
       doneItems.forEach((item) => {
-        zip.file(item.download!.fileName, item.download!.base64, { base64: true });
+        const original = item.download!.fileName;
+        const dot = original.lastIndexOf(".");
+        const stem = dot > 0 ? original.slice(0, dot) : original;
+        const ext = dot > 0 ? original.slice(dot) : "";
+        let unique = original;
+        let suffix = 2;
+        while (usedNames.has(unique.toLowerCase())) {
+          unique = `${stem}-${suffix}${ext}`;
+          suffix += 1;
+        }
+        usedNames.add(unique.toLowerCase());
+        zip.file(unique, item.download!.base64, { base64: true });
       });
       const blob = await zip.generateAsync({ type: "blob" });
       const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "").replace("T", "-");
@@ -1067,7 +1079,10 @@ export default function HomePage() {
             inputRef={batchInputRef}
             onPickFiles={pickBatchFiles}
             onRemoveItem={removeBatchItem}
-            onRetryItem={processBatchItem}
+            onRetryItem={(id) => {
+              if (batchProcessing) return;
+              void processBatchItem(id);
+            }}
             onStart={startBatchProcessing}
             onDownloadZip={downloadBatchZip}
             onReset={resetBatch}
@@ -1104,7 +1119,7 @@ export default function HomePage() {
               <div className="drop-zone-text">
                 <p className="drop-zone-main">拖拽图片到此处</p>
                 <p className="drop-zone-sub">
-                  或 <span>点击浏览文件</span>（1 张单独处理，多张批量处理）
+                  或 <span>点击浏览文件</span>
                 </p>
               </div>
               <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF · 最多 {BATCH_MAX_FILES} 张</p>

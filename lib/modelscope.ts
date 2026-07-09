@@ -1,6 +1,6 @@
 import type { AiImageResult } from "./types";
 import { buildPrompt } from "./prompt";
-import { normalizeAiResult, stripMarkdownFence } from "./gemini";
+import { assertRequiredAiFields, normalizeAiResult, stripMarkdownFence } from "./gemini";
 
 const MODELSCOPE_BASE_URL = "https://api-inference.modelscope.cn/v1";
 
@@ -9,10 +9,13 @@ function readEnv(key: string): string {
   return (raw.charCodeAt(0) === 0xFEFF ? raw.slice(1) : raw).trim();
 }
 
-const apiKey = readEnv("MODELSCOPE_API_KEY");
-const model = readEnv("MODELSCOPE_MODEL") || "Qwen/Qwen3-VL-30B-A3B-Instruct";
-
-export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
+export async function analyzeImageFromBuffer(
+  buffer: Buffer,
+  mimeType: string,
+  opts?: { brand?: string; model?: string },
+): Promise<AiImageResult> {
+  const apiKey = readEnv("MODELSCOPE_API_KEY");
+  const model = readEnv("MODELSCOPE_MODEL") || "Qwen/Qwen3-VL-30B-A3B-Instruct";
   if (!apiKey) {
     throw new Error("MODELSCOPE_API_KEY is not configured");
   }
@@ -45,7 +48,7 @@ export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string, o
     throw new Error(`ModelScope API error ${response.status}: ${body}`);
   }
 
-  const json = await response.json() as {
+  const json = (await response.json()) as {
     choices?: { message?: { content?: string } }[];
   };
 
@@ -61,5 +64,5 @@ export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string, o
     throw new Error("ai_parse_error: ModelScope returned invalid JSON");
   }
 
-  return normalizeAiResult(parsed);
+  return assertRequiredAiFields(normalizeAiResult(parsed));
 }

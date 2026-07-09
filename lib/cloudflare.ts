@@ -1,5 +1,5 @@
 import type { AiImageResult } from "./types";
-import { normalizeAiResult, stripMarkdownFence } from "./gemini";
+import { assertRequiredAiFields, normalizeAiResult, stripMarkdownFence } from "./gemini";
 import { buildContextPrefix } from "./prompt";
 
 type CloudflareRunResponse = {
@@ -163,9 +163,12 @@ function parseAiPayload(json: CloudflareRunResponse): AiImageResult | null {
   for (const candidate of candidates) {
     try {
       const parsed = JSON.parse(candidate) as Partial<AiImageResult> & Record<string, unknown>;
-      return normalizeAiResult(parsed);
-    } catch {
-      // Try the repaired candidate before requesting another model response.
+      return assertRequiredAiFields(normalizeAiResult(parsed));
+    } catch (error) {
+      // Retry next candidate for parse errors; rethrow missing-required-field failures.
+      if (error instanceof Error && error.message.startsWith("ai_parse_error: AI response missing")) {
+        throw error;
+      }
     }
   }
 
@@ -243,7 +246,7 @@ export function parseCloudflareLinePayload(text: string): AiImageResult | null {
     return null;
   }
 
-  return normalizeAiResult(raw);
+  return assertRequiredAiFields(normalizeAiResult(raw));
 }
 
 async function runCloudflareModel(
