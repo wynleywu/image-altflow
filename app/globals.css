@@ -182,32 +182,6 @@ a { color: inherit; text-decoration: none; }
 }
 
 /* ─── History page ─── */
-.history-filter-row {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 24px;
-  margin-bottom: 24px;
-}
-.history-filter-pill {
-  font-family: var(--font-mono);
-  font-size: 11px;
-  font-weight: 500;
-  letter-spacing: 0.3px;
-  padding: 6px 14px;
-  border-radius: 999px;
-  background: var(--bg-gray);
-  color: var(--muted);
-  border: none;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
-}
-.history-filter-pill:hover { color: var(--ink); }
-.history-filter-pill.is-active {
-  background: var(--ink);
-  color: #fff;
-}
-
 .history-empty-state {
   width: min(560px, calc(100% - 32px));
   margin: 8vh auto 0;
@@ -311,14 +285,6 @@ a { color: inherit; text-decoration: none; }
   text-overflow: ellipsis;
 }
 .history-row-meta {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-shrink: 0;
-}
-.history-badges {
-  display: flex;
-  gap: 6px;
   flex-shrink: 0;
 }
 .history-time {

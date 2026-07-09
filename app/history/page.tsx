@@ -1,24 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { useEffect, useState } from "react";
-import type { ImageRecord, ReviewStatus } from "@/lib/types";
+import type { ImageRecord } from "@/lib/types";
 import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
 import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
 import { BrandLink } from "@/app/brand-link";
-
-const REVIEW_FILTERS: { label: string; value: ReviewStatus | "" }[] = [
-  { label: "全部", value: "" },
-  { label: "待审核", value: "待审核" },
-  { label: "通过", value: "通过" },
-  { label: "退回", value: "退回" },
-];
-
-const REVIEW_BADGE_CLASS: Record<string, string> = {
-  待审核: "audit-section-badge-warn",
-  通过: "audit-section-badge-ok",
-  退回: "audit-section-badge-bad",
-};
 
 function formatTime(ts: number | null): string {
   if (!ts) return "";
@@ -29,7 +15,6 @@ export default function HistoryPage() {
   const [records, setRecords] = useState<ImageRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [filter, setFilter] = useState<ReviewStatus | "">("");
   const [lightbox, setLightbox] = useState<MetadataLightboxPayload | null>(null);
 
   useEffect(() => {
@@ -38,7 +23,7 @@ export default function HistoryPage() {
     setError("");
     (async () => {
       try {
-        const records = await listLocalHistoryRecords(filter);
+        const records = await listLocalHistoryRecords();
         if (!cancelled) setRecords(records);
       } catch (err) {
         if (!cancelled) setError(err instanceof Error ? err.message : "加载历史记录失败");
@@ -46,10 +31,8 @@ export default function HistoryPage() {
         if (!cancelled) setLoading(false);
       }
     })();
-    return () => {
-      cancelled = true;
-    };
-  }, [filter]);
+    return () => { cancelled = true; };
+  }, []);
 
   function openRecord(record: ImageRecord) {
     const ai = parseManualNoteAi(record.manualNote);
@@ -70,19 +53,6 @@ export default function HistoryPage() {
       </div>
 
       <div className="audit-result-inner">
-        <div className="history-filter-row">
-          {REVIEW_FILTERS.map((item) => (
-            <button
-              key={item.value || "all"}
-              type="button"
-              className={`history-filter-pill${filter === item.value ? " is-active" : ""}`}
-              onClick={() => setFilter(item.value)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </div>
-
         {loading ? (
           <div className="history-empty-state">
             <p className="history-empty-kicker">加载中</p>
@@ -123,16 +93,6 @@ export default function HistoryPage() {
                     <p className="history-alt">{record.altText || "（无 Alt Text）"}</p>
                   </div>
                   <div className="history-row-meta">
-                    <div className="history-badges">
-                      <span className={`audit-section-badge ${record.flowStatus === "success" ? "audit-section-badge-ok" : "audit-section-badge-bad"}`}>
-                        {record.flowStatus === "success" ? "成功" : "失败"}
-                      </span>
-                      {record.reviewStatus ? (
-                        <span className={`audit-section-badge ${REVIEW_BADGE_CLASS[record.reviewStatus] ?? ""}`}>
-                          {record.reviewStatus}
-                        </span>
-                      ) : null}
-                    </div>
                     <span className="history-time">{formatTime(record.createdAt)}</span>
                   </div>
                 </button>
