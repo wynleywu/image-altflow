@@ -4,6 +4,10 @@ function escapeXml(s: string): string {
   return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
 }
 
+function fullDescription(ai: AiImageResult): string {
+  return (ai.image_description_en || ai.caption_en || ai.alt_text_en).trim();
+}
+
 function seg(marker: number, payload: Buffer): Buffer {
   const len = payload.length + 2;
   if (len > 0xffff) {
@@ -19,49 +23,38 @@ function asciiExifValue(value: string, maxLen: number): Buffer {
   return Buffer.from(`${cleaned || " "}\0`, "ascii");
 }
 
-function buildExifTiff(altText: string, model?: string): Buffer {
-  const desc = asciiExifValue(altText, 1000);
-  const modelBuf = model ? asciiExifValue(model, 200) : null;
-  const entryCount = modelBuf ? 2 : 1;
+function buildExifTiff(description: string): Buffer {
+  const desc = asciiExifValue(description, 1000);
+  const entryCount = 1;
   const ifdOffset = 8;
   const dataOffset = ifdOffset + 2 + entryCount * 12 + 4;
-  const tiff = Buffer.alloc(dataOffset + desc.length + (modelBuf?.length ?? 0));
+  const tiff = Buffer.alloc(dataOffset + desc.length);
 
   tiff.writeUInt16LE(0x4949, 0); // little-endian
   tiff.writeUInt16LE(42, 2);
   tiff.writeUInt32LE(ifdOffset, 4);
   tiff.writeUInt16LE(entryCount, 8);
 
-  let entryPos = 10;
-  let valuePos = dataOffset;
+  const entryPos = 10;
+  const valuePos = dataOffset;
 
   tiff.writeUInt16LE(0x010E, entryPos); // ImageDescription
   tiff.writeUInt16LE(2, entryPos + 2); // ASCII
   tiff.writeUInt32LE(desc.length, entryPos + 4);
   tiff.writeUInt32LE(valuePos, entryPos + 8);
   desc.copy(tiff, valuePos);
-  valuePos += desc.length;
-  entryPos += 12;
 
-  if (modelBuf) {
-    tiff.writeUInt16LE(0x0110, entryPos); // Model
-    tiff.writeUInt16LE(2, entryPos + 2);
-    tiff.writeUInt32LE(modelBuf.length, entryPos + 4);
-    tiff.writeUInt32LE(valuePos, entryPos + 8);
-    modelBuf.copy(tiff, valuePos);
-    entryPos += 12;
-  }
-
-  tiff.writeUInt32LE(0, entryPos); // next IFD = 0
+  tiff.writeUInt32LE(0, entryPos + 12); // next IFD = 0
   return tiff;
 }
 
 /** JPEG APP1 Exif payload / PNG eXIf chunk data: Exif\\0\\0 + TIFF */
-function buildExifPayload(altText: string, model?: string): Buffer {
-  return Buffer.concat([Buffer.from("Exif\0\0"), buildExifTiff(altText, model)]);
+function buildExifPayload(description: string): Buffer {
+  return Buffer.concat([Buffer.from("Exif\0\0"), buildExifTiff(description)]);
 }
 
 function buildXmpXml(ai: AiImageResult): string {
+  const description = fullDescription(ai);
   const tagItems = ai.tags_en
     .slice(0, 25)
     .map((t) => `<rdf:li>${escapeXml(t)}</rdf:li>`)
@@ -72,16 +65,18 @@ function buildXmpXml(ai: AiImageResult): string {
     `<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n` +
     `<rdf:Description rdf:about=""\n` +
     `  xmlns:dc="http://purl.org/dc/elements/1.1/"\n` +
-    `  xmlns:Iptc4xmpExt="http://iptc.org/std/Iptc4xmpExt/2008-02-29/">\n` +
-    `<dc:description><rdf:Alt><rdf:li xml:lang="x-default">${escapeXml(ai.image_description_en || ai.caption_en)}</rdf:li></rdf:Alt></dc:description>\n` +
+    `  xmlns:photoshop="http://ns.adobe.com/photoshop/1.0/"\n` +
+    `  xmlns:Iptc4xmpCore="http://iptc.org/std/Iptc4xmpCore/1.0/xmlns/">\n` +
+    `<dc:description><rdf:Alt><rdf:li xml:lang="x-default">${escapeXml(description)}</rdf:li></rdf:Alt></dc:description>\n` +
     (tagItems ? `<dc:subject><rdf:Bag>${tagItems}</rdf:Bag></dc:subject>\n` : "") +
-    `<Iptc4xmpExt:AltTextAccessibility>${escapeXml(ai.alt_text_en)}</Iptc4xmpExt:AltTextAccessibility>\n` +
+    `<photoshop:Headline>${escapeXml(ai.caption_en)}</photoshop:Headline>\n` +
+    `<Iptc4xmpCore:AltTextAccessibility>${escapeXml(ai.alt_text_en)}</Iptc4xmpCore:AltTextAccessibility>\n` +
     `</rdf:Description>\n</rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="w"?>`
   );
 }
 
-function exifSeg(altText: string, model?: string): Buffer {
-  return seg(0xE1, buildExifPayload(altText, model));
+function exifSeg(description: string): Buffer {
+  return seg(0xE1, buildExifPayload(description));
 }
 
 function xmpSeg(ai: AiImageResult): Buffer {
@@ -99,9 +94,8 @@ function iptcSeg(ai: AiImageResult): Buffer {
     records.push(data);
   }
 
-  addRecord(0x78, ai.caption_en);
+  addRecord(0x78, fullDescription(ai)); // Caption-Abstract
   for (const kw of ai.tags_en.slice(0, 20)) addRecord(0x19, kw);
-  if (ai.brand) addRecord(0x6e, ai.brand); // Credit
 
   if (records.length === 0) return Buffer.alloc(0);
 
@@ -134,10 +128,11 @@ export function injectJpegMetadata(buffer: Buffer, ai: AiImageResult): Buffer {
     pos += 2 + buffer.readUInt16BE(pos + 2);
   }
 
+  const description = fullDescription(ai);
   const iptc = iptcSeg(ai);
   return Buffer.concat([
     buffer.slice(0, pos),
-    exifSeg(ai.alt_text_en, ai.model),
+    exifSeg(description),
     xmpSeg(ai),
     iptc.length > 0 ? iptc : Buffer.alloc(0),
     buffer.slice(pos),
@@ -253,12 +248,13 @@ export function injectPngMetadata(buffer: Buffer, ai: AiImageResult): Buffer {
     throw new Error("Invalid PNG: missing IDAT");
   }
 
-  const description = (ai.image_description_en || ai.caption_en || ai.alt_text_en).slice(0, 2000);
+  const description = fullDescription(ai).slice(0, 2000);
+  const headline = (ai.caption_en || ai.alt_text_en).slice(0, 200);
   const metaChunks = [
-    makePngChunk("eXIf", buildExifPayload(ai.alt_text_en, ai.model)),
+    makePngChunk("eXIf", buildExifPayload(description)),
     makeItxtChunk(PNG_XMP_KEYWORD, buildXmpXml(ai)),
     makeTextChunk("Description", description),
-    makeTextChunk("Title", ai.alt_text_en.slice(0, 200)),
+    makeTextChunk("Title", headline),
   ];
 
   const out: Buffer[] = [PNG_SIGNATURE];

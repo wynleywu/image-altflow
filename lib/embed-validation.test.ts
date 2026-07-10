@@ -10,12 +10,12 @@ import type { AiImageResult } from "./types";
 
 function makeAi(altText = "A desk lamp"): AiImageResult {
   return {
-    image_description_en: altText,
+    image_description_en: `Full description of ${altText}`,
     image_description_zh: "",
     new_file_name: "desk-lamp",
     alt_text_en: altText,
     alt_text_zh: "",
-    caption_en: altText,
+    caption_en: `Headline for ${altText}`,
     caption_zh: "",
     tags_en: ["lamp"],
     tags_zh: [],
@@ -65,13 +65,27 @@ test("PNG fallback injects XMP iTXt and eXIf before IDAT", () => {
   assert.throws(() => injectPngMetadata(Buffer.from("not-a-png"), makeAi()), /Invalid PNG/);
 
   const out = injectPngMetadata(TINY_PNG, makeAi("Red pixel product shot"));
+  const text = out.toString("utf8");
   assert.ok(out.subarray(0, 8).equals(TINY_PNG.subarray(0, 8)));
-  assert.match(out.toString("utf8"), /XML:com\.adobe\.xmp/);
-  assert.match(out.toString("utf8"), /Red pixel product shot/);
-  assert.match(out.toString("utf8"), /AltTextAccessibility/);
+  assert.match(text, /XML:com\.adobe\.xmp/);
+  assert.match(text, /Full description of Red pixel product shot/);
+  assert.match(text, /Headline for Red pixel product shot/);
+  assert.match(text, /Iptc4xmpCore:AltTextAccessibility/);
+  assert.match(text, /photoshop:Headline/);
+  assert.doesNotMatch(text, /Iptc4xmpExt/);
   assert.ok(out.includes(Buffer.from("eXIf")));
   // Still a valid PNG ending
   assert.equal(out.subarray(-8).toString("ascii").includes("IEND"), true);
+});
+
+test("JPEG fallback writes full description and Core AltText namespace", () => {
+  const jpeg = Buffer.from([0xff, 0xd8, 0xff, 0xd9]);
+  const out = injectJpegMetadata(jpeg, makeAi("Desk lamp"));
+  const text = out.toString("utf8");
+  assert.match(text, /Full description of Desk lamp/);
+  assert.match(text, /Headline for Desk lamp/);
+  assert.match(text, /Iptc4xmpCore/);
+  assert.match(text, /photoshop:Headline/);
 });
 
 test("PNG fallback replaces prior XMP chunk on re-inject", () => {

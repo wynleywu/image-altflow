@@ -21,18 +21,19 @@ async function embedWithExiftool(buffer: Buffer, mimeType: string, ai: AiImageRe
   try {
     await writeFile(inputPath, buffer);
 
+    const fullDescription = ai.image_description_en || ai.caption_en;
     const tags: Record<string, string | string[]> = {
-      "XMP-iptcExt:AltTextAccessibility": ai.alt_text_en,
-      "EXIF:ImageDescription": ai.alt_text_en,
-      "IPTC:Caption-Abstract": ai.caption_en,
-      "XMP-dc:Description": ai.image_description_en || ai.caption_en,
+      "EXIF:ImageDescription": fullDescription,
+      "IPTC:Caption-Abstract": fullDescription,
+      "XMP-dc:Description": fullDescription,
+      "XMP-iptcCore:AltTextAccessibility": ai.alt_text_en,
+      "XMP-photoshop:Headline": ai.caption_en,
     };
 
     if (ai.tags_en.length > 0) {
       tags["IPTC:Keywords"] = ai.tags_en;
+      tags["XMP-dc:Subject"] = ai.tags_en;
     }
-    if (ai.brand) tags["IPTC:Credit"] = ai.brand;
-    if (ai.model) tags["EXIF:Model"] = ai.model;
 
     await exiftool.write(inputPath, tags, ["-overwrite_original"]);
     return await readFile(inputPath);

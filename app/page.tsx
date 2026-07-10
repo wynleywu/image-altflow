@@ -1362,7 +1362,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">品牌 / 型号</span>
-                <span className="field-badge">IPTC · XMP</span>
+                <span className="field-badge">仅 Prompt 上下文</span>
               </div>
               <div className="field-pair">
                 <input
@@ -1384,7 +1384,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">文件名</span>
-                <span className="field-badge">EXIF · 下载文件名</span>
+                <span className="field-badge">下载 File Name</span>
               </div>
               <input
                 className="field-input"
@@ -1397,7 +1397,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">Alt Text</span>
-                <span className="field-badge">XMP · IPTC</span>
+                <span className="field-badge">XMP AltTextAccessibility</span>
               </div>
               <div className="field-bilingual">
                 <div className="field-col-en">
@@ -1414,11 +1414,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Caption */}
+            {/* Headline (caption_en) */}
             <div className="field-row">
               <div className="field-label-row">
-                <span className="field-key">Caption</span>
-                <span className="field-badge">IPTC Caption</span>
+                <span className="field-key">Headline</span>
+                <span className="field-badge">XMP photoshop:Headline</span>
               </div>
               <div className="field-bilingual">
                 <div className="field-col-en">
@@ -1426,6 +1426,7 @@ export default function HomePage() {
                     className="field-input sm"
                     value={ai.caption_en}
                     onChange={(e) => updateAi({ caption_en: e.target.value })}
+                    placeholder="一句话摘要"
                   />
                 </div>
                 <div className="field-col-zh">
@@ -1437,8 +1438,8 @@ export default function HomePage() {
             {/* Tags */}
             <div className="field-row">
               <div className="field-label-row">
-                <span className="field-key">Tags</span>
-                <span className="field-badge">XMP Subject · IPTC Keywords</span>
+                <span className="field-key">Keywords</span>
+                <span className="field-badge">IPTC Keywords · XMP dc:subject</span>
               </div>
               <div className="field-bilingual">
                 <div className="field-col-en">
@@ -1458,7 +1459,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">Description</span>
-                <span className="field-badge">XMP dc:description</span>
+                <span className="field-badge">IPTC Caption · EXIF · XMP dc:description</span>
               </div>
               <textarea
                 className="field-textarea"

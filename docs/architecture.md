@@ -4,7 +4,7 @@
 
 ## 概述
 
-Image Altflow 将产品图经视觉模型识图后，把 **英文** SEO 文案（Alt、Caption、Tags、Description）写入图片 EXIF/XMP/IPTC，供素材库与 CMS 使用。中文文案仅用于对照与校对，不写入二进制。
+Image Altflow 将产品图经视觉模型识图后，把 **英文** SEO 文案写入图片 EXIF/XMP/IPTC（完整描述、Headline、无障碍 Alt、关键词），供素材库与 CMS 使用。中文文案仅用于对照与校对，不写入二进制。
 
 当前交付形态：**CLI + HTTP API + Web 单张/批量流程**（`app/page.tsx`）+ **Amazon Listing 审查**（`app/amazon/page.tsx`）。旧 `/review` 已下线。批量 Tab 在浏览器端串行调用既有 `/api/analyze`、`/api/embed`（并发=1，失败自动重试），完成后打包 ZIP 下载。
 
@@ -91,14 +91,15 @@ Gemini、ModelScope 或 Cloudflare 返回字段示例：
 
 ## 写入的图片元数据
 
-| 源字段 | ExifTool 标签 |
-|--------|----------------|
-| `alt_text_en` | `XMP-iptcExt:AltTextAccessibility`, `EXIF:ImageDescription` |
-| `caption_en` | `IPTC:Caption-Abstract` |
-| `tags_en` | `IPTC:Keywords` |
-| `image_description_en` | `XMP-dc:Description` |
+| 源字段 | 写入位置 |
+|--------|----------|
+| `new_file_name` | 下载 File Name |
+| `image_description_en` | `EXIF:ImageDescription`、`IPTC:Caption-Abstract`、`XMP-dc:Description` |
+| `caption_en` | `XMP-photoshop:Headline`（一句话摘要） |
+| `alt_text_en` | `XMP-iptcCore:AltTextAccessibility` |
+| `tags_en` | `IPTC:Keywords`、`XMP-dc:Subject` |
 
-推荐 **JPEG**；云端 ExifTool 不可用时，JPEG / PNG 走 JS 兜底写入（PNG：`eXIf` + XMP `iTXt`）。WebP / GIF 仍依赖 ExifTool。
+品牌 / 型号仅作 Prompt 上下文，**不写入**成品图。推荐 **JPEG**；云端 ExifTool 不可用时，JPEG / PNG 走 JS 兜底写入（PNG：`eXIf` + XMP `iTXt`）。WebP / GIF 仍依赖 ExifTool。
 
 ## HTTP API
 

@@ -54,7 +54,9 @@ export function MetadataLightbox({
             <h3 id="lightbox-title" className="lightbox-meta-title">已写入元数据</h3>
             {groups.map((group) => (
               <section key={group.name} className="lightbox-meta-group">
-                <h4 className="lightbox-meta-group-name">{group.name}</h4>
+                <h4 className="lightbox-meta-group-name">
+                  {group.name === "Download" ? "下载信息" : group.name}
+                </h4>
                 <div className="lightbox-meta-fields">
                   {group.fields.map((field) => (
                     <div key={`${group.name}-${field.tag}`} className="lightbox-meta-field">

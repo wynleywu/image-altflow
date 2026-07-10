@@ -57,7 +57,12 @@ npm run process -- ./product.jpg ./product-out.jpg --ai ./product.jpg.ai.json
 exiftool -G1 -a ./product-out.jpg
 ```
 
-关注 `ImageDescription`、`Keywords` 等应为**英文**。
+关注以下字段应为**英文**：
+
+- `EXIF:ImageDescription`、`IPTC:Caption-Abstract`、`XMP-dc:Description`（完整描述，三者一致）
+- `XMP-photoshop:Headline`（一句话摘要）
+- `XMP-iptcCore:AltTextAccessibility`（无障碍 Alt）
+- `IPTC:Keywords` / `XMP-dc:Subject`（关键词）
 
 ## 方式二：HTTP API
 

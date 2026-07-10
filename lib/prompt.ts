@@ -4,6 +4,11 @@ Provide English (_en) and Simplified Chinese (_zh) values with matching meaning.
 Describe only visible content. Never invent brands, materials, models, features, or scenes.
 new_file_name must be lowercase English, use hyphens, have no extension, and use at most 12 words.
 tags_en and tags_zh must be arrays. confidence_note must be "certain" or "uncertain".
+Field roles:
+- image_description_*: full image description (written to IPTC Caption-Abstract, XMP dc:description, EXIF ImageDescription)
+- caption_*: one-sentence summary / headline (written to XMP photoshop:Headline); keep it shorter than image_description
+- alt_text_*: concise accessibility alternative text (written to XMP Iptc4xmpCore:AltTextAccessibility)
+- tags_*: keyword arrays (written to IPTC Keywords and XMP dc:subject)
 Return these fields:
 image_description_en, image_description_zh,
 new_file_name,
