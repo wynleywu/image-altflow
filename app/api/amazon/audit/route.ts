@@ -8,6 +8,7 @@ import {
   normalizeManualSnapshot,
 } from "@/lib/amazon/fetch-listing";
 import type { AmazonListingSnapshot, AmazonMarketplace } from "@/lib/amazon/types";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
@@ -39,6 +40,9 @@ function parseMarketplace(value: unknown): AmazonMarketplace {
 
 export async function POST(request: Request) {
   try {
+    const limited = await enforceRateLimit(request, "amazon_audit");
+    if (limited) return limited;
+
     const body = await request.json();
     const marketplace = parseMarketplace(body.marketplace);
 

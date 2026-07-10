@@ -2,12 +2,16 @@ import { NextResponse } from "next/server";
 import { analyzeImageBuffer } from "@/lib/pipeline";
 import { canPersistRecords } from "@/lib/persist";
 import { createImageRecord } from "@/lib/records";
+import { enforceRateLimit } from "@/lib/rate-limit";
 import { createTraceId } from "@/lib/validation";
 
 export const maxDuration = 60;
 
 export async function POST(request: Request) {
   try {
+    const limited = await enforceRateLimit(request, "analyze");
+    if (limited) return limited;
+
     const contentType = request.headers.get("content-type") || "";
     if (!contentType.includes("multipart/form-data")) {
       return NextResponse.json(

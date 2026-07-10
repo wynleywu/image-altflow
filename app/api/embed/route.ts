@@ -15,6 +15,7 @@ import {
   validateImageBuffer,
 } from "@/lib/embed-validation";
 import type { AiImageResult, EmbedRequest } from "@/lib/types";
+import { enforceRateLimit } from "@/lib/rate-limit";
 
 export const maxDuration = 60;
 
@@ -27,6 +28,9 @@ function tooLargeResponse() {
 
 export async function POST(request: Request) {
   try {
+    const limited = await enforceRateLimit(request, "embed");
+    if (limited) return limited;
+
     const contentType = request.headers.get("content-type") || "";
     const contentLength = Number(request.headers.get("content-length"));
     const maxBodyBytes = contentType.includes("multipart/form-data")

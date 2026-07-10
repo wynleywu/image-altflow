@@ -35,13 +35,15 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 
 ## 阶段二待办
 
-- [ ] Vercel Password Protection（若公开部署）
+- [x] 公开 API IP 限流（Upstash；未配置则跳过）
+- [ ] Vercel Password Protection（可选额外加固）
 - [ ] Amazon 审查：多策略版本、单章节重新生成、云端历史、Sanity/SP-API
 
 ## 历史决策
 
 | 日期 | 决策 |
 |------|------|
+| 2026-07-10 | 公开 analyze/embed/amazon audit 采用无登录 IP 限流（Upstash sliding window）；本地无 env 时 fail-open |
 | 2026-07-10 | 下线 Legacy `/review` Server Actions；数据库记录 HTTP 管理仅保留带 Bearer 鉴权的 `/api/records*` |
 | 2026-07-10 | 视觉提供商共享 55 秒总预算；Embed 在元数据写入前执行严格运行时校验 |
 | 2026-07-01 | Amazon 审查升级为 V2：规则与建议分级，结果按 `auditId` 保存在浏览器，属性建议不自动进入最终稿 |

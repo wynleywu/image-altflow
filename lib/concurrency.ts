@@ -16,7 +16,10 @@ export async function runWithConcurrency<T>(
 
 function isRetryableError(error: unknown): boolean {
   if (error instanceof Error) {
-    if (/\b(429|5\d\d)\b/.test(error.message)) return true;
+    if (/\b429\b/.test(error.message) || /rate_limited|过于频繁/i.test(error.message)) {
+      return false;
+    }
+    if (/\b5\d\d\b/.test(error.message)) return true;
     if (/network|fetch failed|无法连接/i.test(error.message)) return true;
   }
   return false;

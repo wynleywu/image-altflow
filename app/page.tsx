@@ -10,6 +10,7 @@ import { MetadataHelpFab } from "@/app/metadata-help";
 import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
 import { addLocalHistoryRecord } from "@/lib/client/history-store";
 import { BrandLink } from "@/app/brand-link";
+import { formatAnalyzeErrorMessage, formatEmbedErrorMessage } from "@/lib/analyze-error-message";
 
 type Step = "upload" | "confirm" | "analyzing" | "edit" | "done";
 
@@ -834,11 +835,7 @@ export default function HomePage() {
       }
 
       if (!response.ok || !data.ok || !data.ai) {
-        const message = data.error || "识图失败";
-        if (message.includes("GEMINI_API_KEY")) {
-          throw new Error("未配置 GEMINI_API_KEY，请在 .env.local 中设置后重启 dev server");
-        }
-        throw new Error(message);
+        throw new Error(formatAnalyzeErrorMessage(data.error, data.error_type));
       }
 
       setAi(data.ai);
@@ -865,7 +862,7 @@ export default function HomePage() {
       const response = await fetch("/api/embed", { method: "POST", body: form });
       const data = (await response.json()) as EmbedApiResponse;
       if (!response.ok || !data.ok || !data.download) {
-        throw new Error(data.error || "写入失败");
+        throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
       }
 
       setDownload(data.download);
@@ -951,7 +948,7 @@ export default function HomePage() {
         const response = await fetch("/api/analyze", { method: "POST", body: form });
         const data = (await response.json()) as AnalyzeApiResponse;
         if (!response.ok || !data.ok || !data.ai) {
-          throw new Error(data.error || `HTTP ${response.status}`);
+          throw new Error(formatAnalyzeErrorMessage(data.error, data.error_type));
         }
         return data.ai;
       });
@@ -968,7 +965,7 @@ export default function HomePage() {
         const response = await fetch("/api/embed", { method: "POST", body: form });
         const data = (await response.json()) as EmbedApiResponse;
         if (!response.ok || !data.ok || !data.download) {
-          throw new Error(data.error || `HTTP ${response.status}`);
+          throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
         }
         return data.download;
       });
@@ -977,7 +974,9 @@ export default function HomePage() {
     } catch (batchItemError) {
       patchBatchItem(id, {
         status: "error",
-        errorMessage: batchItemError instanceof Error ? batchItemError.message : "处理失败",
+        errorMessage: batchItemError instanceof Error
+          ? batchItemError.message
+          : "处理失败，请稍后重试",
       });
     }
   }

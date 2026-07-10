@@ -8,6 +8,7 @@ import { createAuditWorkspace, saveAuditWorkspace } from "@/lib/amazon/workspace
 import { BrandLink } from "@/app/brand-link";
 
 const FALLBACK_ERROR = "Audit failed. Please try again.";
+const RATE_LIMITED_MESSAGE = "请求过于频繁，请稍后再试";
 const DETAIL_LABELS: Record<string, string> = {
   fetch_not_configured: "Setup",
   fetch_blocked: "Blocked",
@@ -46,6 +47,9 @@ export default function AmazonAuditPage() {
       if (!data.ok) {
         if (data.error_type === "fetch_not_configured") {
           setShowManual(true);
+        }
+        if (data.error_type === "rate_limited") {
+          throw new Error(RATE_LIMITED_MESSAGE);
         }
         const detailLabel = DETAIL_LABELS[String(data.error_type ?? "")];
         const message = detailLabel

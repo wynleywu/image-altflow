@@ -43,6 +43,8 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Account ID |
 | `CLOUDFLARE_API_TOKEN` | `AI_PROVIDER=cloudflare` 时 | Workers AI API Token；禁止提交到 Git |
 | `CLOUDFLARE_MODEL` | 否 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
+| `UPSTASH_REDIS_REST_URL` | 否 | 与 TOKEN 同时配置时启用公开 API 的 IP 限流 |
+| `UPSTASH_REDIS_REST_TOKEN` | 否 | Upstash Redis REST Token；禁止提交到 Git |
 | `POSTGRES_URL` | 否 | Neon；仅 `canPersistRecords()` 时写库 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储；需与 Postgres 同时配置才在 embed 时持久化 |
 | `RECORDS_API_SECRET` | 使用 `/api/records*` 时 | Bearer 鉴权；未配置则 records HTTP API 503 |
@@ -55,6 +57,7 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `lib/gemini.ts` | Gemini 实现；`normalizeAiResult` 共用 |
 | `lib/modelscope.ts` | ModelScope OpenAI 兼容接口（Qwen3-VL 等） |
 | `lib/cloudflare.ts` | Cloudflare Workers AI REST 接口；复用公共 Prompt 与标准化逻辑 |
+| `lib/rate-limit.ts` | 公开 API 的 IP 限流（Upstash；未配置则跳过） |
 | `lib/embed-metadata.ts` | `embedMetadataIntoImage`（只写 `_en`） |
 | `lib/embed-validation.ts` | embed Base64、图片签名与 MIME 运行时校验 |
 | `lib/pipeline.ts` | `analyzeLocalImage`, `embedImageBuffer`, `parseAiFromJson` |

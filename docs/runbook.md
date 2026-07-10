@@ -115,7 +115,13 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 
 ## 安全
 
-- 公开部署的 `/api/analyze` 会消耗识图 API 额度（ModelScope / Gemini / Cloudflare）；建议 Vercel **Password Protection**。
+- 公开部署的 `/api/analyze`、`/api/embed`、`/api/amazon/audit` 会消耗识图 / LLM 额度。生产环境应配置 **Upstash Redis**（`UPSTASH_REDIS_REST_URL` + `UPSTASH_REDIS_REST_TOKEN`）启用 IP 限流：
+  - analyze：30 次 / 10 分钟
+  - embed：40 次 / 10 分钟
+  - amazon audit：10 次 / 10 分钟
+  - 超限返回 `429` + `error_type: rate_limited` + `Retry-After`
+  - 未配置 Upstash 时限流跳过（本地开发 fail-open）
+- 可选额外加固：Vercel **Password Protection**。
 - 勿将 `.env.local` 提交到 Git（已在 `.gitignore`）。
 
 ## 日志
