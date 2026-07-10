@@ -950,7 +950,7 @@ select.field-input {
 .help-dialog-panel {
   position: relative;
   width: 100%;
-  max-width: 520px;
+  max-width: 720px;
   max-height: 85vh;
   background: var(--bg);
   border-radius: 20px;
