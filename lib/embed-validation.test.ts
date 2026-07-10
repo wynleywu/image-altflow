@@ -61,6 +61,20 @@ const TINY_PNG = Buffer.from(
   "base64",
 );
 
+function findPngChunkData(buffer: Buffer, expectedType: string): Buffer | undefined {
+  let offset = 8;
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.subarray(offset + 4, offset + 8).toString("ascii");
+    const dataStart = offset + 8;
+    const dataEnd = dataStart + length;
+    if (dataEnd + 4 > buffer.length) return undefined;
+    if (type === expectedType) return buffer.subarray(dataStart, dataEnd);
+    offset = dataEnd + 4;
+  }
+  return undefined;
+}
+
 test("PNG fallback injects XMP iTXt and eXIf before IDAT", () => {
   assert.throws(() => injectPngMetadata(Buffer.from("not-a-png"), makeAi()), /Invalid PNG/);
 
@@ -74,6 +88,7 @@ test("PNG fallback injects XMP iTXt and eXIf before IDAT", () => {
   assert.match(text, /photoshop:Headline/);
   assert.doesNotMatch(text, /Iptc4xmpExt/);
   assert.ok(out.includes(Buffer.from("eXIf")));
+  assert.deepEqual(findPngChunkData(out, "eXIf")?.subarray(0, 4), Buffer.from([0x49, 0x49, 0x2a, 0x00]));
   // Still a valid PNG ending
   assert.equal(out.subarray(-8).toString("ascii").includes("IEND"), true);
 });

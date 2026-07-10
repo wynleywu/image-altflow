@@ -48,8 +48,8 @@ function buildExifTiff(description: string): Buffer {
   return tiff;
 }
 
-/** JPEG APP1 Exif payload / PNG eXIf chunk data: Exif\\0\\0 + TIFF */
-function buildExifPayload(description: string): Buffer {
+/** JPEG APP1 Exif payload: Exif\\0\\0 + TIFF */
+function buildJpegExifPayload(description: string): Buffer {
   return Buffer.concat([Buffer.from("Exif\0\0"), buildExifTiff(description)]);
 }
 
@@ -76,7 +76,7 @@ function buildXmpXml(ai: AiImageResult): string {
 }
 
 function exifSeg(description: string): Buffer {
-  return seg(0xE1, buildExifPayload(description));
+  return seg(0xE1, buildJpegExifPayload(description));
 }
 
 function xmpSeg(ai: AiImageResult): Buffer {
@@ -252,7 +252,7 @@ export function injectPngMetadata(buffer: Buffer, ai: AiImageResult): Buffer {
   const description = fullDescription(ai).slice(0, 2000);
   const headline = (ai.caption_en || ai.alt_text_en).slice(0, 200);
   const metaChunks = [
-    makePngChunk("eXIf", buildExifPayload(description)),
+    makePngChunk("eXIf", buildExifTiff(description)),
     makeItxtChunk(PNG_XMP_KEYWORD, buildXmpXml(ai)),
     makeTextChunk("Description", description),
     makeTextChunk("Title", headline),
