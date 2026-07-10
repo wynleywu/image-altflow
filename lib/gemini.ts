@@ -84,7 +84,7 @@ async function callGeminiWithInlineData(
 
   const rawModel = process.env.GEMINI_MODEL ?? "";
   const modelName = (rawModel.charCodeAt(0) === 0xfeff ? rawModel.slice(1) : rawModel).trim()
-    || "gemini-3.5-flash";
+    || "gemini-3.1-flash-lite";
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({
     model: modelName,

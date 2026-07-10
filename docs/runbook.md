@@ -8,7 +8,7 @@
 |------|------|------|------|
 | `AI_PROVIDER` | 否 | 手动 | `gemini`、`modelscope` 或 `cloudflare`；未设置默认 `modelscope` |
 | `GEMINI_API_KEY` | `AI_PROVIDER=gemini` 时 | Google AI Studio | Gemini 识图 |
-| `GEMINI_MODEL` | 否 | 手动 | 默认 `gemini-3.5-flash` |
+| `GEMINI_MODEL` | 否 | 手动 | 默认 `gemini-3.1-flash-lite` |
 | `MODELSCOPE_API_KEY` | `AI_PROVIDER=modelscope` 或未设 provider 时 | ModelScope 控制台 | ModelScope 识图 |
 | `MODELSCOPE_MODEL` | 否 | 手动 | 推荐 `Qwen/Qwen3-VL-30B-A3B-Instruct` |
 | `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Dashboard | Account ID |
