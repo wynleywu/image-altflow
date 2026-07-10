@@ -47,21 +47,21 @@ function MetadataHelpDialog({ onClose }: { onClose: () => void }) {
         </button>
 
         <div className="help-dialog-body">
-          <h2 id="metadata-help-title" className="help-dialog-title">
-            元数据参数说明
-          </h2>
-          <p className="help-dialog-intro">
-            {HELP_DIALOG_INTRO}
-            <strong className="help-dialog-intro-emphasis"> {HELP_DIALOG_INTRO_EMPHASIS}</strong>
-          </p>
+          <header className="help-dialog-header">
+            <h2 id="metadata-help-title" className="help-dialog-title">
+              元数据参数说明
+            </h2>
+            <p className="help-dialog-intro">{HELP_DIALOG_INTRO}</p>
+            <p className="help-dialog-intro-emphasis">{HELP_DIALOG_INTRO_EMPHASIS}</p>
+          </header>
 
           <section className="help-dialog-section">
             <h3 className="help-dialog-section-title">怎么理解这三种标准</h3>
             <ul className="help-standards-list">
               {METADATA_STANDARDS.map((item) => (
-                <li key={item.name} className="help-standard-row">
+                <li key={item.name} className="help-standard-card">
                   <span className="help-standard-name">{item.name}</span>
-                  <span className="help-standard-summary">{item.summary}</span>
+                  <p className="help-standard-summary">{item.summary}</p>
                 </li>
               ))}
             </ul>
@@ -75,7 +75,7 @@ function MetadataHelpDialog({ onClose }: { onClose: () => void }) {
               ))}
             </ul>
             <p className="help-dialog-note">{DUAL_WRITE_EXAMPLE}</p>
-            <p className="help-dialog-conclusion">{DUAL_WRITE_CONCLUSION}</p>
+            <blockquote className="help-dialog-conclusion">{DUAL_WRITE_CONCLUSION}</blockquote>
             <p className="help-dialog-note">{XMP_BEYOND_NOTE}</p>
           </section>
 
