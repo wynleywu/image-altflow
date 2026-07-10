@@ -94,6 +94,7 @@ function iptcSeg(ai: AiImageResult): Buffer {
     records.push(data);
   }
 
+  addRecord(0x69, ai.caption_en); // Headline
   addRecord(0x78, fullDescription(ai)); // Caption-Abstract
   for (const kw of ai.tags_en.slice(0, 20)) addRecord(0x19, kw);
 

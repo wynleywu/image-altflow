@@ -2,7 +2,7 @@ import type { AiImageResult, EmbedDownloadPayload } from "./types";
 
 export type EmbeddedField = { tag: string; label: string; value: string };
 export type EmbeddedGroup = {
-  name: "Download" | "EXIF" | "IPTC" | "XMP";
+  name: "Download" | "AltText" | "Headline" | "Keywords" | "Description";
   fields: EmbeddedField[];
 };
 
@@ -26,27 +26,28 @@ export function getEmbeddedMetadataGroups(ai: AiImageResult, fileName: string): 
 
   pushField(groups, "Download", "Download filename", "File Name", fileName);
 
-  pushField(groups, "EXIF", "EXIF:ImageDescription", "ImageDescription", fullDescription);
-
-  pushField(groups, "IPTC", "IPTC:Caption-Abstract", "Caption-Abstract", fullDescription);
-  if (ai.tags_en.length > 0) {
-    pushField(groups, "IPTC", "IPTC:Keywords", "Keywords", ai.tags_en.join(", "));
-  }
-
   pushField(
     groups,
-    "XMP",
+    "AltText",
     "XMP-iptcCore:AltTextAccessibility",
-    "Iptc4xmpCore:AltTextAccessibility",
+    "AltTextAccessibility",
     ai.alt_text_en,
   );
-  pushField(groups, "XMP", "XMP-photoshop:Headline", "photoshop:Headline", ai.caption_en);
-  pushField(groups, "XMP", "XMP-dc:Description", "dc:description", fullDescription);
+
+  pushField(groups, "Headline", "IPTC:Headline", "IPTC:Headline", ai.caption_en);
+  pushField(groups, "Headline", "XMP-photoshop:Headline", "photoshop:Headline", ai.caption_en);
+
   if (ai.tags_en.length > 0) {
-    pushField(groups, "XMP", "XMP-dc:Subject", "dc:subject", ai.tags_en.join(", "));
+    const keywords = ai.tags_en.join(", ");
+    pushField(groups, "Keywords", "IPTC:Keywords", "IPTC:Keywords", keywords);
+    pushField(groups, "Keywords", "XMP-dc:Subject", "dc:subject", keywords);
   }
 
-  const order: EmbeddedGroup["name"][] = ["Download", "EXIF", "IPTC", "XMP"];
+  pushField(groups, "Description", "IPTC:Caption-Abstract", "Caption-Abstract", fullDescription);
+  pushField(groups, "Description", "XMP-dc:Description", "dc:description", fullDescription);
+  pushField(groups, "Description", "EXIF:ImageDescription", "ImageDescription", fullDescription);
+
+  const order: EmbeddedGroup["name"][] = ["Download", "AltText", "Headline", "Keywords", "Description"];
   return order
     .map((name) => ({ name, fields: groups.get(name) ?? [] }))
     .filter((group) => group.fields.length > 0);

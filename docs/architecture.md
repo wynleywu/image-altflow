@@ -91,13 +91,13 @@ Gemini、ModelScope 或 Cloudflare 返回字段示例：
 
 ## 写入的图片元数据
 
-| 源字段 | 写入位置 |
-|--------|----------|
-| `new_file_name` | 下载 File Name |
-| `image_description_en` | `EXIF:ImageDescription`、`IPTC:Caption-Abstract`、`XMP-dc:Description` |
-| `caption_en` | `XMP-photoshop:Headline`（一句话摘要） |
-| `alt_text_en` | `XMP-iptcCore:AltTextAccessibility` |
-| `tags_en` | `IPTC:Keywords`、`XMP-dc:Subject` |
+| 语义字段 | 源字段 | 写入位置 |
+|----------|--------|----------|
+| 下载文件名 | `new_file_name` | 下载 File Name |
+| Alt Text | `alt_text_en` | `XMP-iptcCore:AltTextAccessibility` |
+| Headline | `caption_en` | `IPTC:Headline`、`XMP-photoshop:Headline` |
+| Keywords | `tags_en` | `IPTC:Keywords`、`XMP-dc:Subject` |
+| Description | `image_description_en` | `IPTC:Caption-Abstract`、`XMP-dc:Description`；`EXIF:ImageDescription`（可选兼容） |
 
 品牌 / 型号仅作 Prompt 上下文，**不写入**成品图。推荐 **JPEG**；云端 ExifTool 不可用时，JPEG / PNG 走 JS 兜底写入（PNG：`eXIf` + XMP `iTXt`）。WebP / GIF 仍依赖 ExifTool。
 

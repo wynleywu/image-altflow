@@ -59,10 +59,10 @@ exiftool -G1 -a ./product-out.jpg
 
 关注以下字段应为**英文**：
 
-- `EXIF:ImageDescription`、`IPTC:Caption-Abstract`、`XMP-dc:Description`（完整描述，三者一致）
-- `XMP-photoshop:Headline`（一句话摘要）
-- `XMP-iptcCore:AltTextAccessibility`（无障碍 Alt）
-- `IPTC:Keywords` / `XMP-dc:Subject`（关键词）
+- Alt Text：`XMP-iptcCore:AltTextAccessibility`
+- Headline：`IPTC:Headline`、`XMP-photoshop:Headline`
+- Keywords：`IPTC:Keywords`、`XMP-dc:Subject`
+- Description：`IPTC:Caption-Abstract`、`XMP-dc:Description`（以及兼容用的 `EXIF:ImageDescription`）
 
 ## 方式二：HTTP API
 

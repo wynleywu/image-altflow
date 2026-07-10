@@ -6,52 +6,51 @@ export type MetadataGlossaryEntry = {
 
 export const METADATA_STANDARDS: { name: string; summary: string }[] = [
   {
-    name: "下载信息",
-    summary: "成品图下载文件名（SEO 友好命名）。",
+    name: "下载文件名",
+    summary: "成品图 SEO 友好文件名。",
   },
   {
-    name: "EXIF",
-    summary: "写入 ImageDescription，与完整 Description 保持一致。",
+    name: "Alt Text",
+    summary: "写入 XMP-iptcCore:AltTextAccessibility，简洁无障碍替代文本。",
   },
   {
-    name: "IPTC",
-    summary: "写入 Caption-Abstract（完整描述）与 Keywords（关键词数组）。",
+    name: "Headline",
+    summary: "写入 IPTC:Headline 与 XMP-photoshop:Headline，一句话摘要。",
   },
   {
-    name: "XMP",
-    summary: "写入 AltTextAccessibility、Headline、dc:description、dc:subject。",
+    name: "Keywords",
+    summary: "写入 IPTC:Keywords 与 XMP-dc:Subject，多值关键词。",
+  },
+  {
+    name: "Description",
+    summary: "写入 IPTC:Caption-Abstract、XMP-dc:Description；EXIF:ImageDescription 作兼容。",
   },
 ];
 
 export const METADATA_GLOSSARY: MetadataGlossaryEntry[] = [
   {
-    key: "File Name",
-    tags: "下载文件名",
+    key: "下载文件名",
+    tags: "Download File Name",
     description: "下载时使用的 SEO 友好文件名。",
   },
   {
-    key: "ImageDescription",
-    tags: "EXIF ImageDescription",
-    description: "与完整 Description / IPTC Caption-Abstract 保持一致。",
-  },
-  {
-    key: "Caption-Abstract",
-    tags: "IPTC Caption-Abstract · XMP dc:description",
-    description: "完整图片描述，供图库与 SEO 使用。",
-  },
-  {
-    key: "Keywords",
-    tags: "IPTC Keywords · XMP dc:subject",
-    description: "多值关键词，提升搜索与分类匹配。",
-  },
-  {
-    key: "AltTextAccessibility",
-    tags: "XMP Iptc4xmpCore:AltTextAccessibility",
+    key: "Alt Text",
+    tags: "XMP-iptcCore:AltTextAccessibility",
     description: "简洁无障碍替代文本。",
   },
   {
     key: "Headline",
-    tags: "XMP photoshop:Headline",
+    tags: "IPTC:Headline · XMP-photoshop:Headline",
     description: "一句话摘要，短于完整描述。",
+  },
+  {
+    key: "Keywords",
+    tags: "IPTC:Keywords · XMP-dc:Subject",
+    description: "多值关键词，提升搜索与分类匹配。",
+  },
+  {
+    key: "Description",
+    tags: "IPTC:Caption-Abstract · XMP-dc:Description · EXIF:ImageDescription",
+    description: "完整图片描述；EXIF ImageDescription 为可选兼容字段。",
   },
 ];

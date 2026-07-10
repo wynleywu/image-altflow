@@ -23,11 +23,13 @@ async function embedWithExiftool(buffer: Buffer, mimeType: string, ai: AiImageRe
 
     const fullDescription = ai.image_description_en || ai.caption_en;
     const tags: Record<string, string | string[]> = {
-      "EXIF:ImageDescription": fullDescription,
+      "XMP-iptcCore:AltTextAccessibility": ai.alt_text_en,
+      "IPTC:Headline": ai.caption_en,
+      "XMP-photoshop:Headline": ai.caption_en,
       "IPTC:Caption-Abstract": fullDescription,
       "XMP-dc:Description": fullDescription,
-      "XMP-iptcCore:AltTextAccessibility": ai.alt_text_en,
-      "XMP-photoshop:Headline": ai.caption_en,
+      // Optional compatibility for readers that only look at EXIF
+      "EXIF:ImageDescription": fullDescription,
     };
 
     if (ai.tags_en.length > 0) {

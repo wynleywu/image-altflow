@@ -1473,7 +1473,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">Headline</span>
-                <span className="field-badge">XMP photoshop:Headline</span>
+                <span className="field-badge">IPTC:Headline · XMP photoshop:Headline</span>
               </div>
               <div className="field-bilingual">
                 <div className="field-col-en">
