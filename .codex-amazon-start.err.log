@@ -1,0 +1,64 @@
+ ⨯ [Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- D:\vibe coding\image-altflow\.next\server\webpack-runtime.js
+- D:\vibe coding\image-altflow\.next\server\pages\_document.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\require.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\load-components.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\utils.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\options.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\index.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\cli\next-test.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\bin\next] {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ [Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- D:\vibe coding\image-altflow\.next\server\webpack-runtime.js
+- D:\vibe coding\image-altflow\.next\server\pages\_document.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\require.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\load-components.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\utils.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\options.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\index.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\cli\next-test.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\bin\next] {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ [Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- D:\vibe coding\image-altflow\.next\server\webpack-runtime.js
+- D:\vibe coding\image-altflow\.next\server\pages\_document.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\require.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\load-components.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\utils.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\options.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\index.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\cli\next-test.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\bin\next] {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}
+ ⨯ [Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- D:\vibe coding\image-altflow\.next\server\webpack-runtime.js
+- D:\vibe coding\image-altflow\.next\server\pages\_document.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\require.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\load-components.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\utils.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\options.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\index.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\cli\next-test.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\bin\next] {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}

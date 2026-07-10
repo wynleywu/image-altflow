@@ -1,0 +1,895 @@
+ ⨯ ./app/history/page.tsx
+Error:   [31mx[0m You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m         ^^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+  [31mx[0m You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m                    ^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+
+Import trace for requested module:
+./app/history/page.tsx
+ ⨯ ./app/history/page.tsx
+Error:   [31mx[0m You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m         ^^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+  [31mx[0m You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m                    ^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+
+Import trace for requested module:
+./app/history/page.tsx
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ ./app/history/page.tsx
+Error:   [31mx[0m You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m         ^^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+  [31mx[0m You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m                    ^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+
+Import trace for requested module:
+./app/history/page.tsx
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⨯ ./app/history/page.tsx
+Error:   [31mx[0m You're importing a component that needs `useEffect`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m         ^^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+  [31mx[0m You're importing a component that needs `useState`. This React Hook only works in a Client Component. To fix, mark the file (or its parent) with the `"use client"` directive.
+  [31m|[0m
+  [31m|[0m  Learn more: https://nextjs.org/docs/app/api-reference/directives/use-client
+  [31m|[0m
+
+   ,-[[36;1;4mD:\vibe coding\image-altflow\app\history\page.tsx[0m:1:1]
+ [2m1[0m | import { useEffect, useState } from "react";
+   : [35;1m                    ^^^^^^^^[0m
+ [2m2[0m | import type { ImageRecord } from "@/lib/types";
+ [2m3[0m | import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+ [2m4[0m | import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
+   `----
+
+Import trace for requested module:
+./app/history/page.tsx
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload due to a runtime error.
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json',
+  page: '/history'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\routes-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\routes-manifest.json'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '6932967'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/history'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '6932967'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/history'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '6932967'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/history'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '6932967'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '6932967'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>)
+    at stringify (<anonymous>) {
+  digest: '1764504842'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  digest: '6932967'
+}
+ ⨯ Error: Could not find the module "D:\vibe coding\image-altflow\node_modules\next\dist\next-devtools\userspace\app\segment-explorer-node.js#SegmentViewNode" in the React Client Manifest. This is probably a bug in the React Server Components bundler.
+    at stringify (<anonymous>) {
+  digest: '4287439534'
+}
+[TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function]
+ ⨯ [TypeError: __webpack_modules__[moduleId] is not a function] {
+  page: '/'
+}
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development\2.pack.gz_' -> 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development\2.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Restoring pack failed from D:\vibe coding\image-altflow\.next\cache\webpack\client-development.pack.gz: Error: incorrect header check
+ ⨯ SyntaxError: Unexpected end of JSON input
+    at JSON.parse (<anonymous>) {
+  page: '/'
+}
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development\0.pack.gz_' -> 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development\0.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development\1.pack.gz_' -> 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development\1.pack.gz'
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: ENOENT: no such file or directory, rename 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development-fallback\1.pack.gz_' -> 'D:\vibe coding\image-altflow\.next\cache\webpack\client-development-fallback\1.pack.gz'
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\page.js',
+  page: '/'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⚠ Fast Refresh had to perform a full reload. Read more: https://nextjs.org/docs/messages/fast-refresh-reload
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\app\_not-found\page.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\app\\_not-found\\page.js'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}
+ ⨯ [Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\server\pages\_document.js'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\server\\pages\\_document.js'
+}
+[Error: ENOENT: no such file or directory, open 'D:\vibe coding\image-altflow\.next\fallback-build-manifest.json'] {
+  errno: -4058,
+  code: 'ENOENT',
+  syscall: 'open',
+  path: 'D:\\vibe coding\\image-altflow\\.next\\fallback-build-manifest.json'
+}

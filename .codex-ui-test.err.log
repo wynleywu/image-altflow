@@ -1,0 +1,32 @@
+[audit] raw LLM output: {
+  "schemaVersion": 2,
+  "overallScore": 65,
+  "scoreBreakdown": {
+    "compliance": 85,
+    "discoverability": 60,
+    "conversion": 55,
+    "completeness": 50,
+    "readability": 75
+  },
+  "summary": "该商品Listing整体框架基本完整，但存在标题过长、描述（Description）完全缺失以及系统属性（Attributes）未填写等严重问题。这不仅限制了SEO自然流量的收录，也降低了消费者的转化率。建议立即补全缺失文本，精简标题，并规划A+页面以提升视觉说服力。",
+  "title": {
+    "issues": [
+      {
+        "id": "title_length_exceeds_recommendation",
+        "severity": "medium",
+        "area": "title",
+        "message": "Title exceeds the recommended 75-character limit for optimal mobile display and SEO.",
+        "impact": "readability",
+        "reason": "The current title is 119 characters, which may get truncated on mobile devices and looks cluttered.",
+        "evidence": [
+          "HOMLAND Raised Toilet Seat with Handles, Handicap Toilet Seat Risers for Seniors, Elevated Toilet Seat Fits Most Toilet, Gray"
+        ],
+        "basisType": "category_guidance",
+        "confidence": 0.9
+      }
+    ],
+    "suggested": "HOMLAND Raised Toilet Seat with Handles, Adjustable Elevated Toilet Riser"
+  },
+  "itemHighlights": {
+    "suggested": "Secure dual-locking raised toilet seat with adjustable padded
+[amazon/audit] { errorType: 'ai_parse_error', details: 'audit returned invalid JSON' }
