@@ -4,12 +4,19 @@ import { canPersistAll } from "@/lib/persist";
 import { createImageRecord } from "@/lib/records";
 import { persistProcessedBuffer } from "@/lib/storage";
 import { createTraceId } from "@/lib/validation";
+import {
+  decodeImageBase64,
+  EmbedValidationError,
+  MAX_EMBED_AI_JSON_CHARS,
+  MAX_EMBED_BASE64_CHARS,
+  MAX_EMBED_IMAGE_BYTES,
+  MAX_EMBED_JSON_BODY_BYTES,
+  MAX_EMBED_MULTIPART_BODY_BYTES,
+  validateImageBuffer,
+} from "@/lib/embed-validation";
 import type { AiImageResult, EmbedRequest } from "@/lib/types";
 
 export const maxDuration = 60;
-
-const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
-const MAX_BASE64_CHARS = Math.ceil(MAX_IMAGE_BYTES * 4 / 3) + 8;
 
 function tooLargeResponse() {
   return NextResponse.json(
@@ -21,6 +28,18 @@ function tooLargeResponse() {
 export async function POST(request: Request) {
   try {
     const contentType = request.headers.get("content-type") || "";
+    const contentLength = Number(request.headers.get("content-length"));
+    const maxBodyBytes = contentType.includes("multipart/form-data")
+      ? MAX_EMBED_MULTIPART_BODY_BYTES
+      : MAX_EMBED_JSON_BODY_BYTES;
+    if (Number.isFinite(contentLength) && contentLength > maxBodyBytes) {
+      throw new EmbedValidationError(
+        "request_too_large",
+        "Embed request body is too large",
+        413,
+      );
+    }
+
     let inputBuffer: Buffer;
     let sourceMimeType: string;
     let ai: AiImageResult;
@@ -40,32 +59,63 @@ export async function POST(request: Request) {
         );
       }
 
-      if (file.size > MAX_IMAGE_BYTES) {
+      if (file.size > MAX_EMBED_IMAGE_BYTES) {
         return tooLargeResponse();
       }
 
+      if (aiRaw.length > MAX_EMBED_AI_JSON_CHARS) {
+        throw new EmbedValidationError("invalid_ai_json", "AI JSON is too large");
+      }
+
       inputBuffer = Buffer.from(await file.arrayBuffer());
-      sourceMimeType = String(form.get("mimeType") || "") || file.type || "image/jpeg";
-      ai = parseAiFromJson(JSON.parse(aiRaw));
+      sourceMimeType = file.type || String(form.get("mimeType") || "");
+      let parsedAi: unknown;
+      try {
+        parsedAi = JSON.parse(aiRaw);
+      } catch {
+        throw new EmbedValidationError("invalid_ai_json", "AI JSON is not valid JSON");
+      }
+      ai = parseAiFromJson(parsedAi);
       traceId = String(form.get("traceId") || "").trim() || undefined;
       originalFileName = file.name || String(form.get("originalFileName") || "") || undefined;
     } else {
       // Documented JSON API path: imageBase64 + mimeType + ai.
-      const body = (await request.json()) as EmbedRequest;
+      let rawBody: unknown;
+      try {
+        rawBody = await request.json();
+      } catch {
+        throw new EmbedValidationError("invalid_request", "Request body is not valid JSON");
+      }
+      if (!rawBody || typeof rawBody !== "object") {
+        throw new EmbedValidationError("invalid_request", "Request body must be a JSON object");
+      }
+      const body = rawBody as Partial<EmbedRequest>;
 
-      if (!body.imageBase64 || !body.mimeType || !body.ai) {
+      if (
+        typeof body.imageBase64 !== "string"
+        || !body.imageBase64
+        || typeof body.mimeType !== "string"
+        || !body.mimeType.trim()
+        || !body.ai
+        || typeof body.ai !== "object"
+      ) {
         return NextResponse.json(
           { ok: false, error: "imageBase64, mimeType, and ai are required", error_type: "invalid_request" },
           { status: 400 },
         );
       }
 
-      if (body.imageBase64.length > MAX_BASE64_CHARS) {
+      if (body.imageBase64.length > MAX_EMBED_BASE64_CHARS) {
         return tooLargeResponse();
       }
 
-      inputBuffer = Buffer.from(body.imageBase64, "base64");
-      if (inputBuffer.length > MAX_IMAGE_BYTES) {
+      const aiJson = JSON.stringify(body.ai);
+      if (!aiJson || aiJson.length > MAX_EMBED_AI_JSON_CHARS) {
+        throw new EmbedValidationError("invalid_ai_json", "AI JSON is too large");
+      }
+
+      inputBuffer = decodeImageBase64(body.imageBase64);
+      if (inputBuffer.length > MAX_EMBED_IMAGE_BYTES) {
         return tooLargeResponse();
       }
       sourceMimeType = body.mimeType;
@@ -73,6 +123,8 @@ export async function POST(request: Request) {
       traceId = body.traceId;
       originalFileName = body.originalFileName;
     }
+
+    sourceMimeType = validateImageBuffer(inputBuffer, sourceMimeType);
 
     const { buffer, fileName, mimeType } = await embedImageBuffer(inputBuffer, sourceMimeType, ai);
 
@@ -104,6 +156,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ ok: true, download, record });
   } catch (error) {
+    if (error instanceof EmbedValidationError) {
+      return NextResponse.json(
+        { ok: false, error: error.message, error_type: error.errorType },
+        { status: error.status },
+      );
+    }
     const message = error instanceof Error ? error.message : "Embed failed";
     const errorType = message.includes("Invalid AI JSON")
       ? "invalid_ai_json"

@@ -8,6 +8,7 @@ const REQUIRED_FIELDS: (keyof AiImageResult)[] = [
   "alt_text_en",
   "caption_en",
 ];
+const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
 
 export function stripMarkdownFence(text: string): string {
   let cleaned = text.trim();
@@ -69,7 +70,12 @@ export function normalizeAiResult(raw: Partial<AiImageResult> & Record<string, u
   };
 }
 
-async function callGeminiWithInlineData(data: string, mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
+async function callGeminiWithInlineData(
+  data: string,
+  mimeType: string,
+  opts?: { brand?: string; model?: string },
+  timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
+): Promise<AiImageResult> {
   const rawKey = process.env.GEMINI_API_KEY ?? "";
   const apiKey = (rawKey.charCodeAt(0) === 0xfeff ? rawKey.slice(1) : rawKey).trim();
   if (!apiKey) {
@@ -92,7 +98,7 @@ async function callGeminiWithInlineData(data: string, mimeType: string, opts?: {
   try {
     result = await model.generateContent(
       [buildPrompt(opts), { inlineData: { data, mimeType } }],
-      { timeout: 50_000 },
+      { timeout: timeoutMs },
     );
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
@@ -118,6 +124,11 @@ export function assertRequiredAiFields(normalized: AiImageResult): AiImageResult
   return normalized;
 }
 
-export async function analyzeImageFromBuffer(buffer: Buffer, mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
-  return callGeminiWithInlineData(buffer.toString("base64"), mimeType || "image/jpeg", opts);
+export async function analyzeImageFromBuffer(
+  buffer: Buffer,
+  mimeType: string,
+  opts?: { brand?: string; model?: string },
+  timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
+): Promise<AiImageResult> {
+  return callGeminiWithInlineData(buffer.toString("base64"), mimeType || "image/jpeg", opts, timeoutMs);
 }

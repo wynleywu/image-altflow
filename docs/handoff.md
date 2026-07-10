@@ -1,6 +1,6 @@
 # Handoff & Changelog
 
-> 最后更新：2026-07-01
+> 最后更新：2026-07-10
 
 ## 当前状态
 
@@ -11,12 +11,14 @@
 | 本地 CLI `npm run process` | 完成 |
 | `POST /api/analyze` | 完成 |
 | `POST /api/embed` | 完成 |
+| Provider 超时与回退预算 | 完成（2026-07-10，视觉链路 55 秒总预算；Amazon 文本单提供商 20 秒） |
+| Embed 运行时输入校验 | 完成（2026-07-10，Base64、图片签名/MIME、AI 字段与 JPEG 段长度） |
 | 可选 Neon + Blob 持久化 | 完成 |
 | Vercel 生产部署 | 完成（2026-06-26，`image-altflow.vercel.app`） |
 | Web UI 单张流程（`app/page.tsx`） | 完成（2026-06-25） |
 | Web UI 批量 Tab | 完成（2026-07-01，串行处理 + 重试 + ZIP 下载） |
 | Amazon Listing 审查 (`/amazon`) | 完成 V2 首批闭环（2026-07-01，诊断证据 + 编辑确认 + 最终稿 + localStorage） |
-| `/review` 旧审核 UI | 未清理 |
+| `/review` 旧审核 UI | 已下线（2026-07-10） |
 | Shopify 回写 | 未开始 |
 
 ## 推荐使用方式（2026-06-26）
@@ -33,7 +35,6 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 
 ## 阶段二待办
 
-- [ ] 移除或隐藏 `/review` 旧审核流 UI
 - [ ] Vercel Password Protection（若公开部署）
 - [ ] Amazon 审查：多策略版本、单章节重新生成、云端历史、Sanity/SP-API
 
@@ -41,6 +42,8 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 
 | 日期 | 决策 |
 |------|------|
+| 2026-07-10 | 下线 Legacy `/review` Server Actions；数据库记录 HTTP 管理仅保留带 Bearer 鉴权的 `/api/records*` |
+| 2026-07-10 | 视觉提供商共享 55 秒总预算；Embed 在元数据写入前执行严格运行时校验 |
 | 2026-07-01 | Amazon 审查升级为 V2：规则与建议分级，结果按 `auditId` 保存在浏览器，属性建议不自动进入最终稿 |
 | 2026-06-27 | 新增 Cloudflare Workers AI REST 提供商；三个提供商共用 `lib/prompt.ts`，默认 Cloudflare 模型为 Llama 3.2 11B Vision |
 | 2026-06-26 | Vercel 生产部署；识图主路径 `AI_PROVIDER=modelscope` + `Qwen/Qwen3-VL-30B-A3B-Instruct` |

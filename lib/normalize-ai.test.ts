@@ -43,6 +43,38 @@ test("parseAiFromJson keeps brand through normalize", () => {
   assert.equal(result.brand, "Acme");
 });
 
+test("parseAiFromJson rejects missing, mistyped, and oversized embed metadata", () => {
+  assert.throws(() => parseAiFromJson({}), /missing required fields/);
+  assert.throws(
+    () => parseAiFromJson({
+      image_description_en: "A lamp",
+      new_file_name: "lamp",
+      alt_text_en: { text: "A lamp" },
+      caption_en: "Desk lamp",
+    }),
+    /alt_text_en must be a string/,
+  );
+  assert.throws(
+    () => parseAiFromJson({
+      image_description_en: "x".repeat(4_001),
+      new_file_name: "lamp",
+      alt_text_en: "A lamp",
+      caption_en: "Desk lamp",
+    }),
+    /image_description_en exceeds 4000 characters/,
+  );
+  assert.throws(
+    () => parseAiFromJson({
+      image_description_en: "A lamp",
+      new_file_name: "lamp",
+      alt_text_en: "A lamp",
+      caption_en: "Desk lamp",
+      tags_en: "x".repeat(101),
+    }),
+    /tags_en must contain at most 25 tags of 100 characters/,
+  );
+});
+
 test("assertRequiredAiFields fails when any required field is empty", () => {
   assert.throws(
     () =>

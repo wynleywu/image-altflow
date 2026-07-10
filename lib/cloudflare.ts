@@ -29,6 +29,7 @@ const CLOUDFLARE_FIELD_NAMES = [
   "scene_zh",
   "confidence_note",
 ] as const;
+const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
 
 const CLOUDFLARE_LINE_PROMPT = `Analyze the uploaded image for ecommerce SEO metadata.
 Return exactly 16 lines using FIELD|||VALUE. Do not return JSON, markdown, bullets, or explanations.
@@ -253,6 +254,7 @@ async function runCloudflareModel(
   buffer: Buffer,
   attempt: number,
   opts?: { brand?: string; model?: string },
+  timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
 ): Promise<CloudflareRunResponse> {
   const { accountId, apiToken, model } = getCloudflareConfig();
   const retryInstruction = attempt === 0
@@ -268,7 +270,7 @@ async function runCloudflareModel(
         Authorization: `Bearer ${apiToken}`,
         "Content-Type": "application/json",
       },
-      signal: AbortSignal.timeout(25_000),
+      signal: AbortSignal.timeout(timeoutMs),
       body: JSON.stringify({
         prompt: `${contextPrefix}${CLOUDFLARE_LINE_PROMPT}${retryInstruction}`,
         image: buffer.toString("base64"),
@@ -304,10 +306,20 @@ async function runCloudflareModel(
   return json;
 }
 
-export async function analyzeImageFromBuffer(buffer: Buffer, _mimeType: string, opts?: { brand?: string; model?: string }): Promise<AiImageResult> {
+export async function analyzeImageFromBuffer(
+  buffer: Buffer,
+  _mimeType: string,
+  opts?: { brand?: string; model?: string },
+  timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
+): Promise<AiImageResult> {
+  const deadline = Date.now() + timeoutMs;
   for (let attempt = 0; attempt < 2; attempt += 1) {
     try {
-      const json = await runCloudflareModel(buffer, attempt, opts);
+      const remainingMs = deadline - Date.now();
+      if (remainingMs <= 0) {
+        throw new DOMException("Cloudflare request timed out", "TimeoutError");
+      }
+      const json = await runCloudflareModel(buffer, attempt, opts, remainingMs);
       const parsed = parseAiPayload(json);
       if (parsed) {
         return parsed;

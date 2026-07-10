@@ -6,6 +6,9 @@ function escapeXml(s: string): string {
 
 function seg(marker: number, payload: Buffer): Buffer {
   const len = payload.length + 2;
+  if (len > 0xffff) {
+    throw new Error(`JPEG metadata segment exceeds 65535 bytes (${len})`);
+  }
   const hdr = Buffer.from([0xFF, marker, (len >> 8) & 0xFF, len & 0xFF]);
   return Buffer.concat([hdr, payload]);
 }
@@ -105,7 +108,14 @@ function iptcSeg(ai: AiImageResult): Buffer {
 }
 
 export function injectJpegMetadata(buffer: Buffer, ai: AiImageResult): Buffer {
-  if (buffer[0] !== 0xFF || buffer[1] !== 0xD8) return buffer; // not JPEG
+  if (
+    buffer.length < 4
+    || buffer[0] !== 0xFF
+    || buffer[1] !== 0xD8
+    || buffer[2] !== 0xFF
+  ) {
+    throw new Error("Invalid JPEG image data");
+  }
 
   // Insert after SOI and any leading APP0 (JFIF) segment
   let pos = 2;

@@ -1,6 +1,6 @@
 # Runbook
 
-> 最后更新：2026-07-01
+> 最后更新：2026-07-10
 
 ## 环境变量
 
@@ -26,7 +26,7 @@
 npm install
 npm run dev          # 开发服务器 :3000
 npm run build        # 生产构建（含类型检查）
-npm test             # Amazon V2 标准化与本地工作区测试
+npm test             # Provider 超时、Embed 边界、Amazon V2 与本地工作区测试
 npm run cf:agree     # 默认 Meta 模型首次使用前接受协议
 npm run process -- ./in.jpg ./out.jpg
 ```
@@ -62,7 +62,7 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
   -F "image=@./test.jpg"
 ```
 
-识图约 30–90 秒（ModelScope 30B + Serverless）。HTTP 200 且响应含 `"ok":true` 即通过。
+识图在 55 秒总预算内运行；单个视觉提供商最多分配 25 秒，超时后尝试已配置的备用提供商。HTTP 200 且响应含 `"ok":true` 即通过。
 
 ### 5. Amazon 审查工作台
 
@@ -105,12 +105,13 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 | `ModelScope API error 400` | 模型未上架推理 | 换 `Qwen/Qwen3-VL-*`；勿用 `Qwen2.5-VL-72B` / `diffusiongemma` |
 | `ModelScope API error 429` | 免费额度限流 | 降频重试；或 `AI_PROVIDER=gemini` |
 | `ai_parse_error` | 模型连续返回不足 6 个可用字段 | Cloudflare 已逐字段解析并重试一次；Web 页面可点“重新分析”，仍失败时检查对应模型配置 |
-| `Corrupted JPEG` / embed 失败 | 输入非有效图片 | 换 JPEG；用 ExifTool 检查原图 |
+| `invalid_base64` / `invalid_image` / `mime_mismatch` | Embed 图片编码、签名或声明 MIME 不一致 | 重新使用 analyze 返回的 Base64 与 MIME；不要手工改 MIME |
+| `Corrupted JPEG` / embed 失败 | 原图或元数据段无效 | 换 JPEG；用 ExifTool 检查原图；确认 AI 字段未超过 API 限制 |
 | CLI 找不到模块 | 未 install | `npm install` |
 | Caption 在 exiftool 中为空 | 工具字段名差异 | `ImageDescription` / `Keywords` 仍应存在 |
 | Amazon 结果提示无法恢复 | URL 缺少/包含失效 `auditId`，或浏览器 localStorage 被清理 | 返回 `/amazon` 重新审查；工作区仅保存在当前浏览器 |
 | Amazon 建议缺少 V2 字段 | 上游模型返回旧结构或部分字段 | `normalize-audit.ts` 会补默认值；检查服务端日志与 Prompt 输出 |
-| 前端提交失败 | API Key、网络或 `/review` 旧 UI 问题 | 使用首页流程、`/amazon`、CLI 或 curl；勿依赖旧 `/review` |
+| 前端提交失败 | API Key 或网络问题 | 使用首页流程、`/amazon`、CLI 或 curl；数据库记录管理使用带 Bearer 鉴权的 `/api/records*` |
 
 ## 安全
 

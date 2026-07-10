@@ -1,12 +1,12 @@
 # Architecture
 
-> 最后更新：2026-07-01
+> 最后更新：2026-07-10
 
 ## 概述
 
 Image Altflow 将产品图经视觉模型识图后，把 **英文** SEO 文案（Alt、Caption、Tags、Description）写入图片 EXIF/XMP/IPTC，供素材库与 CMS 使用。中文文案仅用于对照与校对，不写入二进制。
 
-当前交付形态：**CLI + HTTP API + Web 单张/批量流程**（`app/page.tsx`）+ **Amazon Listing 审查**（`app/amazon/page.tsx`）；`/review` 为旧版占位。批量 Tab 在浏览器端串行调用既有 `/api/analyze`、`/api/embed`（并发=1，失败自动重试），完成后打包 ZIP 下载。
+当前交付形态：**CLI + HTTP API + Web 单张/批量流程**（`app/page.tsx`）+ **Amazon Listing 审查**（`app/amazon/page.tsx`）。旧 `/review` 已下线。批量 Tab 在浏览器端串行调用既有 `/api/analyze`、`/api/embed`（并发=1，失败自动重试），完成后打包 ZIP 下载。
 
 ## 数据流
 
@@ -64,11 +64,12 @@ ASIN / URL ──► Rainforest API ──► AmazonListingSnapshot
 | 模块 | 文件 | 说明 |
 |------|------|------|
 | Prompt | `lib/prompt.ts` | 要求模型输出双语 JSON |
-| 识图路由 | `lib/ai.ts` | 按 `AI_PROVIDER` 选择 Gemini、ModelScope 或 Cloudflare；默认 ModelScope，可回退 Gemini |
+| 识图路由 | `lib/ai.ts` | 按 `AI_PROVIDER` 选择 Gemini、ModelScope 或 Cloudflare；55 秒总预算内按已配置提供商分配时间并回退 |
 | Gemini | `lib/gemini.ts` | `analyzeImageFromBuffer`；`normalizeAiResult` 共用 |
 | ModelScope | `lib/modelscope.ts` | `api-inference.modelscope.cn` OpenAI 兼容；推荐 Qwen3-VL |
-| Cloudflare | `lib/cloudflare.ts` | Workers AI REST API；默认 Llama 3.2 11B Vision；逐行字段协议、字段级清洗、25 秒超时与单次重试 |
+| Cloudflare | `lib/cloudflare.ts` | Workers AI REST API；默认 Llama 3.2 11B Vision；逐行字段协议、字段级清洗，在分配的超时预算内最多重试一次 |
 | 元数据 | `lib/embed-metadata.ts` | ExifTool 写 `alt_text_en` 等 |
+| Embed 输入校验 | `lib/embed-validation.ts` | 严格 Base64、图片签名、MIME 一致性、请求体大小 |
 | 编排 | `lib/pipeline.ts` | analyze / embed 统一入口 |
 | 文件名 | `lib/filename.ts` | 下载名消毒与扩展名 |
 | 持久化判断 | `lib/persist.ts` | `canPersistRecords` / `canPersistAll` |
@@ -108,7 +109,7 @@ Gemini、ModelScope 或 Cloudflare 返回字段示例：
 | `POST /api/amazon/audit` | ASIN 抓取 + Listing SEO 审查（适老品类） |
 | `GET/PATCH /api/records*` | 可选历史；需 `RECORDS_API_SECRET` Bearer |
 
-两步设计与前端阶段二一致：先 analyze，用户编辑后再 embed。不接受 `image_url` 代抓。
+两步设计与前端阶段二一致：先 analyze，用户编辑后再 embed。不接受 `image_url` 代抓。Embed 仅接受不超过 5 MB 的有效 JPEG、PNG、WebP 或 GIF，并在写入前校验 AI 必填字段、字段长度和 JPEG 段大小。
 
 ## 可选持久化
 
@@ -139,7 +140,6 @@ Gemini、ModelScope 或 Cloudflare 返回字段示例：
 
 ## 未实现
 
-- `/review` 旧审核流清理
 - Shopify Admin API 回写 Alt
 - 批量目录（CLI 侧）处理
 - Amazon 审查 → 多版本生成、云端历史、Sanity/SP-API 直连

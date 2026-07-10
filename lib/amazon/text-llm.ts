@@ -1,5 +1,6 @@
 const MODELSCOPE_BASE_URL = "https://api-inference.modelscope.cn/v1";
 const TEXT_MODEL_FALLBACK = "Qwen/Qwen3-32B";
+const TEXT_PROVIDER_TIMEOUT_MS = 20_000;
 
 export function readAmazonEnv(key: string): string {
   const raw = process.env[key] ?? "";
@@ -35,6 +36,7 @@ async function callModelScopeText(prompt: string): Promise<string> {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
+    signal: AbortSignal.timeout(TEXT_PROVIDER_TIMEOUT_MS),
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: prompt }],
@@ -70,6 +72,7 @@ async function callGeminiText(prompt: string): Promise<string> {
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(TEXT_PROVIDER_TIMEOUT_MS),
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {

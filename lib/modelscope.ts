@@ -3,6 +3,7 @@ import { buildPrompt } from "./prompt";
 import { assertRequiredAiFields, normalizeAiResult, stripMarkdownFence } from "./gemini";
 
 const MODELSCOPE_BASE_URL = "https://api-inference.modelscope.cn/v1";
+const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
 
 function readEnv(key: string): string {
   const raw = process.env[key] ?? "";
@@ -13,6 +14,7 @@ export async function analyzeImageFromBuffer(
   buffer: Buffer,
   mimeType: string,
   opts?: { brand?: string; model?: string },
+  timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
 ): Promise<AiImageResult> {
   const apiKey = readEnv("MODELSCOPE_API_KEY");
   const model = readEnv("MODELSCOPE_MODEL") || "Qwen/Qwen3-VL-30B-A3B-Instruct";
@@ -28,6 +30,7 @@ export async function analyzeImageFromBuffer(
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
+    signal: AbortSignal.timeout(timeoutMs),
     body: JSON.stringify({
       model,
       messages: [
