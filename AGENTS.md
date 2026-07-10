@@ -58,7 +58,8 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `lib/modelscope.ts` | ModelScope OpenAI 兼容接口（Qwen3-VL 等） |
 | `lib/cloudflare.ts` | Cloudflare Workers AI REST 接口；复用公共 Prompt 与标准化逻辑 |
 | `lib/rate-limit.ts` | 公开 API 的 IP 限流（Upstash；未配置则跳过） |
-| `lib/embed-metadata.ts` | `embedMetadataIntoImage`（只写 `_en`） |
+| `lib/embed-metadata.ts` | `embedMetadataIntoImage`（只写 `_en`；ExifTool 失败时 JPEG/PNG 走 JS 兜底） |
+| `lib/embed-metadata-js.ts` | JPEG / PNG 无 ExifTool 时的元数据注入 |
 | `lib/embed-validation.ts` | embed Base64、图片签名与 MIME 运行时校验 |
 | `lib/pipeline.ts` | `analyzeLocalImage`, `embedImageBuffer`, `parseAiFromJson` |
 | `scripts/process-image.ts` | 本地 CLI：`npm run process --` |

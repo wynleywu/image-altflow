@@ -4,7 +4,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import type { AiImageResult } from "./types";
 import { mimeTypeFromFileName, sanitizeDownloadFileName } from "./filename";
-import { injectJpegMetadata } from "./embed-metadata-js";
+import { injectJpegMetadata, injectPngMetadata } from "./embed-metadata-js";
 
 function extensionForMime(mimeType: string): string {
   if (mimeType.includes("png")) return ".png";
@@ -41,6 +41,20 @@ async function embedWithExiftool(buffer: Buffer, mimeType: string, ai: AiImageRe
   }
 }
 
+function embedWithJsFallback(buffer: Buffer, mimeType: string, ai: AiImageResult): Buffer {
+  if (mimeType.includes("jpeg") || mimeType.includes("jpg")) {
+    console.warn("[embed] ExifTool unavailable; using JPEG JS fallback");
+    return injectJpegMetadata(buffer, ai);
+  }
+  if (mimeType.includes("png")) {
+    console.warn("[embed] ExifTool unavailable; using PNG JS fallback");
+    return injectPngMetadata(buffer, ai);
+  }
+  throw new Error(
+    `embed_unavailable: ExifTool unavailable and no JS fallback for mimeType=${mimeType}`,
+  );
+}
+
 export async function embedMetadataIntoImage(
   buffer: Buffer,
   mimeType: string,
@@ -52,13 +66,7 @@ export async function embedMetadataIntoImage(
     const msg = err instanceof Error ? err.message : String(err);
     // ExifTool unavailable (no Perl on Linux serverless, or binary not found)
     if (msg.includes("Perl") || msg.includes("ENOENT") || msg.includes("spawn")) {
-      if (mimeType.includes("jpeg") || mimeType.includes("jpg")) {
-        console.warn("[embed] ExifTool unavailable; using JPEG JS fallback");
-        return injectJpegMetadata(buffer, ai);
-      }
-      throw new Error(
-        `embed_unavailable: ExifTool unavailable and no JS fallback for mimeType=${mimeType}`,
-      );
+      return embedWithJsFallback(buffer, mimeType, ai);
     }
     throw err;
   }

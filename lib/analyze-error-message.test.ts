@@ -18,8 +18,9 @@ test("formatAnalyzeErrorMessage handles missing provider config", () => {
 });
 
 test("formatEmbedErrorMessage maps embed_unavailable", () => {
-  const message = formatEmbedErrorMessage("embed_unavailable: ExifTool unavailable and no JS fallback for mimeType=image/png", "embed_unavailable");
-  assert.match(message, /无法写入图片元数据/);
+  const message = formatEmbedErrorMessage("embed_unavailable: ExifTool unavailable and no JS fallback for mimeType=image/webp", "embed_unavailable");
+  assert.match(message, /无法写入该格式的图片元数据/);
+  assert.match(message, /JPEG 或 PNG/);
 });
 
 test("formatAnalyzeErrorMessage maps rate_limited", () => {

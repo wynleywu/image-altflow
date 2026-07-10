@@ -106,7 +106,8 @@ curl -s -o /dev/null -w "HTTP %{http_code}\n" \
 | `ModelScope API error 429` | 免费额度限流 | 降频重试；或 `AI_PROVIDER=gemini` |
 | `ai_parse_error` | 模型连续返回不足 6 个可用字段 | Cloudflare 已逐字段解析并重试一次；Web 页面可点“重新分析”，仍失败时检查对应模型配置 |
 | `invalid_base64` / `invalid_image` / `mime_mismatch` | Embed 图片编码、签名或声明 MIME 不一致 | 重新使用 analyze 返回的 Base64 与 MIME；不要手工改 MIME |
-| `Corrupted JPEG` / embed 失败 | 原图或元数据段无效 | 换 JPEG；用 ExifTool 检查原图；确认 AI 字段未超过 API 限制 |
+| `Corrupted JPEG` / embed 失败 | 原图或元数据段无效 | 换 JPEG/PNG；用 ExifTool 检查原图；确认 AI 字段未超过 API 限制 |
+| `embed_unavailable`（WebP/GIF） | 云端无 ExifTool 且无 JS 兜底 | 改用 JPEG 或 PNG；本地 CLI 可用 ExifTool 写 WebP/GIF |
 | CLI 找不到模块 | 未 install | `npm install` |
 | Caption 在 exiftool 中为空 | 工具字段名差异 | `ImageDescription` / `Keywords` 仍应存在 |
 | Amazon 结果提示无法恢复 | URL 缺少/包含失效 `auditId`，或浏览器 localStorage 被清理 | 返回 `/amazon` 重新审查；工作区仅保存在当前浏览器 |

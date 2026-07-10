@@ -141,7 +141,7 @@ curl -X POST http://localhost:3000/api/embed \
 | `mime_mismatch` | 声明的 `mimeType` 与图片签名不一致 |
 | `request_too_large` | embed 整体请求体超过上限 |
 | `embed_failed` | ExifTool 写入失败 |
-| `embed_unavailable` | ExifTool 不可用且无 JS fallback（常见于非 JPEG） |
+| `embed_unavailable` | ExifTool 不可用且无 JS fallback（常见于 WebP / GIF；JPEG / PNG 有 JS 兜底） |
 | `file_too_large` | 图片超过 5 MB |
 | `rate_limited` | 同一 IP 请求过于频繁（需配置 Upstash Redis）；HTTP `429`，含 `Retry-After` |
 

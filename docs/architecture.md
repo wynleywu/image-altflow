@@ -98,7 +98,7 @@ Gemini、ModelScope 或 Cloudflare 返回字段示例：
 | `tags_en` | `IPTC:Keywords` |
 | `image_description_en` | `XMP-dc:Description` |
 
-推荐 **JPEG**；PNG 元数据在部分工具中可见性较差。
+推荐 **JPEG**；云端 ExifTool 不可用时，JPEG / PNG 走 JS 兜底写入（PNG：`eXIf` + XMP `iTXt`）。WebP / GIF 仍依赖 ExifTool。
 
 ## HTTP API
 

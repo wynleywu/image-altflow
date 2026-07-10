@@ -19,11 +19,10 @@ function asciiExifValue(value: string, maxLen: number): Buffer {
   return Buffer.from(`${cleaned || " "}\0`, "ascii");
 }
 
-function exifSeg(altText: string, model?: string): Buffer {
+function buildExifTiff(altText: string, model?: string): Buffer {
   const desc = asciiExifValue(altText, 1000);
   const modelBuf = model ? asciiExifValue(model, 200) : null;
   const entryCount = modelBuf ? 2 : 1;
-  // Minimal TIFF: II + magic 42 + IFD0 offset 8
   const ifdOffset = 8;
   const dataOffset = ifdOffset + 2 + entryCount * 12 + 4;
   const tiff = Buffer.alloc(dataOffset + desc.length + (modelBuf?.length ?? 0));
@@ -54,15 +53,20 @@ function exifSeg(altText: string, model?: string): Buffer {
   }
 
   tiff.writeUInt32LE(0, entryPos); // next IFD = 0
-  return seg(0xE1, Buffer.concat([Buffer.from("Exif\0\0"), tiff]));
+  return tiff;
 }
 
-function xmpSeg(ai: AiImageResult): Buffer {
+/** JPEG APP1 Exif payload / PNG eXIf chunk data: Exif\\0\\0 + TIFF */
+function buildExifPayload(altText: string, model?: string): Buffer {
+  return Buffer.concat([Buffer.from("Exif\0\0"), buildExifTiff(altText, model)]);
+}
+
+function buildXmpXml(ai: AiImageResult): string {
   const tagItems = ai.tags_en
     .slice(0, 25)
     .map((t) => `<rdf:li>${escapeXml(t)}</rdf:li>`)
     .join("");
-  const xml =
+  return (
     `<?xpacket begin="﻿" id="W5M0MpCehiHzreSzNTczkc9d"?>\n` +
     `<x:xmpmeta xmlns:x="adobe:ns:meta/">\n` +
     `<rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">\n` +
@@ -72,10 +76,17 @@ function xmpSeg(ai: AiImageResult): Buffer {
     `<dc:description><rdf:Alt><rdf:li xml:lang="x-default">${escapeXml(ai.image_description_en || ai.caption_en)}</rdf:li></rdf:Alt></dc:description>\n` +
     (tagItems ? `<dc:subject><rdf:Bag>${tagItems}</rdf:Bag></dc:subject>\n` : "") +
     `<Iptc4xmpExt:AltTextAccessibility>${escapeXml(ai.alt_text_en)}</Iptc4xmpExt:AltTextAccessibility>\n` +
-    `</rdf:Description>\n</rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="w"?>`;
+    `</rdf:Description>\n</rdf:RDF>\n</x:xmpmeta>\n<?xpacket end="w"?>`
+  );
+}
 
+function exifSeg(altText: string, model?: string): Buffer {
+  return seg(0xE1, buildExifPayload(altText, model));
+}
+
+function xmpSeg(ai: AiImageResult): Buffer {
   const ns = Buffer.from("http://ns.adobe.com/xap/1.0/\0");
-  return seg(0xE1, Buffer.concat([ns, Buffer.from(xml, "utf8")]));
+  return seg(0xE1, Buffer.concat([ns, Buffer.from(buildXmpXml(ai), "utf8")]));
 }
 
 function iptcSeg(ai: AiImageResult): Buffer {
@@ -131,4 +142,131 @@ export function injectJpegMetadata(buffer: Buffer, ai: AiImageResult): Buffer {
     iptc.length > 0 ? iptc : Buffer.alloc(0),
     buffer.slice(pos),
   ]);
+}
+
+const PNG_SIGNATURE = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+const PNG_XMP_KEYWORD = "XML:com.adobe.xmp";
+
+const CRC_TABLE = (() => {
+  const table = new Uint32Array(256);
+  for (let n = 0; n < 256; n += 1) {
+    let c = n;
+    for (let k = 0; k < 8; k += 1) {
+      c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1;
+    }
+    table[n] = c >>> 0;
+  }
+  return table;
+})();
+
+function pngCrc(typeAndData: Buffer): number {
+  let c = 0xffffffff;
+  for (let i = 0; i < typeAndData.length; i += 1) {
+    c = CRC_TABLE[(c ^ typeAndData[i]) & 0xff] ^ (c >>> 8);
+  }
+  return (c ^ 0xffffffff) >>> 0;
+}
+
+function makePngChunk(type: string, data: Buffer): Buffer {
+  const typeBuf = Buffer.from(type, "ascii");
+  const len = Buffer.alloc(4);
+  len.writeUInt32BE(data.length, 0);
+  const typeAndData = Buffer.concat([typeBuf, data]);
+  const crc = Buffer.alloc(4);
+  crc.writeUInt32BE(pngCrc(typeAndData), 0);
+  return Buffer.concat([len, typeAndData, crc]);
+}
+
+function makeItxtChunk(keyword: string, text: string): Buffer {
+  const data = Buffer.concat([
+    Buffer.from(keyword, "latin1"),
+    Buffer.from([0x00, 0x00, 0x00]), // null, compressionFlag=0, compressionMethod=0
+    Buffer.from([0x00]), // empty language tag + null
+    Buffer.from([0x00]), // empty translated keyword + null
+    Buffer.from(text, "utf8"),
+  ]);
+  return makePngChunk("iTXt", data);
+}
+
+function makeTextChunk(keyword: string, text: string): Buffer {
+  // tEXt is Latin-1; strip non-Latin-1 for safety
+  const cleaned = text.replace(/[^\x20-\x7E\xA0-\xFF]/g, " ").trim().slice(0, 2000);
+  const data = Buffer.concat([
+    Buffer.from(keyword, "latin1"),
+    Buffer.from([0x00]),
+    Buffer.from(cleaned || " ", "latin1"),
+  ]);
+  return makePngChunk("tEXt", data);
+}
+
+function readPngTextKeyword(type: string, data: Buffer): string | null {
+  if (type !== "tEXt" && type !== "iTXt" && type !== "zTXt") return null;
+  const nul = data.indexOf(0);
+  if (nul <= 0) return null;
+  return data.subarray(0, nul).toString("latin1");
+}
+
+function shouldDropPngChunk(type: string, data: Buffer): boolean {
+  if (type === "eXIf") return true;
+  const keyword = readPngTextKeyword(type, data);
+  if (!keyword) return false;
+  if (keyword === PNG_XMP_KEYWORD) return true;
+  if (keyword === "Description" || keyword === "Title" || keyword === "Comment") return true;
+  return false;
+}
+
+export function injectPngMetadata(buffer: Buffer, ai: AiImageResult): Buffer {
+  if (buffer.length < 8 || !buffer.subarray(0, 8).equals(PNG_SIGNATURE)) {
+    throw new Error("Invalid PNG image data");
+  }
+
+  type Chunk = { type: string; data: Buffer; raw: Buffer };
+  const chunks: Chunk[] = [];
+  let offset = 8;
+
+  while (offset + 12 <= buffer.length) {
+    const length = buffer.readUInt32BE(offset);
+    const type = buffer.subarray(offset + 4, offset + 8).toString("ascii");
+    const dataStart = offset + 8;
+    const dataEnd = dataStart + length;
+    const chunkEnd = dataEnd + 4;
+    if (chunkEnd > buffer.length) {
+      throw new Error("Invalid PNG chunk bounds");
+    }
+    const data = buffer.subarray(dataStart, dataEnd);
+    const raw = buffer.subarray(offset, chunkEnd);
+    chunks.push({ type, data, raw });
+    offset = chunkEnd;
+    if (type === "IEND") break;
+  }
+
+  if (chunks.length === 0 || chunks[0].type !== "IHDR") {
+    throw new Error("Invalid PNG: missing IHDR");
+  }
+  if (chunks[chunks.length - 1].type !== "IEND") {
+    throw new Error("Invalid PNG: missing IEND");
+  }
+
+  const kept = chunks.filter((chunk) => !shouldDropPngChunk(chunk.type, chunk.data));
+  const idatIndex = kept.findIndex((chunk) => chunk.type === "IDAT");
+  if (idatIndex < 0) {
+    throw new Error("Invalid PNG: missing IDAT");
+  }
+
+  const description = (ai.image_description_en || ai.caption_en || ai.alt_text_en).slice(0, 2000);
+  const metaChunks = [
+    makePngChunk("eXIf", buildExifPayload(ai.alt_text_en, ai.model)),
+    makeItxtChunk(PNG_XMP_KEYWORD, buildXmpXml(ai)),
+    makeTextChunk("Description", description),
+    makeTextChunk("Title", ai.alt_text_en.slice(0, 200)),
+  ];
+
+  const out: Buffer[] = [PNG_SIGNATURE];
+  for (let i = 0; i < kept.length; i += 1) {
+    if (i === idatIndex) {
+      for (const meta of metaChunks) out.push(meta);
+    }
+    out.push(kept[i].raw);
+  }
+  return Buffer.concat(out);
 }

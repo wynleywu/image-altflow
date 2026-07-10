@@ -109,7 +109,7 @@ export function formatEmbedErrorMessage(raw?: string, errorType?: string): strin
     return "元数据格式异常，请重新识图后再写入";
   }
   if (errorType === "embed_unavailable" || message.startsWith("embed_unavailable")) {
-    return "当前环境无法写入图片元数据（ExifTool 不可用）。请使用 JPEG 格式，或在本地安装 ExifTool 后重试";
+    return "当前环境无法写入该格式的图片元数据（ExifTool 不可用，且无 JS 兜底）。请改用 JPEG 或 PNG，或在本地安装 ExifTool 后重试";
   }
   if (message.includes("request_too_large")) {
     return "请求体积过大，请压缩图片后重试";

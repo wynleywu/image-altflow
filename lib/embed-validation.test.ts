@@ -5,7 +5,7 @@ import {
   EmbedValidationError,
   validateImageBuffer,
 } from "./embed-validation";
-import { injectJpegMetadata } from "./embed-metadata-js";
+import { injectJpegMetadata, injectPngMetadata } from "./embed-metadata-js";
 import type { AiImageResult } from "./types";
 
 function makeAi(altText = "A desk lamp"): AiImageResult {
@@ -53,4 +53,31 @@ test("JPEG fallback rejects non-JPEG input and oversized metadata segments", () 
     () => injectJpegMetadata(Buffer.from([0xff, 0xd8, 0xff, 0xd9]), makeAi("x".repeat(70_000))),
     /metadata segment exceeds 65535 bytes/,
   );
+});
+
+// 1x1 transparent PNG
+const TINY_PNG = Buffer.from(
+  "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+  "base64",
+);
+
+test("PNG fallback injects XMP iTXt and eXIf before IDAT", () => {
+  assert.throws(() => injectPngMetadata(Buffer.from("not-a-png"), makeAi()), /Invalid PNG/);
+
+  const out = injectPngMetadata(TINY_PNG, makeAi("Red pixel product shot"));
+  assert.ok(out.subarray(0, 8).equals(TINY_PNG.subarray(0, 8)));
+  assert.match(out.toString("utf8"), /XML:com\.adobe\.xmp/);
+  assert.match(out.toString("utf8"), /Red pixel product shot/);
+  assert.match(out.toString("utf8"), /AltTextAccessibility/);
+  assert.ok(out.includes(Buffer.from("eXIf")));
+  // Still a valid PNG ending
+  assert.equal(out.subarray(-8).toString("ascii").includes("IEND"), true);
+});
+
+test("PNG fallback replaces prior XMP chunk on re-inject", () => {
+  const once = injectPngMetadata(TINY_PNG, makeAi("first caption"));
+  const twice = injectPngMetadata(once, makeAi("second caption"));
+  const text = twice.toString("utf8");
+  assert.match(text, /second caption/);
+  assert.equal(text.includes("first caption"), false);
 });
