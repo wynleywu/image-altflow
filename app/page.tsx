@@ -35,6 +35,33 @@ function formatSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
+function filesFromClipboard(event: ClipboardEvent): File[] {
+  const data = event.clipboardData;
+  if (!data) return [];
+
+  const fromItems: File[] = [];
+  for (const item of Array.from(data.items ?? [])) {
+    if (!item.type.startsWith("image/")) continue;
+    const file = item.getAsFile();
+    if (!file) continue;
+    const hasName = Boolean(file.name && file.name !== "image.png" && file.name !== "blob");
+    if (hasName) {
+      fromItems.push(file);
+      continue;
+    }
+    const ext = (file.type.split("/")[1] || "png").replace("jpeg", "jpg");
+    fromItems.push(new File([file], `pasted-image.${ext}`, { type: file.type }));
+  }
+  if (fromItems.length > 0) return fromItems;
+
+  return Array.from(data.files ?? []).filter((file) => file.type.startsWith("image/"));
+}
+
+function isEditablePasteTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
+}
+
 async function compressImage(file: File, maxBytes = 5 * 1024 * 1024): Promise<File> {
   if (file.size <= maxBytes) return file;
 
@@ -600,7 +627,7 @@ function BatchPanel({
             <div className="drop-zone-text">
               <p className="drop-zone-main">拖拽多张图片到此处</p>
               <p className="drop-zone-sub">
-                或 <span>点击浏览文件</span>（最多 {BATCH_MAX_FILES} 张）
+                或 <span>点击浏览文件</span> · Ctrl+V / ⌘V 粘贴（最多 {BATCH_MAX_FILES} 张）
               </p>
             </div>
             <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF</p>
@@ -913,6 +940,34 @@ export default function HomePage() {
     setBatchItems((current) => [...current, ...newItems]);
   }
 
+  useEffect(() => {
+    function onPaste(event: ClipboardEvent) {
+      if (isEditablePasteTarget(event.target)) return;
+
+      const onIdleUpload = mode === "idle" && step === "upload";
+      const onBatchUpload =
+        mode === "batch"
+        && !batchProcessing
+        && !batchZipping
+        && batchView !== "complete"
+        && batchItems.length < BATCH_MAX_FILES;
+      if (!onIdleUpload && !onBatchUpload) return;
+
+      const images = filesFromClipboard(event);
+      if (images.length === 0) return;
+
+      event.preventDefault();
+      if (onBatchUpload) {
+        void pickBatchFiles(images);
+        return;
+      }
+      void pickFiles(images);
+    }
+
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  });
+
   function removeBatchItem(id: string) {
     setBatchItems((current) => {
       const target = current.find((item) => item.id === id);
@@ -1118,7 +1173,7 @@ export default function HomePage() {
               <div className="drop-zone-text">
                 <p className="drop-zone-main">拖拽图片到此处</p>
                 <p className="drop-zone-sub">
-                  或 <span>点击浏览文件</span>
+                  或 <span>点击浏览文件</span> · Ctrl+V / ⌘V 粘贴
                 </p>
               </div>
               <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF · 最多 {BATCH_MAX_FILES} 张</p>
