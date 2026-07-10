@@ -1,7 +1,16 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { METADATA_GLOSSARY, METADATA_STANDARDS } from "@/lib/metadata-glossary";
+import {
+  DUAL_WRITE_CONCLUSION,
+  DUAL_WRITE_EXAMPLE,
+  DUAL_WRITE_REASONS,
+  HELP_DIALOG_INTRO,
+  HELP_DIALOG_INTRO_EMPHASIS,
+  METADATA_GLOSSARY,
+  METADATA_STANDARDS,
+  XMP_BEYOND_NOTE,
+} from "@/lib/metadata-glossary";
 
 function MetadataHelpDialog({ onClose }: { onClose: () => void }) {
   useEffect(() => {
@@ -42,11 +51,12 @@ function MetadataHelpDialog({ onClose }: { onClose: () => void }) {
             元数据参数说明
           </h2>
           <p className="help-dialog-intro">
-            本应用将 AI 生成的英文字段写入图片 EXIF、IPTC、XMP，下载后可直接用于 SEO 与图库管理。
+            {HELP_DIALOG_INTRO}
+            <strong className="help-dialog-intro-emphasis"> {HELP_DIALOG_INTRO_EMPHASIS}</strong>
           </p>
 
           <section className="help-dialog-section">
-            <h3 className="help-dialog-section-title">标准简介</h3>
+            <h3 className="help-dialog-section-title">怎么理解这三种标准</h3>
             <ul className="help-standards-list">
               {METADATA_STANDARDS.map((item) => (
                 <li key={item.name} className="help-standard-row">
@@ -55,6 +65,18 @@ function MetadataHelpDialog({ onClose }: { onClose: () => void }) {
                 </li>
               ))}
             </ul>
+          </section>
+
+          <section className="help-dialog-section">
+            <h3 className="help-dialog-section-title">为什么要双写</h3>
+            <ul className="help-dual-write-list">
+              {DUAL_WRITE_REASONS.map((reason) => (
+                <li key={reason}>{reason}</li>
+              ))}
+            </ul>
+            <p className="help-dialog-note">{DUAL_WRITE_EXAMPLE}</p>
+            <p className="help-dialog-conclusion">{DUAL_WRITE_CONCLUSION}</p>
+            <p className="help-dialog-note">{XMP_BEYOND_NOTE}</p>
           </section>
 
           <section className="help-dialog-section">
