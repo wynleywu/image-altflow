@@ -990,7 +990,6 @@ select.field-input {
   line-height: 1.7;
   color: var(--muted);
   margin: 0 0 10px;
-  max-width: 58ch;
 }
 
 .help-dialog-intro-emphasis {
@@ -999,7 +998,6 @@ select.field-input {
   line-height: 1.6;
   color: var(--ink);
   font-weight: 600;
-  max-width: 58ch;
 }
 
 .help-dual-write-list {
@@ -1036,7 +1034,6 @@ select.field-input {
   font-size: 13px;
   line-height: 1.65;
   color: var(--muted);
-  max-width: 62ch;
 }
 
 .help-dialog-conclusion {
@@ -1148,7 +1145,6 @@ select.field-input {
   line-height: 1.6;
   color: var(--muted);
   margin: 0;
-  max-width: 62ch;
 }
 
 @media (max-width: 720px) {
