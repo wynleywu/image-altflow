@@ -192,7 +192,7 @@ function DoneCheckIcon({ size = 36 }: { size?: number }) {
     <svg width={size} height={size} viewBox="0 0 36 36" fill="none" aria-hidden="true">
       <path
         d="M8 18l7 7 13-13"
-        stroke="#0D0D0D"
+        stroke="var(--accent-ink)"
         strokeWidth="3.2"
         strokeLinecap="round"
         strokeLinejoin="round"
@@ -296,7 +296,7 @@ function BatchStatusIcon({ status }: { status: BatchStatus }) {
   }
   return (
     <svg width="16" height="16" viewBox="0 0 16 16">
-      <circle cx="8" cy="8" r="6" fill="none" stroke="#D2D2CC" strokeWidth="1.5" />
+      <circle cx="8" cy="8" r="6" fill="none" stroke="var(--line-dashed)" strokeWidth="1.5" />
     </svg>
   );
 }
@@ -415,7 +415,7 @@ function BatchAnalyzeSplit({
       <div className="analyze-right">
         <div className="spin-ring-wrap">
           <svg className="spin-ring-track" width="60" height="60" viewBox="0 0 60 60">
-            <circle cx="30" cy="30" r="25" stroke="#F0F0EE" strokeWidth="3.5" fill="none" />
+            <circle cx="30" cy="30" r="25" stroke="var(--track)" strokeWidth="3.5" fill="none" />
           </svg>
           <svg className="spin-ring-arc" width="60" height="60" viewBox="0 0 60 60">
             <path d="M30 5a25 25 0 0 1 25 25" stroke="#C9F178" strokeWidth="3.5" strokeLinecap="round" fill="none" />
@@ -619,10 +619,10 @@ function BatchPanel({
             }}
           >
             <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-              <rect x="1" y="1" width="54" height="54" rx="14" stroke="#D2D2CC" strokeWidth="1.5" strokeDasharray="5 3.5" />
-              <path d="M28 38V24" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" />
-              <path d="M21 30l7-7 7 7" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-              <path d="M19 41h18" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" opacity="0.18" />
+              <rect x="1" y="1" width="54" height="54" rx="14" stroke="var(--line-dashed)" strokeWidth="1.5" strokeDasharray="5 3.5" />
+              <path d="M28 38V24" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" />
+              <path d="M21 30l7-7 7 7" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M19 41h18" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" opacity="0.18" />
             </svg>
             <div className="drop-zone-text">
               <p className="drop-zone-main">拖拽多张图片到此处</p>
@@ -1165,10 +1165,10 @@ export default function HomePage() {
                 onChange={(e) => void pickFiles(e.target.files)}
               />
               <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-                <rect x="1" y="1" width="54" height="54" rx="14" stroke="#D2D2CC" strokeWidth="1.5" strokeDasharray="5 3.5" />
-                <path d="M28 38V24" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" />
-                <path d="M21 30l7-7 7 7" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
-                <path d="M19 41h18" stroke="#0D0D0D" strokeWidth="2.2" strokeLinecap="round" opacity="0.18" />
+                <rect x="1" y="1" width="54" height="54" rx="14" stroke="var(--line-dashed)" strokeWidth="1.5" strokeDasharray="5 3.5" />
+                <path d="M28 38V24" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" />
+                <path d="M21 30l7-7 7 7" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" />
+                <path d="M19 41h18" stroke="var(--ink)" strokeWidth="2.2" strokeLinecap="round" opacity="0.18" />
               </svg>
               <div className="drop-zone-text">
                 <p className="drop-zone-main">拖拽图片到此处</p>
@@ -1296,7 +1296,7 @@ export default function HomePage() {
         <div className="analyze-right">
           <div className="spin-ring-wrap">
             <svg className="spin-ring-track" width="60" height="60" viewBox="0 0 60 60">
-              <circle cx="30" cy="30" r="25" stroke="#F0F0EE" strokeWidth="3.5" fill="none" />
+              <circle cx="30" cy="30" r="25" stroke="var(--track)" strokeWidth="3.5" fill="none" />
             </svg>
             <svg className="spin-ring-arc" width="60" height="60" viewBox="0 0 60 60">
               <path d="M30 5a25 25 0 0 1 25 25" stroke="#C9F178" strokeWidth="3.5" strokeLinecap="round" fill="none" />
