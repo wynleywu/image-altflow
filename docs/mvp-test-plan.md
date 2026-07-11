@@ -14,7 +14,7 @@
 ↓
 n8n 自动触发
 ↓
-gemini-3.1-flash-lite 识别图片内容
+gemini-3.5-flash 识别图片内容
 ↓
 生成文件名、Alt Text、Caption、Tags
 ↓
@@ -135,12 +135,12 @@ created_at
 
 ### 3. AI Vision 节点
 
-作用：使用 `gemini-3.1-flash-lite` 多模态模型识别图片内容，并生成结构化文案。
+作用：使用 `gemini-3.5-flash` 多模态模型识别图片内容，并生成结构化文案。
 
 推荐模型：
 
 ```text
-gemini-3.1-flash-lite
+gemini-3.5-flash
 ```
 
 Prompt 建议：
@@ -325,7 +325,7 @@ Trace ID
 ```text
 创建 n8n workflow
 添加 Webhook Trigger
-添加 Gemini AI Vision 节点，模型使用 gemini-3.1-flash-lite
+添加 Gemini AI Vision 节点，模型使用 gemini-3.5-flash
 添加 JSON 解析节点
 添加飞书写入节点
 添加飞书通知节点
@@ -406,7 +406,7 @@ Alt Text 可用率
 
 ```text
 1. n8n 可以稳定接收图片链接
-2. gemini-3.1-flash-lite 可以生成结构化结果
+2. gemini-3.5-flash 可以生成结构化结果
 3. 结果可以写入飞书多维表格
 4. 飞书群可以收到提醒
 5. 生成的 Alt Text 不严重误导
@@ -515,7 +515,7 @@ table_id
 
 ```text
 Webhook 可以接收图片链接
-gemini-3.1-flash-lite 可以返回 JSON
+gemini-3.5-flash 可以返回 JSON
 n8n 可以解析结果
 ```
 
@@ -572,7 +572,7 @@ Prompt 优化建议
 复盘问题：
 
 ```text
-gemini-3.1-flash-lite 识别是否足够准？
+gemini-3.5-flash 识别是否足够准？
 Alt Text 是否可用？
 飞书审核是否顺手？
 是否需要网站前台？

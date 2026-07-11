@@ -7,8 +7,9 @@ import type {
   ListingAuditResult,
 } from "./types";
 
-const PREFIX = "amazon_audit_workspace:v1:";
-const INDEX_KEY = "amazon_audit_workspace_index:v1";
+const WORKSPACE_VERSION = 2;
+const PREFIX = "amazon_audit_workspace:v2:";
+const INDEX_KEY = "amazon_audit_workspace_index:v2";
 const MAX_WORKSPACES = 10;
 
 interface WorkspaceIndexItem {
@@ -37,7 +38,7 @@ export function createAuditWorkspace(
   const now = Date.now();
   const audit = normalizeStoredAuditResult(auditInput, snapshot);
   return {
-    version: 1,
+    version: WORKSPACE_VERSION,
     auditId,
     snapshot,
     audit,
@@ -86,13 +87,13 @@ export function loadAuditWorkspace(auditId: string): AmazonAuditWorkspace | null
     const raw = localStorage.getItem(storageKey(auditId));
     if (!raw) return null;
     const parsed = JSON.parse(raw) as Partial<AmazonAuditWorkspace>;
-    if (parsed.version !== 1 || parsed.auditId !== auditId || !parsed.snapshot || !parsed.audit) return null;
+    if (parsed.version !== WORKSPACE_VERSION || parsed.auditId !== auditId || !parsed.snapshot || !parsed.audit) return null;
 
     const audit = normalizeStoredAuditResult(parsed.audit, parsed.snapshot);
     const fallbackDraft = initialDraft(audit);
     const accepted = parsed.accepted ?? {} as Record<AmazonAuditEditableSection, boolean>;
     return {
-      version: 1,
+      version: WORKSPACE_VERSION,
       auditId,
       snapshot: parsed.snapshot,
       audit,

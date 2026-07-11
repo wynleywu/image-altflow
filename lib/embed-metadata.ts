@@ -4,7 +4,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import type { AiImageResult } from "./types";
 import { mimeTypeFromFileName, sanitizeDownloadFileName } from "./filename";
-import { injectJpegMetadata } from "./embed-metadata-js";
+import { injectJpegMetadata, injectPngMetadata } from "./embed-metadata-js";
 
 function extensionForMime(mimeType: string): string {
   if (mimeType.includes("png")) return ".png";
@@ -21,24 +21,41 @@ async function embedWithExiftool(buffer: Buffer, mimeType: string, ai: AiImageRe
   try {
     await writeFile(inputPath, buffer);
 
+    const fullDescription = ai.image_description_en || ai.caption_en;
     const tags: Record<string, string | string[]> = {
-      "XMP-iptcExt:AltTextAccessibility": ai.alt_text_en,
-      "EXIF:ImageDescription": ai.alt_text_en,
-      "IPTC:Caption-Abstract": ai.caption_en,
-      "XMP-dc:Description": ai.image_description_en || ai.caption_en,
+      "XMP-iptcCore:AltTextAccessibility": ai.alt_text_en,
+      "IPTC:Headline": ai.caption_en,
+      "XMP-photoshop:Headline": ai.caption_en,
+      "IPTC:Caption-Abstract": fullDescription,
+      "XMP-dc:Description": fullDescription,
+      // Optional compatibility for readers that only look at EXIF
+      "EXIF:ImageDescription": fullDescription,
     };
 
     if (ai.tags_en.length > 0) {
       tags["IPTC:Keywords"] = ai.tags_en;
+      tags["XMP-dc:Subject"] = ai.tags_en;
     }
-    if (ai.brand) tags["IPTC:Credit"] = ai.brand;
-    if (ai.model) tags["EXIF:Model"] = ai.model;
 
     await exiftool.write(inputPath, tags, ["-overwrite_original"]);
     return await readFile(inputPath);
   } finally {
     await rm(dir, { recursive: true, force: true });
   }
+}
+
+function embedWithJsFallback(buffer: Buffer, mimeType: string, ai: AiImageResult): Buffer {
+  if (mimeType.includes("jpeg") || mimeType.includes("jpg")) {
+    console.warn("[embed] ExifTool unavailable; using JPEG JS fallback");
+    return injectJpegMetadata(buffer, ai);
+  }
+  if (mimeType.includes("png")) {
+    console.warn("[embed] ExifTool unavailable; using PNG JS fallback");
+    return injectPngMetadata(buffer, ai);
+  }
+  throw new Error(
+    `embed_unavailable: ExifTool unavailable and no JS fallback for mimeType=${mimeType}`,
+  );
 }
 
 export async function embedMetadataIntoImage(
@@ -52,11 +69,7 @@ export async function embedMetadataIntoImage(
     const msg = err instanceof Error ? err.message : String(err);
     // ExifTool unavailable (no Perl on Linux serverless, or binary not found)
     if (msg.includes("Perl") || msg.includes("ENOENT") || msg.includes("spawn")) {
-      if (mimeType.includes("jpeg") || mimeType.includes("jpg")) {
-        return injectJpegMetadata(buffer, ai);
-      }
-      // Non-JPEG without ExifTool: return original rather than failing
-      return buffer;
+      return embedWithJsFallback(buffer, mimeType, ai);
     }
     throw err;
   }

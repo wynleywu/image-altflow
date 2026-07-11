@@ -5,6 +5,74 @@ import { normalizeAuditResult } from "./normalize-audit";
 import type { AmazonListingSnapshot, ListingAuditResult } from "./types";
 import { callTextLlm } from "./text-llm";
 
+function tryParseJson(text: string): Record<string, unknown> | null {
+  try {
+    return JSON.parse(text) as Record<string, unknown>;
+  } catch {
+    return null;
+  }
+}
+
+function extractOutermostJson(text: string): string | null {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end <= start) return null;
+  return text.slice(start, end + 1);
+}
+
+function extractBalancedJson(text: string): string | null {
+  const start = text.indexOf("{");
+  if (start === -1) return null;
+
+  let depth = 0;
+  let inString = false;
+  let escaped = false;
+
+  for (let index = start; index < text.length; index += 1) {
+    const char = text[index];
+    if (escaped) {
+      escaped = false;
+      continue;
+    }
+    if (char === "\\") {
+      escaped = true;
+      continue;
+    }
+    if (char === "\"") {
+      inString = !inString;
+      continue;
+    }
+    if (inString) continue;
+    if (char === "{") depth += 1;
+    if (char === "}") {
+      depth -= 1;
+      if (depth === 0) {
+        return text.slice(start, index + 1);
+      }
+    }
+  }
+
+  return null;
+}
+
+async function repairAuditJson(rawText: string): Promise<Record<string, unknown> | null> {
+  const repairPrompt = `You repair malformed JSON for an Amazon listing audit pipeline.
+Return ONE valid JSON object only. No markdown. No commentary.
+Preserve the original structure and wording as much as possible.
+If a field is incomplete or missing, use an empty string, empty array, empty object, or 0 instead of inventing facts.
+
+Malformed JSON:
+${rawText.slice(0, 12000)}`;
+
+  const repairedText = await callTextLlm(repairPrompt);
+  const cleaned = stripMarkdownFence(repairedText);
+  return (
+    tryParseJson(cleaned)
+    ?? (extractBalancedJson(cleaned) ? tryParseJson(extractBalancedJson(cleaned) as string) : null)
+    ?? (extractOutermostJson(cleaned) ? tryParseJson(extractOutermostJson(cleaned) as string) : null)
+  );
+}
+
 export async function auditListing(
   snapshot: AmazonListingSnapshot,
   imageContext?: AiImageResult,
@@ -27,24 +95,15 @@ export async function auditListing(
 
   const text = await callTextLlm(prompt);
   const cleaned = stripMarkdownFence(text);
-  let parsed: Record<string, unknown>;
-  try {
-    parsed = JSON.parse(cleaned);
-  } catch {
-    // Fallback: extract outermost {...} from the response
-    const start = cleaned.indexOf("{");
-    const end = cleaned.lastIndexOf("}");
-    if (start !== -1 && end > start) {
-      try {
-        parsed = JSON.parse(cleaned.slice(start, end + 1));
-      } catch {
-        console.error("[audit] raw LLM output:", text.slice(0, 500));
-        throw new Error("ai_parse_error: audit returned invalid JSON");
-      }
-    } else {
-      console.error("[audit] raw LLM output:", text.slice(0, 500));
-      throw new Error("ai_parse_error: audit returned invalid JSON");
-    }
+  const parsed =
+    tryParseJson(cleaned)
+    ?? (extractBalancedJson(cleaned) ? tryParseJson(extractBalancedJson(cleaned) as string) : null)
+    ?? (extractOutermostJson(cleaned) ? tryParseJson(extractOutermostJson(cleaned) as string) : null)
+    ?? await repairAuditJson(cleaned);
+
+  if (!parsed) {
+    console.error("[audit] raw LLM output:", text.slice(0, 1200));
+    throw new Error("ai_parse_error: audit returned invalid JSON");
   }
 
   return normalizeAuditResult(parsed, snapshot);

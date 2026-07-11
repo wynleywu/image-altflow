@@ -47,6 +47,7 @@ function mapRow(row: ImageRecordRow): ImageRecord {
     traceId: row.trace_id,
     imageUrl: row.image_url,
     sourceImageUrl: row.source_image_url || "",
+    thumbnailDataUrl: "",
     originalFileName: row.original_file_name,
     source: row.source,
     imageDescription: row.image_description,

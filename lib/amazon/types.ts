@@ -95,7 +95,7 @@ export interface AmazonAuditDraft {
 }
 
 export interface AmazonAuditWorkspace {
-  version: 1;
+  version: 2;
   auditId: string;
   snapshot: AmazonListingSnapshot;
   audit: ListingAuditResult;

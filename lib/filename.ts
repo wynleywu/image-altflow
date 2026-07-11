@@ -11,8 +11,9 @@ export function sanitizeDownloadFileName(fileName: string, mimeType: string): st
   let safe = fileName
     .trim()
     .replace(/[^\w.\-]+/g, "-")
+    .replace(/\.+/g, ".")
     .replace(/-+/g, "-")
-    .replace(/^-+|-+$/g, "")
+    .replace(/^[.\-]+|[.\-]+$/g, "")
     .slice(0, 120);
 
   if (!safe) {

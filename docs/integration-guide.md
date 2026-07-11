@@ -1,6 +1,6 @@
 # Integration Guide
 
-> 最后更新：2026-07-01
+> 最后更新：2026-07-10
 > 面向：第一次接入 Image Altflow 的开发者（CLI 或 HTTP）。
 
 ## 前置条件
@@ -57,7 +57,12 @@ npm run process -- ./product.jpg ./product-out.jpg --ai ./product.jpg.ai.json
 exiftool -G1 -a ./product-out.jpg
 ```
 
-关注 `ImageDescription`、`Keywords` 等应为**英文**。
+关注以下字段应为**英文**：
+
+- Alt Text：`XMP-iptcCore:AltTextAccessibility`
+- Headline：`IPTC:Headline`、`XMP-photoshop:Headline`
+- Keywords：`IPTC:Keywords`、`XMP-dc:Subject`
+- Description：`IPTC:Caption-Abstract`、`XMP-dc:Description`（以及兼容用的 `EXIF:ImageDescription`）
 
 ## 方式二：HTTP API
 
@@ -96,7 +101,7 @@ curl -X POST http://localhost:3000/api/analyze \
 }
 ```
 
-也支持 JSON body：`{ "image_url": "https://..." }`（公开可访问 URL）。
+仅支持 `multipart/form-data` 上传；不再接受 `image_url`（避免服务端代抓任意 URL）。
 
 ### Step 2 — Embed
 
@@ -131,14 +136,21 @@ curl -X POST http://localhost:3000/api/embed \
 
 | 值 | 含义 |
 |----|------|
-| `missing_image` | 未提供图片文件或 URL |
+| `missing_image` | 未提供图片文件 |
+| `invalid_request` | 请求体格式错误、Content-Type 非 multipart，或缺少必填字段 |
 | `ai_parse_error` | 上游返回非 JSON 或缺必填字段；换图重试，确认模型支持识图 |
 | `analyze_failed` | 识图过程失败 |
-| `invalid_ai_json` | embed 请求体 `ai` 无法解析 |
+| `invalid_ai_json` | embed 请求体 `ai` 无法解析、缺必填字段、类型错误或超过长度限制 |
+| `invalid_base64` | `imageBase64` 不是合法 Base64 |
+| `invalid_image` | 图片签名不是受支持的 JPEG、PNG、WebP 或 GIF |
+| `mime_mismatch` | 声明的 `mimeType` 与图片签名不一致 |
+| `request_too_large` | embed 整体请求体超过上限 |
 | `embed_failed` | ExifTool 写入失败 |
-| `invalid_request` | embed 缺少必填字段 |
+| `embed_unavailable` | ExifTool 不可用且无 JS fallback（常见于 WebP / GIF；JPEG / PNG 有 JS 兜底） |
+| `file_too_large` | 图片超过 5 MB |
+| `rate_limited` | 同一 IP 请求过于频繁（需配置 Upstash Redis）；HTTP `429`，含 `Retry-After` |
 
-HTTP 状态：客户端错误 `400`，服务端/上游错误 `502`。
+HTTP 状态：客户端错误 `400`，限流 `429`，请求或图片过大 `413`，服务端/上游错误 `502`。
 
 ## 可选：云持久化
 
@@ -146,10 +158,12 @@ HTTP 状态：客户端错误 `400`，服务端/上游错误 `502`。
 
 | 变量 | 作用 |
 |------|------|
+| `UPSTASH_REDIS_REST_URL` / `UPSTASH_REDIS_REST_TOKEN` | 启用 `/api/analyze`、`/api/embed`、`/api/amazon/audit` 的 IP 限流；未配置则跳过 |
 | `POSTGRES_URL` | analyze 成功时可写 `image_records` |
 | `BLOB_READ_WRITE_TOKEN` | 与 Postgres 同时配置时，embed 成品存 Blob |
+| `RECORDS_API_SECRET` | 暴露 `GET/PATCH /api/records*` 时必填；未配置则 records HTTP API 返回 503 |
 
-仅配置识图 Key 即可完成识图 + 元数据写入；`POSTGRES_URL` / `BLOB_READ_WRITE_TOKEN` 为可选持久化。
+仅配置识图 Key 即可完成识图 + 元数据写入；`POSTGRES_URL` / `BLOB_READ_WRITE_TOKEN` 为可选持久化。HTTP 读写历史需额外配置 `RECORDS_API_SECRET`（`Authorization: Bearer …`）。
 
 ## Web UI
 
@@ -169,7 +183,7 @@ curl -X POST https://image-altflow.vercel.app/api/analyze \
 
 - **批量 Tab**：串行调用 analyze/embed，失败自动重试，完成后下载 ZIP
 - **Amazon 审查**：`/amazon` 支持 ASIN/URL 与手动 Listing；结果页可编辑、确认并汇总最终 Listing，草稿保存在当前浏览器 localStorage
-- **`/review`**：旧审核 UI，未接当前两步 API
+- **`/review`**：旧审核 UI 已下线；数据库记录仅通过带 Bearer 鉴权的 `/api/records*` 管理
 
 ## 限制说明
 

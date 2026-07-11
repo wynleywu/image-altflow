@@ -55,3 +55,19 @@ test("retains only the ten most recently saved workspaces", () => {
   assert.equal(loadAuditWorkspace("audit-0"), null);
   assert.notEqual(loadAuditWorkspace("audit-10"), null);
 });
+
+test("ignores stale workspace entries from the previous cache version", () => {
+  localStorage.clear();
+  localStorage.setItem("amazon_audit_workspace:v2:audit-stale", JSON.stringify({
+    version: 1,
+    auditId: "audit-stale",
+    snapshot,
+    audit,
+    draft: { title: "Old", itemHighlights: "", bullets: [], searchTerms: "" },
+    accepted: { title: false, highlights: false, bullets: false, searchTerms: false },
+    createdAt: 1,
+    updatedAt: 1,
+  }));
+
+  assert.equal(loadAuditWorkspace("audit-stale"), null);
+});

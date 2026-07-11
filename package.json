@@ -7,13 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "tsx --test lib/amazon/*.test.ts",
+    "test": "tsx --test lib/amazon/*.test.ts lib/*.test.ts",
     "process": "tsx scripts/process-image.ts",
     "cf:agree": "tsx scripts/cloudflare-agree.ts"
   },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@neondatabase/serverless": "^1.0.1",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "@vercel/blob": "^1.1.1",
     "exiftool-vendored": "^28.0.0",
     "jszip": "^3.10.1",

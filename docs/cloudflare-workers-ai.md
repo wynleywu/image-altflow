@@ -38,7 +38,7 @@ If you switch `CLOUDFLARE_MODEL` to a non-Meta model, the script exits without d
 - The Cloudflare integration currently uses the REST API from the Next.js server route, not a deployed Worker binding.
 - The request sends the existing project prompt plus the uploaded image to the selected Workers AI model.
 - Cloudflare uses a provider-specific `FIELD|||VALUE` line protocol because the default vision model does not reliably satisfy JSON mode for every image.
-- Each model request has a 25-second timeout. Line output is parsed field by field and retried once at most when too few usable fields are returned.
+- The provider receives at most 25 seconds from the shared analyze budget. Line output is parsed field by field and retried once at most while time remains.
 - File names, confidence values, and tag punctuation are normalized locally before entering the shared result path.
 - The response is normalized through the same result path already used for Gemini and ModelScope.
 - The Web UI preserves the selected file after a failed analysis and offers a `重新分析` action.

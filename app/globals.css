@@ -83,8 +83,11 @@ a { color: inherit; text-decoration: none; }
   left: 24px;
   font-size: 13px;
   color: var(--muted-light);
-  cursor: default;
+  text-decoration: none;
   z-index: 100;
+}
+.signin-corner:hover {
+  color: var(--ink);
 }
 
 
@@ -176,6 +179,119 @@ a { color: inherit; text-decoration: none; }
 }
 .mode-tab-link:hover {
   color: var(--ink);
+}
+
+/* ─── History page ─── */
+.history-empty-state {
+  width: min(560px, calc(100% - 32px));
+  margin: 8vh auto 0;
+  padding: 40px;
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  text-align: center;
+}
+.history-empty-kicker {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-light);
+  margin: 0 0 10px;
+}
+.history-empty-kicker.is-error { color: var(--bad); }
+.history-empty-title {
+  font-size: 20px;
+  font-weight: 500;
+  letter-spacing: -0.3px;
+  margin: 0 0 8px;
+}
+.history-empty-desc {
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.history-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.history-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  width: 100%;
+  padding: 10px 16px 10px 10px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--bg);
+  text-align: left;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.history-row:hover,
+.history-row:focus-visible {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+  border-color: #B0B0AA;
+  outline: none;
+}
+.history-row.is-static {
+  cursor: default;
+}
+.history-row.is-static:hover {
+  box-shadow: none;
+  border-color: var(--line);
+}
+.history-row-thumb {
+  width: 52px;
+  height: 52px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  overflow: hidden;
+  background: var(--bg-gray);
+}
+.history-row-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.history-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.history-filename {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: -0.1px;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-alt {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.history-row-meta {
+  flex-shrink: 0;
+}
+.history-time {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  color: var(--muted-light);
+  flex-shrink: 0;
 }
 
 .upload-h1 {
@@ -834,8 +950,8 @@ select.field-input {
 .help-dialog-panel {
   position: relative;
   width: 100%;
-  max-width: 520px;
-  max-height: 85vh;
+  max-width: 760px;
+  max-height: 88vh;
   background: var(--bg);
   border-radius: 20px;
   overflow: hidden;
@@ -843,39 +959,109 @@ select.field-input {
 }
 
 .help-dialog-body {
-  padding: 28px 28px 32px;
+  padding: 36px 40px 40px;
   overflow-y: auto;
-  max-height: 85vh;
+  max-height: 88vh;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.help-dialog-body::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+.help-dialog-header {
+  margin: 0 0 8px;
+  padding-right: 28px;
 }
 
 .help-dialog-title {
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 500;
-  letter-spacing: -0.6px;
-  margin: 0 0 10px;
-  padding-right: 36px;
+  letter-spacing: -0.8px;
+  line-height: 1.2;
+  margin: 0 0 14px;
 }
 
 .help-dialog-intro {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+
+.help-dialog-intro-emphasis {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink);
+  font-weight: 600;
+}
+
+.help-dual-write-list {
+  margin: 0 0 16px;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
   font-size: 14px;
   line-height: 1.6;
+  color: var(--ink);
+}
+
+.help-dual-write-list li {
+  position: relative;
+  padding-left: 18px;
+}
+
+.help-dual-write-list li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0.55em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent-ink);
+  opacity: 0.55;
+}
+
+.help-dialog-note {
+  margin: 0 0 14px;
+  font-size: 13px;
+  line-height: 1.65;
   color: var(--muted);
-  margin: 0 0 24px;
+}
+
+.help-dialog-conclusion {
+  margin: 0 0 16px;
+  padding: 14px 16px;
+  border-left: 3px solid var(--accent-ink);
+  background: var(--bg-soft);
+  border-radius: 0 12px 12px 0;
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--ink);
+  font-weight: 600;
+  font-style: normal;
 }
 
 .help-dialog-section + .help-dialog-section {
-  margin-top: 24px;
-  padding-top: 24px;
+  margin-top: 28px;
+  padding-top: 28px;
   border-top: 1px solid var(--line);
 }
 
 .help-dialog-section-title {
   font-family: var(--font-mono);
-  font-size: 10px;
-  letter-spacing: 1px;
+  font-size: 11px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
   color: var(--muted-light);
-  margin: 0 0 14px;
+  margin: 0 0 16px;
   font-weight: 500;
 }
 
@@ -883,21 +1069,24 @@ select.field-input {
   list-style: none;
   margin: 0;
   padding: 0;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
 
-.help-standard-row {
+.help-standard-card {
   display: flex;
-  gap: 12px;
-  align-items: flex-start;
-  font-size: 14px;
-  line-height: 1.55;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--bg-gray);
+  min-height: 100%;
 }
 
 .help-standard-name {
-  flex-shrink: 0;
+  align-self: flex-start;
   font-family: var(--font-mono);
   font-size: 11px;
   font-weight: 600;
@@ -909,19 +1098,33 @@ select.field-input {
 }
 
 .help-standard-summary {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.6;
   color: var(--ink);
 }
 
 .help-glossary-list {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 0;
 }
 
 .help-glossary-row {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.help-glossary-row:first-child {
+  padding-top: 0;
+}
+
+.help-glossary-row:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
 }
 
 .help-glossary-head {
@@ -932,16 +1135,32 @@ select.field-input {
 }
 
 .help-glossary-tags {
-  font-size: 8px;
-  padding: 2px 8px;
+  font-size: 9px;
+  padding: 3px 9px;
+  line-height: 1.3;
 }
 
 .help-glossary-desc {
   font-size: 14px;
-  line-height: 1.55;
+  line-height: 1.6;
   color: var(--muted);
   margin: 0;
 }
+
+@media (max-width: 720px) {
+  .help-dialog-body {
+    padding: 28px 22px 32px;
+  }
+
+  .help-standards-list {
+    grid-template-columns: 1fr;
+  }
+
+  .help-dialog-title {
+    font-size: 24px;
+  }
+}
+
 
 /* ─── Amazon Listing audit ─── */
 .amazon-audit-h1 {

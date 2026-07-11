@@ -71,6 +71,8 @@ exiftool -G1 -a ./output.jpg
 }
 ```
 
+仅接受不超过 5 MB 的有效 JPEG、PNG、WebP 或 GIF；服务端会校验 Base64、图片签名、声明 MIME 与 AI 必填字段/长度后再写入元数据。
+
 ### `POST /api/amazon/audit`
 
 提交 `{ "asin": "B0XXXXXXXX", "marketplace": "US" }`，或提交含 `title`、`bullets` 等字段的 `manual` 对象。返回商品快照与 V2 审查结果；浏览器工作台在本地保存编辑稿，不写入云端数据库。
@@ -102,6 +104,7 @@ exiftool -G1 -a ./output.jpg
 | `CLOUDFLARE_MODEL` | 否 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
 | `POSTGRES_URL` | 否 | 历史记录 |
 | `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储 |
+| `RECORDS_API_SECRET` | 使用 `/api/records*` 时 | Bearer 鉴权；未配置则 records HTTP API 503 |
 
 ## 架构
 
@@ -135,6 +138,5 @@ CLI / API / Web
 
 ## 遗留
 
-- `/review` 旧审核 UI 清理
 - Shopify Admin API 回写
 - Amazon 多版本生成、云端历史与 SP-API 回写

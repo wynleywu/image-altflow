@@ -1,7 +1,10 @@
 import type { AiImageResult, EmbedDownloadPayload } from "./types";
 
 export type EmbeddedField = { tag: string; label: string; value: string };
-export type EmbeddedGroup = { name: "EXIF" | "IPTC" | "XMP"; fields: EmbeddedField[] };
+export type EmbeddedGroup = {
+  name: "Download" | "AltText" | "Headline" | "Keywords" | "Description";
+  fields: EmbeddedField[];
+};
 
 function pushField(
   groups: Map<EmbeddedGroup["name"], EmbeddedField[]>,
@@ -19,30 +22,32 @@ function pushField(
 
 export function getEmbeddedMetadataGroups(ai: AiImageResult, fileName: string): EmbeddedGroup[] {
   const groups = new Map<EmbeddedGroup["name"], EmbeddedField[]>();
+  const fullDescription = ai.image_description_en || ai.caption_en;
 
-  pushField(groups, "EXIF", "EXIF:ImageDescription", "Alt Text", ai.alt_text_en);
-  if (ai.model) pushField(groups, "EXIF", "EXIF:Model", "Model", ai.model);
-  pushField(groups, "EXIF", "Download filename", "File name", fileName);
+  pushField(groups, "Download", "Download filename", "File Name", fileName);
 
-  pushField(groups, "IPTC", "IPTC:Caption-Abstract", "Caption", ai.caption_en);
-  if (ai.tags_en.length > 0) {
-    pushField(groups, "IPTC", "IPTC:Keywords", "Keywords", ai.tags_en.join(", "));
-  }
-  if (ai.brand) pushField(groups, "IPTC", "IPTC:Credit", "Brand", ai.brand);
-
-  pushField(groups, "XMP", "XMP-iptcExt:AltTextAccessibility", "Alt Text (accessibility)", ai.alt_text_en);
   pushField(
     groups,
-    "XMP",
-    "XMP-dc:Description",
-    "Description",
-    ai.image_description_en || ai.caption_en,
+    "AltText",
+    "XMP-iptcCore:AltTextAccessibility",
+    "AltTextAccessibility",
+    ai.alt_text_en,
   );
+
+  pushField(groups, "Headline", "IPTC:Headline", "IPTC:Headline", ai.caption_en);
+  pushField(groups, "Headline", "XMP-photoshop:Headline", "photoshop:Headline", ai.caption_en);
+
   if (ai.tags_en.length > 0) {
-    pushField(groups, "XMP", "XMP-dc:Subject", "Subject tags", ai.tags_en.join(", "));
+    const keywords = ai.tags_en.join(", ");
+    pushField(groups, "Keywords", "IPTC:Keywords", "IPTC:Keywords", keywords);
+    pushField(groups, "Keywords", "XMP-dc:Subject", "dc:subject", keywords);
   }
 
-  const order: EmbeddedGroup["name"][] = ["EXIF", "IPTC", "XMP"];
+  pushField(groups, "Description", "IPTC:Caption-Abstract", "Caption-Abstract", fullDescription);
+  pushField(groups, "Description", "XMP-dc:Description", "dc:description", fullDescription);
+  pushField(groups, "Description", "EXIF:ImageDescription", "ImageDescription", fullDescription);
+
+  const order: EmbeddedGroup["name"][] = ["Download", "AltText", "Headline", "Keywords", "Description"];
   return order
     .map((name) => ({ name, fields: groups.get(name) ?? [] }))
     .filter((group) => group.fields.length > 0);

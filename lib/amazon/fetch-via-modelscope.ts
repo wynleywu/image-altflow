@@ -3,6 +3,10 @@ import type { AmazonListingSnapshot, AmazonMarketplace } from "./types";
 import { callTextLlm } from "./text-llm";
 import { buildAmazonProductUrl } from "./asin";
 
+function createFetchError(code: string, message: string): Error {
+  return new Error(`${code}: ${message}`);
+}
+
 function decodeHtmlEntities(text: string): string {
   return text
     .replace(/&amp;/g, "&")
@@ -35,8 +39,8 @@ function extractTitle(html: string): string | undefined {
   ];
 
   for (const pattern of patterns) {
-    const m = html.match(pattern);
-    const raw = m?.[1];
+    const match = html.match(pattern);
+    const raw = match?.[1];
     if (!raw) continue;
     const title = stripTags(unescapeJsonString(raw));
     if (title.length >= 8 && title.length < 500) {
@@ -59,8 +63,8 @@ function extractFeatureBullets(html: string): string[] {
   ];
 
   for (const pattern of itemPatterns) {
-    for (const m of section.matchAll(pattern)) {
-      const text = stripTags(m[1]);
+    for (const match of section.matchAll(pattern)) {
+      const text = stripTags(match[1]);
       if (text.length < 12 || text.length > 600) continue;
       if (bullets.includes(text)) continue;
       bullets.push(text);
@@ -78,17 +82,17 @@ function extractFromMarkdown(markdown: string): Partial<ReturnType<typeof extrac
     attributes: {},
   };
 
-  const lines = markdown.split("\n").map((l) => l.trim()).filter(Boolean);
+  const lines = markdown.split("\n").map((line) => line.trim()).filter(Boolean);
   if (lines.length > 0) {
-    const h1 = lines.find((l) => l.startsWith("# "));
+    const h1 = lines.find((line) => line.startsWith("# "));
     if (h1) result.title = h1.replace(/^#\s+/, "").trim();
     else if (!lines[0].startsWith("http")) result.title = lines[0];
   }
 
-  const bulletLines = lines.filter((l) => /^[-*•]\s+/.test(l) || /^\d+\.\s+/.test(l));
+  const bulletLines = lines.filter((line) => /^[-*\u2022]\s+/.test(line) || /^\d+\.\s+/.test(line));
   result.bullets = bulletLines
-    .map((l) => l.replace(/^[-*•]\s+/, "").replace(/^\d+\.\s+/, "").trim())
-    .filter((t) => t.length >= 12)
+    .map((line) => line.replace(/^[-*\u2022]\s+/, "").replace(/^\d+\.\s+/, "").trim())
+    .filter((text) => text.length >= 12)
     .slice(0, 5);
 
   return result;
@@ -129,8 +133,8 @@ export function extractListingFromAmazonHtml(html: string): Partial<{
   const wayfinding = html.match(/id="wayfinding-breadcrumbs[^"]*"[\s\S]{0,3000}?<\/ul>/i);
   if (wayfinding?.[0]) {
     const crumbs: string[] = [];
-    for (const m of wayfinding[0].matchAll(/<a[^>]*>([\s\S]*?)<\/a>/gi)) {
-      const text = stripTags(m[1]);
+    for (const match of wayfinding[0].matchAll(/<a[^>]*>([\s\S]*?)<\/a>/gi)) {
+      const text = stripTags(match[1]);
       if (text && text.length < 80) crumbs.push(text);
     }
     if (crumbs.length > 0) result.browsePath = crumbs.join(" > ");
@@ -150,7 +154,7 @@ function buildCompactPageExcerpt(html: string, markdown?: string): string {
 
   if (extracted.title) parts.push(`TITLE: ${extracted.title}`);
   if (extracted.bullets?.length) {
-    parts.push("BULLETS:\n" + extracted.bullets.map((b, i) => `${i + 1}. ${b}`).join("\n"));
+    parts.push("BULLETS:\n" + extracted.bullets.map((bullet, index) => `${index + 1}. ${bullet}`).join("\n"));
   }
   if (extracted.description) parts.push(`DESCRIPTION: ${extracted.description}`);
   if (extracted.browsePath) parts.push(`BROWSE: ${extracted.browsePath}`);
@@ -217,8 +221,8 @@ function mergeExtractedWithParsed(
     parsed.attributes && typeof parsed.attributes === "object" && !Array.isArray(parsed.attributes)
       ? Object.fromEntries(
           Object.entries(parsed.attributes as Record<string, unknown>)
-            .map(([k, v]) => [k, String(v)])
-            .filter(([, v]) => v),
+            .map(([key, value]) => [key, String(value)])
+            .filter(([, value]) => value),
         )
       : {};
 
@@ -259,12 +263,12 @@ export async function fetchProductPageContent(productUrl: string): Promise<strin
   });
 
   if (!response.ok) {
-    throw new Error(`fetch_failed: HTTP ${response.status} for product page`);
+    throw createFetchError("fetch_failed", `Amazon product page returned HTTP ${response.status}`);
   }
 
   const html = await response.text();
   if (isBlockedAmazonHtml(html)) {
-    throw new Error("fetch_failed: Amazon 拦截了自动访问，请改用手动粘贴 Listing");
+    throw createFetchError("fetch_blocked", "Amazon blocked automated access; switch to manual listing paste");
   }
 
   return html;
@@ -281,12 +285,12 @@ async function fetchViaJinaReader(productUrl: string): Promise<string> {
   });
 
   if (!response.ok) {
-    throw new Error(`fetch_failed: reader proxy HTTP ${response.status}`);
+    throw createFetchError("fetch_proxy_failed", `Reader proxy returned HTTP ${response.status}`);
   }
 
   const text = await response.text();
   if (!text.trim() || text.length < 200) {
-    throw new Error("fetch_failed: reader proxy returned empty content");
+    throw createFetchError("fetch_proxy_failed", "Reader proxy returned empty content");
   }
   return text;
 }
@@ -332,8 +336,9 @@ export async function parseListingFromPageContent(
 
   const merged = mergeExtractedWithParsed(extracted, parsed, asin);
   if (!merged.title) {
-    throw new Error(
-      "fetch_failed: 无法从该 ASIN 获取 Listing（Amazon 可能限制访问或站点不匹配）。请改用手动粘贴 Listing。",
+    throw createFetchError(
+      "fetch_failed",
+      "Could not extract listing data for this ASIN; Amazon may have blocked access or the marketplace does not match",
     );
   }
 
@@ -347,10 +352,13 @@ export async function fetchListingViaModelScope(
   const productUrl = buildAmazonProductUrl(asin, marketplace);
   let html = "";
   let markdown: string | undefined;
+  let htmlError: Error | null = null;
+  let readerError: Error | null = null;
 
   try {
     html = await fetchProductPageContent(productUrl);
-  } catch {
+  } catch (error) {
+    htmlError = error instanceof Error ? error : new Error(String(error));
     html = "";
   }
 
@@ -365,19 +373,26 @@ export async function fetchListingViaModelScope(
         title: mdData.title,
         bullets: mdData.bullets ?? [],
       };
-    } catch {
-      // fall through to parse error below
+    } catch (error) {
+      readerError = error instanceof Error ? error : new Error(String(error));
     }
   }
 
-  const parsed = await parseListingFromPageContent(
-    html || markdown || "",
-    asin,
-    marketplace,
-    productUrl,
-    html || undefined,
-    markdown,
-  );
+  let parsed: Omit<AmazonListingSnapshot, "fetchedAt" | "marketplace" | "url" | "searchTerms">;
+  try {
+    parsed = await parseListingFromPageContent(
+      html || markdown || "",
+      asin,
+      marketplace,
+      productUrl,
+      html || undefined,
+      markdown,
+    );
+  } catch (error) {
+    const parseError = error instanceof Error ? error : new Error(String(error));
+    const causes = [htmlError?.message, readerError?.message, parseError.message].filter(Boolean);
+    throw createFetchError("audit_chain_failed", causes.join(" | "));
+  }
 
   return {
     ...parsed,

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Image Altflow — 图片 SEO 元数据写入规则</title>
+  <style>
+    @page { size: A4; margin: 18mm 16mm; }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      color: #1a1a2e;
+      background: #fff;
+      font-size: 10.5pt;
+      line-height: 1.55;
+    }
+    .page { max-width: 210mm; margin: 0 auto; padding: 0; }
+
+    /* Cover */
+    .cover {
+      background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 55%, #2563eb 100%);
+      color: #fff;
+      padding: 36px 32px 28px;
+      border-radius: 12px;
+      margin-bottom: 24px;
+      page-break-after: avoid;
+    }
+    .cover .badge {
+      display: inline-block;
+      background: rgba(255,255,255,.15);
+      border: 1px solid rgba(255,255,255,.25);
+      border-radius: 999px;
+      padding: 4px 12px;
+      font-size: 9pt;
+      letter-spacing: .04em;
+      margin-bottom: 14px;
+    }
+    .cover h1 { font-size: 22pt; font-weight: 700; line-height: 1.25; margin-bottom: 8px; }
+    .cover p { font-size: 10.5pt; opacity: .88; max-width: 90%; }
+    .cover .meta { margin-top: 18px; font-size: 9pt; opacity: .65; }
+
+    h2 {
+      font-size: 13pt;
+      font-weight: 700;
+      color: #0f172a;
+      margin: 22px 0 10px;
+      padding-bottom: 5px;
+      border-bottom: 2px solid #e2e8f0;
+      page-break-after: avoid;
+    }
+    h3 { font-size: 10.5pt; font-weight: 600; color: #334155; margin: 14px 0 6px; page-break-after: avoid; }
+    p { margin-bottom: 8px; color: #334155; }
+
+    .summary-box {
+      background: #f0f9ff;
+      border: 1px solid #bae6fd;
+      border-left: 4px solid #0284c7;
+      border-radius: 8px;
+      padding: 12px 14px;
+      margin: 12px 0;
+      font-size: 10pt;
+    }
+    .summary-box strong { color: #0369a1; }
+
+    /* Field groups */
+    .groups { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin: 12px 0 18px; }
+    .group-card {
+      border-radius: 10px;
+      padding: 12px;
+      border: 1px solid #e2e8f0;
+      page-break-inside: avoid;
+    }
+    .group-card.exif { background: #fefce8; border-color: #fde047; }
+    .group-card.iptc { background: #f0fdf4; border-color: #86efac; }
+    .group-card.xmp  { background: #eff6ff; border-color: #93c5fd; }
+    .group-card .label {
+      font-size: 8.5pt;
+      font-weight: 700;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+    .group-card.exif .label { color: #a16207; }
+    .group-card.iptc .label { color: #15803d; }
+    .group-card.xmp  .label { color: #1d4ed8; }
+    .field-item { margin-bottom: 8px; }
+    .field-item:last-child { margin-bottom: 0; }
+    .field-name { font-size: 8.5pt; font-weight: 600; color: #64748b; }
+    .field-tag  { font-size: 7.5pt; font-family: Consolas, monospace; color: #94a3b8; }
+    .field-val  { font-size: 9pt; color: #1e293b; margin-top: 2px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 10px 0 16px;
+      font-size: 9pt;
+      page-break-inside: avoid;
+    }
+    th {
+      background: #f1f5f9;
+      color: #475569;
+      font-weight: 600;
+      text-align: left;
+      padding: 7px 9px;
+      border: 1px solid #e2e8f0;
+    }
+    td {
+      padding: 7px 9px;
+      border: 1px solid #e2e8f0;
+      vertical-align: top;
+      color: #334155;
+    }
+    tr:nth-child(even) td { background: #f8fafc; }
+    code {
+      font-family: Consolas, "Courier New", monospace;
+      font-size: 8.5pt;
+      background: #f1f5f9;
+      padding: 1px 5px;
+      border-radius: 4px;
+      color: #0f172a;
+    }
+
+    .flow {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      margin: 12px 0 18px;
+      page-break-inside: avoid;
+    }
+    .flow-step {
+      flex: 1;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      padding: 10px 12px;
+      text-align: center;
+      position: relative;
+    }
+    .flow-step:first-child { border-radius: 8px 0 0 8px; }
+    .flow-step:last-child  { border-radius: 0 8px 8px 0; }
+    .flow-step .num {
+      display: inline-block;
+      width: 20px; height: 20px;
+      background: #2563eb; color: #fff;
+      border-radius: 50%;
+      font-size: 8.5pt; font-weight: 700;
+      line-height: 20px;
+      margin-bottom: 4px;
+    }
+    .flow-step .title { font-size: 9pt; font-weight: 600; color: #0f172a; }
+    .flow-step .desc  { font-size: 8pt; color: #64748b; margin-top: 2px; }
+    .flow-arrow {
+      display: flex; align-items: center;
+      color: #94a3b8; font-size: 14pt;
+      padding: 0 2px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+      border-bottom: 1px solid #e2e8f0;
+    }
+
+    .rules-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 10px 0 16px;
+    }
+    .rule-card {
+      background: #fafafa;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 10px 12px;
+      page-break-inside: avoid;
+    }
+    .rule-card .rule-title { font-size: 9.5pt; font-weight: 600; color: #0f172a; margin-bottom: 4px; }
+    .rule-card .rule-desc  { font-size: 8.5pt; color: #64748b; }
+
+    .example-row {
+      display: grid;
+      grid-template-columns: 110px 1fr;
+      gap: 8px;
+      padding: 7px 0;
+      border-bottom: 1px solid #f1f5f9;
+      font-size: 9pt;
+    }
+    .example-row .key { font-weight: 600; color: #475569; }
+    .example-row .val { color: #1e293b; font-style: italic; }
+
+    .not-written {
+      background: #fff7ed;
+      border: 1px solid #fed7aa;
+      border-radius: 8px;
+      padding: 10px 14px;
+      font-size: 9pt;
+      color: #9a3412;
+      margin: 10px 0;
+    }
+
+    .footer {
+      margin-top: 24px;
+      padding-top: 10px;
+      border-top: 1px solid #e2e8f0;
+      font-size: 8pt;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+
+  <div class="cover">
+    <div class="badge">IMAGE ALTFLOW · METADATA RULES</div>
+    <h1>图片 SEO 元数据<br>写入规则说明</h1>
+    <p>右侧面板「已写入元数据」展示的是 embed 后真正写入图片文件的字段——不是 AI 返回的全部内容。</p>
+    <div class="meta">Image Altflow · 2026-07-02 · lib/prompt.ts · lib/embed-metadata.ts</div>
+  </div>
+
+  <h2>一、整体流程</h2>
+  <div class="flow">
+    <div class="flow-step"><div class="num">1</div><div class="title">AI 识图</div><div class="desc">生成双语 AiImageResult</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="num">2</div><div class="title">标准化</div><div class="desc">normalizeAiResult</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="num">3</div><div class="title">筛选英文字段</div><div class="desc">仅 _en 写入图片</div></div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-step"><div class="num">4</div><div class="title">ExifTool 写入</div><div class="desc">EXIF / IPTC / XMP</div></div>
+  </div>
+
+  <div class="summary-box">
+    <strong>一句话规则：</strong>
+    Alt = 客观短描述 · Caption = 带卖点的图注 · Description = 最完整叙述 · Keywords = 检索标签 · File name = SEO 文件名 · Brand = 品牌。
+    全部只用英文 <code>_en</code> 字段写入标准元数据标签。
+  </div>
+
+  <h2>二、右侧面板：三类元数据分组</h2>
+  <p>以淋浴椅产品图为例，各字段的实际写入效果：</p>
+
+  <div class="groups">
+    <div class="group-card exif">
+      <div class="label">EXIF</div>
+      <div class="field-item">
+        <div class="field-name">Alt Text</div>
+        <div class="field-tag">EXIF:ImageDescription</div>
+        <div class="field-val">Man using a white shower chair with armrests in a bathroom setting</div>
+      </div>
+      <div class="field-item">
+        <div class="field-name">File Name</div>
+        <div class="field-tag">Download filename（不进 EXIF）</div>
+        <div class="field-val">man-using-shower-chair-with-armrests.png</div>
+      </div>
+    </div>
+
+    <div class="group-card iptc">
+      <div class="label">IPTC</div>
+      <div class="field-item">
+        <div class="field-name">Caption</div>
+        <div class="field-tag">IPTC:Caption-Abstract</div>
+        <div class="field-val">A man enjoys a comfortable shower experience using a wide-seat shower chair…</div>
+      </div>
+      <div class="field-item">
+        <div class="field-name">Keywords</div>
+        <div class="field-tag">IPTC:Keywords</div>
+        <div class="field-val">shower chair, bathroom, armrests, comfort, wide seat…</div>
+      </div>
+      <div class="field-item">
+        <div class="field-name">Brand</div>
+        <div class="field-tag">IPTC:Credit</div>
+        <div class="field-val">homland</div>
+      </div>
+    </div>
+
+    <div class="group-card xmp">
+      <div class="label">XMP</div>
+      <div class="field-item">
+        <div class="field-name">Alt Text (accessibility)</div>
+        <div class="field-tag">XMP-iptcExt:AltTextAccessibility</div>
+        <div class="field-val">（同 EXIF Alt Text）</div>
+      </div>
+      <div class="field-item">
+        <div class="field-name">Description</div>
+        <div class="field-tag">XMP-dc:Description</div>
+        <div class="field-val">A man sitting on a white shower chair… compared to other models…</div>
+      </div>
+      <div class="field-item">
+        <div class="field-name">Subject Tags</div>
+        <div class="field-tag">XMP-dc:Subject</div>
+        <div class="field-val">（同 IPTC Keywords）</div>
+      </div>
+    </div>
+  </div>
+
+  <h2>三、字段映射表</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>面板显示</th>
+        <th>写入标签</th>
+        <th>AI 来源字段</th>
+        <th>为什么这么写</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Alt Text</strong></td>
+        <td><code>EXIF:ImageDescription</code></td>
+        <td><code>alt_text_en</code></td>
+        <td>无障碍 + SEO；客观描述画面主体，不营销</td>
+      </tr>
+      <tr>
+        <td><strong>File Name</strong></td>
+        <td>下载文件名</td>
+        <td><code>new_file_name</code></td>
+        <td>小写、连字符、核心关键词、无空格</td>
+      </tr>
+      <tr>
+        <td><strong>Caption</strong></td>
+        <td><code>IPTC:Caption-Abstract</code></td>
+        <td><code>caption_en</code></td>
+        <td>比 alt 稍长，可带卖点/场景，适合图注</td>
+      </tr>
+      <tr>
+        <td><strong>Keywords</strong></td>
+        <td><code>IPTC:Keywords</code></td>
+        <td><code>tags_en[]</code></td>
+        <td>覆盖产品、场景、人群、功能，便于检索</td>
+      </tr>
+      <tr>
+        <td><strong>Brand</strong></td>
+        <td><code>IPTC:Credit</code></td>
+        <td><code>brand</code>（用户传入）</td>
+        <td>品牌名，不依赖 AI 猜测</td>
+      </tr>
+      <tr>
+        <td><strong>Alt Text (a11y)</strong></td>
+        <td><code>XMP-iptcExt:AltTextAccessibility</code></td>
+        <td><code>alt_text_en</code></td>
+        <td>现代无障碍标准，与 EXIF alt 一致</td>
+      </tr>
+      <tr>
+        <td><strong>Description</strong></td>
+        <td><code>XMP-dc:Description</code></td>
+        <td><code>image_description_en</code></td>
+        <td>最完整叙述；缺省时 fallback 到 caption_en</td>
+      </tr>
+      <tr>
+        <td><strong>Subject Tags</strong></td>
+        <td><code>XMP-dc:Subject</code></td>
+        <td><code>tags_en[]</code></td>
+        <td>与 Keywords 相同，保证跨软件兼容</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>四、各字段写作规则（Prompt 约束）</h2>
+  <div class="rules-grid">
+    <div class="rule-card">
+      <div class="rule-title">alt_text_en — 客观短描述</div>
+      <div class="rule-desc">只描述看得见的内容；适合读屏；不夸张、不营销。例：男人 + 白色淋浴椅 + 扶手 + 浴室。</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">caption_en — 带卖点的图注</div>
+      <div class="rule-desc">比 alt 稍长；可强调舒适、宽座、与竞品对比等卖点。缺省时自动回填 alt_text_en。</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">image_description_en — 最完整叙述</div>
+      <div class="rule-desc">可包含对比图信息、手持花洒等细节；写入 XMP-dc:Description。</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">tags_en — 检索关键词</div>
+      <div class="rule-desc">数组，最多约 8 个；覆盖产品类型、场景、人群、功能。</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">new_file_name — SEO 文件名</div>
+      <div class="rule-desc">小写英文、连字符、无扩展名、最多 12 词。例：man-using-shower-chair-with-armrests</div>
+    </div>
+    <div class="rule-card">
+      <div class="rule-title">brand / model — 用户注入</div>
+      <div class="rule-desc">不由 AI 生成；表单传入后原样写入 IPTC:Credit / EXIF:Model。</div>
+    </div>
+  </div>
+
+  <h3>全局约束</h3>
+  <table>
+    <thead><tr><th>规则</th><th>说明</th></tr></thead>
+    <tbody>
+      <tr><td>只写可见内容</td><td>禁止编造品牌、材质、型号、功能、场景</td></tr>
+      <tr><td>双语生成，英文写入</td><td><code>_en</code> 写入图片；<code>_zh</code> 仅供 UI 审核</td></tr>
+      <tr><td>置信度</td><td><code>confidence_note</code> 仅 certain / uncertain，不写入图片</td></tr>
+      <tr><td>缺省回填</td><td>caption 空 → 用 alt；description 空 → 用 caption</td></tr>
+    </tbody>
+  </table>
+
+  <h2>五、示例图字段解读</h2>
+  <div class="example-row"><div class="key">Alt Text</div><div class="val">只描述主体：男人、白色淋浴椅、扶手、浴室——不含营销语</div></div>
+  <div class="example-row"><div class="key">Caption</div><div class="val">强调舒适体验、宽座设计、与窄款对比——允许带卖点</div></div>
+  <div class="example-row"><div class="key">Description</div><div class="val">最完整：含手持花洒、宽座、与其他型号对比的上下文</div></div>
+  <div class="example-row"><div class="key">Keywords</div><div class="val">shower chair, senior, mobility aid, accessible design…</div></div>
+  <div class="example-row"><div class="key">File Name</div><div class="val">主体 + 产品 + 关键特征，SEO 友好连字符格式</div></div>
+  <div class="example-row"><div class="key">Brand</div><div class="val">homland——来自图上可见品牌或用户表单</div></div>
+
+  <div class="not-written">
+    <strong>不写入图片的字段：</strong>
+    product_type、main_color、scene、confidence_note，以及所有 <code>_zh</code> 中文字段——仅供审核界面展示。
+  </div>
+
+  <div class="footer">Image Altflow · docs/image-seo-metadata-rules.pdf · 生成自 lib/prompt.ts + lib/embed-metadata.ts</div>
+</div>
+</body>
+</html>

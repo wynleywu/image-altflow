@@ -1,5 +1,6 @@
 const MODELSCOPE_BASE_URL = "https://api-inference.modelscope.cn/v1";
 const TEXT_MODEL_FALLBACK = "Qwen/Qwen3-32B";
+const TEXT_PROVIDER_TIMEOUT_MS = 20_000;
 
 export function readAmazonEnv(key: string): string {
   const raw = process.env[key] ?? "";
@@ -7,6 +8,10 @@ export function readAmazonEnv(key: string): string {
 }
 
 export type AmazonTextProvider = "gemini" | "modelscope";
+
+function withProviderPrefix(provider: AmazonTextProvider, message: string): Error {
+  return new Error(`${provider}_error: ${message}`);
+}
 
 export function getAmazonTextProvider(): AmazonTextProvider {
   const pref = readAmazonEnv("AMAZON_TEXT_PROVIDER").toLowerCase();
@@ -19,7 +24,7 @@ export function getAmazonTextProvider(): AmazonTextProvider {
 async function callModelScopeText(prompt: string): Promise<string> {
   const apiKey = readAmazonEnv("MODELSCOPE_API_KEY");
   if (!apiKey) {
-    throw new Error("MODELSCOPE_API_KEY is not configured");
+    throw withProviderPrefix("modelscope", "MODELSCOPE_API_KEY is not configured");
   }
 
   const configured = readAmazonEnv("MODELSCOPE_TEXT_MODEL") || readAmazonEnv("MODELSCOPE_MODEL");
@@ -31,6 +36,7 @@ async function callModelScopeText(prompt: string): Promise<string> {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
+    signal: AbortSignal.timeout(TEXT_PROVIDER_TIMEOUT_MS),
     body: JSON.stringify({
       model,
       messages: [{ role: "user", content: prompt }],
@@ -43,7 +49,7 @@ async function callModelScopeText(prompt: string): Promise<string> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(`ModelScope text API error ${response.status}: ${body}`);
+    throw withProviderPrefix("modelscope", `text API ${response.status}: ${body}`);
   }
 
   const json = (await response.json()) as { choices?: { message?: { content?: string } }[] };
@@ -57,15 +63,16 @@ async function callModelScopeText(prompt: string): Promise<string> {
 async function callGeminiText(prompt: string): Promise<string> {
   const apiKey = readAmazonEnv("GEMINI_API_KEY");
   if (!apiKey) {
-    throw new Error("GEMINI_API_KEY is not configured");
+    throw withProviderPrefix("gemini", "GEMINI_API_KEY is not configured");
   }
 
-  const modelName = readAmazonEnv("GEMINI_MODEL") || "gemini-2.0-flash";
+  const modelName = readAmazonEnv("GEMINI_MODEL") || "gemini-3.1-flash-lite";
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(modelName)}:generateContent?key=${encodeURIComponent(apiKey)}`;
 
   const response = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+    signal: AbortSignal.timeout(TEXT_PROVIDER_TIMEOUT_MS),
     body: JSON.stringify({
       contents: [{ parts: [{ text: prompt }] }],
       generationConfig: {
@@ -78,7 +85,7 @@ async function callGeminiText(prompt: string): Promise<string> {
 
   if (!response.ok) {
     const body = await response.text().catch(() => "");
-    throw new Error(`Gemini text API error ${response.status}: ${body}`);
+    throw withProviderPrefix("gemini", `text API ${response.status}: ${body}`);
   }
 
   const json = (await response.json()) as {
@@ -91,7 +98,7 @@ async function callGeminiText(prompt: string): Promise<string> {
   return text;
 }
 
-/** Amazon Listing 文本任务：默认 Gemini，可由 AMAZON_TEXT_PROVIDER 切换。 */
+/** Amazon Listing text tasks default to Gemini and can switch via AMAZON_TEXT_PROVIDER. */
 export async function callTextLlm(prompt: string): Promise<string> {
   const primary = getAmazonTextProvider();
 

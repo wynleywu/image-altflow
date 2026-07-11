@@ -4,15 +4,13 @@ import Link from "next/link";
 import { useEffect, useMemo, useRef, useState, type ReactNode, type RefObject } from "react";
 import JSZip from "jszip";
 import type { AiImageResult, EmbedApiResponse, AnalyzeApiResponse } from "@/lib/types";
-import { buildEmbeddedImageUrl, getEmbeddedMetadataGroups } from "@/lib/embedded-metadata-display";
+import { buildEmbeddedImageUrl } from "@/lib/embedded-metadata-display";
 import { runWithConcurrency, withRetry } from "@/lib/concurrency";
 import { MetadataHelpFab } from "@/app/metadata-help";
-
-type MetadataLightboxPayload = {
-  imageUrl: string;
-  fileName: string;
-  ai: AiImageResult;
-};
+import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
+import { addLocalHistoryRecord } from "@/lib/client/history-store";
+import { BrandLink } from "@/app/brand-link";
+import { formatAnalyzeErrorMessage, formatEmbedErrorMessage } from "@/lib/analyze-error-message";
 
 type Step = "upload" | "confirm" | "analyzing" | "edit" | "done";
 
@@ -35,6 +33,33 @@ function formatSize(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+function filesFromClipboard(event: ClipboardEvent): File[] {
+  const data = event.clipboardData;
+  if (!data) return [];
+
+  const fromItems: File[] = [];
+  for (const item of Array.from(data.items ?? [])) {
+    if (!item.type.startsWith("image/")) continue;
+    const file = item.getAsFile();
+    if (!file) continue;
+    const hasName = Boolean(file.name && file.name !== "image.png" && file.name !== "blob");
+    if (hasName) {
+      fromItems.push(file);
+      continue;
+    }
+    const ext = (file.type.split("/")[1] || "png").replace("jpeg", "jpg");
+    fromItems.push(new File([file], `pasted-image.${ext}`, { type: file.type }));
+  }
+  if (fromItems.length > 0) return fromItems;
+
+  return Array.from(data.files ?? []).filter((file) => file.type.startsWith("image/"));
+}
+
+function isEditablePasteTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  return Boolean(target.closest("input, textarea, select, [contenteditable='true']"));
 }
 
 async function compressImage(file: File, maxBytes = 5 * 1024 * 1024): Promise<File> {
@@ -77,6 +102,52 @@ function downloadBase64(base64: string, fileName: string, mimeType: string) {
   downloadBlob(blob, fileName);
 }
 
+async function makeThumbnailDataUrl(file: File, maxSize = 200, quality = 0.6): Promise<string> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, maxSize / Math.max(bitmap.width, bitmap.height));
+  const width = Math.max(1, Math.round(bitmap.width * scale));
+  const height = Math.max(1, Math.round(bitmap.height * scale));
+
+  const canvas = document.createElement("canvas");
+  canvas.width = width;
+  canvas.height = height;
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return "";
+  ctx.drawImage(bitmap, 0, 0, width, height);
+  return canvas.toDataURL("image/jpeg", quality);
+}
+
+async function saveLocalHistory(ai: AiImageResult, originalFileName: string, thumbnailDataUrl: string) {
+  try {
+    await addLocalHistoryRecord({
+      recordId: crypto.randomUUID(),
+      traceId: crypto.randomUUID(),
+      imageUrl: "",
+      sourceImageUrl: "",
+      thumbnailDataUrl,
+      originalFileName,
+      source: "web",
+      imageDescription: ai.image_description_en,
+      newFileName: ai.new_file_name,
+      altText: ai.alt_text_en,
+      caption: ai.caption_en,
+      tags: ai.tags_en,
+      productType: ai.product_type_en,
+      mainColor: ai.main_color_en,
+      scene: ai.scene_en,
+      confidenceNote: ai.confidence_note,
+      flowStatus: "success",
+      reviewStatus: "",
+      errorType: "",
+      errorMessage: "",
+      manualNote: JSON.stringify(ai),
+      createdAt: Date.now(),
+    });
+  } catch {
+    // local history is best-effort; ignore storage failures (e.g. private browsing)
+  }
+}
+
 function downloadBlob(blob: Blob, fileName: string) {
   const url = URL.createObjectURL(blob);
   const anchor = document.createElement("a");
@@ -86,119 +157,24 @@ function downloadBlob(blob: Blob, fileName: string) {
   URL.revokeObjectURL(url);
 }
 
-function RefreshCcwIcon({ size = 16 }: { size?: number }) {
+function RotateCwIcon({ size = 16 }: { size?: number }) {
   return (
     <svg width={size} height={size} viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
-        d="M13 3.8V7h-3.2"
+        d="M14 2v3.5h-3.5"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
       <path
-        d="M12.4 7A5.4 5.4 0 1 1 10.9 3.7L13 5.3"
+        d="M14 8a6 6 0 1 1-1.76-4.24"
         stroke="currentColor"
         strokeWidth="1.5"
         strokeLinecap="round"
         strokeLinejoin="round"
       />
     </svg>
-  );
-}
-
-function BrandLink({ className = "page-logo" }: { className?: string }) {
-  return (
-    <a href="/" className={`nav-logo ${className}`.trim()} aria-label="altflow 首页">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect width="24" height="24" rx="6" fill="#0D0D0D" />
-        <path d="M7.5 17.5l4.5-11 4.5 11" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-        <path d="M9.5 13.5h5" stroke="#C9F178" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-      altflow
-    </a>
-  );
-}
-
-function MetadataLightbox({
-  imageUrl,
-  fileName,
-  ai,
-  onClose,
-}: MetadataLightboxPayload & { onClose: () => void }) {
-  const groups = useMemo(() => getEmbeddedMetadataGroups(ai, fileName), [ai, fileName]);
-
-  useEffect(() => {
-    const prevOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") onClose();
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => {
-      document.body.style.overflow = prevOverflow;
-      window.removeEventListener("keydown", onKeyDown);
-    };
-  }, [onClose]);
-
-  return (
-    <div
-      className="lightbox-scrim"
-      role="presentation"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onClose();
-      }}
-    >
-      <div className="lightbox-panel" role="dialog" aria-modal="true" aria-labelledby="lightbox-title">
-        <button type="button" className="lightbox-close" onClick={onClose} aria-label="关闭">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
-            <path d="M4 4l8 8M12 4L4 12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-        </button>
-        <div className="lightbox-split">
-          <div className="lightbox-media">
-            <img src={imageUrl} alt={fileName} className="lightbox-img" />
-            <p className="lightbox-filename">{fileName}</p>
-          </div>
-          <div className="lightbox-meta">
-            <h3 id="lightbox-title" className="lightbox-meta-title">已写入元数据</h3>
-            {groups.map((group) => (
-              <section key={group.name} className="lightbox-meta-group">
-                <h4 className="lightbox-meta-group-name">{group.name}</h4>
-                <div className="lightbox-meta-fields">
-                  {group.fields.map((field) => (
-                    <div key={`${group.name}-${field.tag}`} className="lightbox-meta-field">
-                      <div className="lightbox-meta-field-head">
-                        <span className="field-key">{field.label}</span>
-                        <span className="field-badge">{field.tag}</span>
-                      </div>
-                      <p className="lightbox-meta-value">{field.value}</p>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function PageFrame({
-  children,
-  lightbox,
-  onCloseLightbox,
-}: {
-  children: ReactNode;
-  lightbox: MetadataLightboxPayload | null;
-  onCloseLightbox: () => void;
-}) {
-  return (
-    <>
-      {children}
-      {lightbox ? <MetadataLightbox {...lightbox} onClose={onCloseLightbox} /> : null}
-    </>
   );
 }
 
@@ -243,7 +219,7 @@ function DonePageLayout({
 
   return (
     <div className="done-page fade-up">
-      <BrandLink />
+      <BrandLink className="page-logo" />
 
       <div className="done-check-sm">
         <DoneCheckIcon size={28} />
@@ -651,7 +627,7 @@ function BatchPanel({
             <div className="drop-zone-text">
               <p className="drop-zone-main">拖拽多张图片到此处</p>
               <p className="drop-zone-sub">
-                或 <span>点击浏览文件</span>（最多 {BATCH_MAX_FILES} 张）
+                或 <span>点击浏览文件</span> · Ctrl+V / ⌘V 粘贴（最多 {BATCH_MAX_FILES} 张）
               </p>
             </div>
             <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF</p>
@@ -869,6 +845,7 @@ export default function HomePage() {
       const effectiveModel = (ai ? ai.model : model)?.trim();
       if (effectiveBrand) form.append("brand", effectiveBrand);
       if (effectiveModel) form.append("model", effectiveModel);
+      const thumbnailPromise = makeThumbnailDataUrl(selected).catch(() => "");
 
       let response: Response;
       try {
@@ -885,16 +862,13 @@ export default function HomePage() {
       }
 
       if (!response.ok || !data.ok || !data.ai) {
-        const message = data.error || "识图失败";
-        if (message.includes("GEMINI_API_KEY")) {
-          throw new Error("未配置 GEMINI_API_KEY，请在 .env.local 中设置后重启 dev server");
-        }
-        throw new Error(message);
+        throw new Error(formatAnalyzeErrorMessage(data.error, data.error_type));
       }
 
       setAi(data.ai);
       setDownload(null);
       setStep("edit");
+      void thumbnailPromise.then((thumbnail) => saveLocalHistory(data.ai!, selected.name, thumbnail));
     } catch (analyzeError) {
       setError(analyzeError instanceof Error ? analyzeError.message : "识图失败");
       setStep("upload");
@@ -915,7 +889,7 @@ export default function HomePage() {
       const response = await fetch("/api/embed", { method: "POST", body: form });
       const data = (await response.json()) as EmbedApiResponse;
       if (!response.ok || !data.ok || !data.download) {
-        throw new Error(data.error || "写入失败");
+        throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
       }
 
       setDownload(data.download);
@@ -966,6 +940,34 @@ export default function HomePage() {
     setBatchItems((current) => [...current, ...newItems]);
   }
 
+  useEffect(() => {
+    function onPaste(event: ClipboardEvent) {
+      if (isEditablePasteTarget(event.target)) return;
+
+      const onIdleUpload = mode === "idle" && step === "upload";
+      const onBatchUpload =
+        mode === "batch"
+        && !batchProcessing
+        && !batchZipping
+        && batchView !== "complete"
+        && batchItems.length < BATCH_MAX_FILES;
+      if (!onIdleUpload && !onBatchUpload) return;
+
+      const images = filesFromClipboard(event);
+      if (images.length === 0) return;
+
+      event.preventDefault();
+      if (onBatchUpload) {
+        void pickBatchFiles(images);
+        return;
+      }
+      void pickFiles(images);
+    }
+
+    window.addEventListener("paste", onPaste);
+    return () => window.removeEventListener("paste", onPaste);
+  });
+
   function removeBatchItem(id: string) {
     setBatchItems((current) => {
       const target = current.find((item) => item.id === id);
@@ -990,6 +992,7 @@ export default function HomePage() {
     if (!target) return;
 
     patchBatchItem(id, { status: "analyzing", errorMessage: undefined });
+    const thumbnailPromise = makeThumbnailDataUrl(target.file).catch(() => "");
     try {
       const ai = await withRetry(async () => {
         const form = new FormData();
@@ -1000,12 +1003,13 @@ export default function HomePage() {
         const response = await fetch("/api/analyze", { method: "POST", body: form });
         const data = (await response.json()) as AnalyzeApiResponse;
         if (!response.ok || !data.ok || !data.ai) {
-          throw new Error(data.error || `HTTP ${response.status}`);
+          throw new Error(formatAnalyzeErrorMessage(data.error, data.error_type));
         }
         return data.ai;
       });
 
       patchBatchItem(id, { status: "embedding", ai });
+      void thumbnailPromise.then((thumbnail) => saveLocalHistory(ai, target.file.name, thumbnail));
 
       const download = await withRetry(async () => {
         const form = new FormData();
@@ -1016,7 +1020,7 @@ export default function HomePage() {
         const response = await fetch("/api/embed", { method: "POST", body: form });
         const data = (await response.json()) as EmbedApiResponse;
         if (!response.ok || !data.ok || !data.download) {
-          throw new Error(data.error || `HTTP ${response.status}`);
+          throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
         }
         return data.download;
       });
@@ -1025,7 +1029,9 @@ export default function HomePage() {
     } catch (batchItemError) {
       patchBatchItem(id, {
         status: "error",
-        errorMessage: batchItemError instanceof Error ? batchItemError.message : "处理失败",
+        errorMessage: batchItemError instanceof Error
+          ? batchItemError.message
+          : "处理失败，请稍后重试",
       });
     }
   }
@@ -1053,8 +1059,20 @@ export default function HomePage() {
     setBatchZipping(true);
     try {
       const zip = new JSZip();
+      const usedNames = new Set<string>();
       doneItems.forEach((item) => {
-        zip.file(item.download!.fileName, item.download!.base64, { base64: true });
+        const original = item.download!.fileName;
+        const dot = original.lastIndexOf(".");
+        const stem = dot > 0 ? original.slice(0, dot) : original;
+        const ext = dot > 0 ? original.slice(dot) : "";
+        let unique = original;
+        let suffix = 2;
+        while (usedNames.has(unique.toLowerCase())) {
+          unique = `${stem}-${suffix}${ext}`;
+          suffix += 1;
+        }
+        usedNames.add(unique.toLowerCase());
+        zip.file(unique, item.download!.base64, { base64: true });
       });
       const blob = await zip.generateAsync({ type: "blob" });
       const stamp = new Date().toISOString().replace(/[-:]/g, "").replace(/\..+/, "").replace("T", "-");
@@ -1092,7 +1110,7 @@ export default function HomePage() {
     return (
       <PageFrame lightbox={metadataLightbox} onCloseLightbox={closeMetadataLightbox}>
       <div className={`upload-page upload-page-amazon${mode === "batch" && batchItems.length > 0 ? " upload-page-batch-ready" : ""}`}>
-        <BrandLink />
+        <BrandLink className="page-logo" />
         <div className="mode-tabs">
           <span className="mode-tab is-active">图片 SEO</span>
           <Link href="/amazon" className="mode-tab mode-tab-link">
@@ -1115,7 +1133,10 @@ export default function HomePage() {
             inputRef={batchInputRef}
             onPickFiles={pickBatchFiles}
             onRemoveItem={removeBatchItem}
-            onRetryItem={processBatchItem}
+            onRetryItem={(id) => {
+              if (batchProcessing) return;
+              void processBatchItem(id);
+            }}
             onStart={startBatchProcessing}
             onDownloadZip={downloadBatchZip}
             onReset={resetBatch}
@@ -1152,7 +1173,7 @@ export default function HomePage() {
               <div className="drop-zone-text">
                 <p className="drop-zone-main">拖拽图片到此处</p>
                 <p className="drop-zone-sub">
-                  或 <span>点击浏览文件</span>（1 张单独处理，多张批量处理）
+                  或 <span>点击浏览文件</span> · Ctrl+V / ⌘V 粘贴
                 </p>
               </div>
               <p className="drop-zone-caption">JPEG · PNG · WEBP · RAW · HEIF · 最多 {BATCH_MAX_FILES} 张</p>
@@ -1196,7 +1217,7 @@ export default function HomePage() {
     return (
       <PageFrame lightbox={metadataLightbox} onCloseLightbox={closeMetadataLightbox}>
       <div className="upload-page fade-up">
-        <BrandLink />
+        <BrandLink className="page-logo" />
 
         <div className="confirm-preview-wrap">
           {previewUrl ? (
@@ -1379,7 +1400,7 @@ export default function HomePage() {
                   aria-label="重新分析"
                   title="重新分析"
                 >
-                  <RefreshCcwIcon />
+                  <RotateCwIcon />
                 </button>
               ) : null}
               <button type="button" className="btn-ghost" onClick={resetAll}>
@@ -1396,7 +1417,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">品牌 / 型号</span>
-                <span className="field-badge">IPTC · XMP</span>
+                <span className="field-badge">仅 Prompt 上下文</span>
               </div>
               <div className="field-pair">
                 <input
@@ -1418,7 +1439,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">文件名</span>
-                <span className="field-badge">EXIF · 下载文件名</span>
+                <span className="field-badge">下载 File Name</span>
               </div>
               <input
                 className="field-input"
@@ -1431,7 +1452,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">Alt Text</span>
-                <span className="field-badge">XMP · IPTC</span>
+                <span className="field-badge">XMP AltTextAccessibility</span>
               </div>
               <div className="field-bilingual">
                 <div className="field-col-en">
@@ -1448,11 +1469,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Caption */}
+            {/* Headline (caption_en) */}
             <div className="field-row">
               <div className="field-label-row">
-                <span className="field-key">Caption</span>
-                <span className="field-badge">IPTC Caption</span>
+                <span className="field-key">Headline</span>
+                <span className="field-badge">IPTC:Headline · XMP photoshop:Headline</span>
               </div>
               <div className="field-bilingual">
                 <div className="field-col-en">
@@ -1460,6 +1481,7 @@ export default function HomePage() {
                     className="field-input sm"
                     value={ai.caption_en}
                     onChange={(e) => updateAi({ caption_en: e.target.value })}
+                    placeholder="一句话摘要"
                   />
                 </div>
                 <div className="field-col-zh">
@@ -1471,8 +1493,8 @@ export default function HomePage() {
             {/* Tags */}
             <div className="field-row">
               <div className="field-label-row">
-                <span className="field-key">Tags</span>
-                <span className="field-badge">XMP Subject · IPTC Keywords</span>
+                <span className="field-key">Keywords</span>
+                <span className="field-badge">IPTC Keywords · XMP dc:subject</span>
               </div>
               <div className="field-bilingual">
                 <div className="field-col-en">
@@ -1492,7 +1514,7 @@ export default function HomePage() {
             <div className="field-row">
               <div className="field-label-row">
                 <span className="field-key">Description</span>
-                <span className="field-badge">XMP dc:description</span>
+                <span className="field-badge">IPTC Caption · EXIF · XMP dc:description</span>
               </div>
               <textarea
                 className="field-textarea"

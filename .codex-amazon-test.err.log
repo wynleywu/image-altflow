@@ -1,0 +1,51 @@
+[audit] raw LLM output: {
+  "schemaVersion": 2,
+  "overallScore": 72,
+  "scoreBreakdown": {
+    "compliance": 90,
+    "discoverability": 65,
+    "conversion": 75,
+    "completeness": 50,
+    "readability": 80
+  },
+  "summary": "该Listing整体框架完整，但存在标题堆砌、属性缺失以及缺少A+页面和产品描述的问题。通过精简标题、补充关键属性（如承重、材质等）并优化后台埋词，可以显著提升搜索权重与转化率。",
+  "title": {
+    "current": "HOML
+[amazon/audit] { errorType: 'ai_parse_error', details: 'audit returned invalid JSON' }
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- D:\vibe coding\image-altflow\.next\server\webpack-runtime.js
+- D:\vibe coding\image-altflow\.next\server\app\api\amazon\audit\route.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\require.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\load-components.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\utils.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\options.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\index.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\next.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (D:\vibe coding\image-altflow\.next\server\app\api\amazon\audit\route.js:284:47)
+    at Object.<anonymous> (D:\vibe coding\image-altflow\.next\server\app\api\amazon\audit\route.js:287:3) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array],
+  page: '/api/amazon/audit'
+}
+ ⨯ Error: Cannot find module './chunks/vendor-chunks/next.js'
+Require stack:
+- D:\vibe coding\image-altflow\.next\server\webpack-runtime.js
+- D:\vibe coding\image-altflow\.next\server\pages\_document.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\require.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\load-components.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\utils.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\options.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\swc\index.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\build\next-config-ts\transpile-config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\config.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\next.js
+- D:\vibe coding\image-altflow\node_modules\next\dist\server\lib\start-server.js
+    at <unknown> (D:\vibe coding\image-altflow\.next\server\pages\_document.js:63:47)
+    at Object.<anonymous> (D:\vibe coding\image-altflow\.next\server\pages\_document.js:66:3) {
+  code: 'MODULE_NOT_FOUND',
+  requireStack: [Array]
+}

@@ -28,6 +28,7 @@ export interface ImageRecord {
   traceId: string;
   imageUrl: string;
   sourceImageUrl: string;
+  thumbnailDataUrl: string;
   originalFileName: string;
   source: string;
   imageDescription: string;
@@ -45,13 +46,6 @@ export interface ImageRecord {
   errorMessage: string;
   manualNote: string;
   createdAt: number | null;
-}
-
-export interface AnalyzeRequest {
-  image_url: string;
-  original_file_name?: string;
-  source?: string;
-  trace_id?: string;
 }
 
 export interface AnalyzeApiResponse {

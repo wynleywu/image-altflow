@@ -115,7 +115,7 @@ invalid_image_url
 模型：
 
 ```text
-gemini-3.1-flash-lite
+gemini-3.5-flash
 ```
 
 输入：
