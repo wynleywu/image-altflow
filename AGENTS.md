@@ -66,6 +66,9 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `lib/amazon/normalize-audit.ts` | V2 审查结果标准化与旧结果兼容 |
 | `lib/amazon/workspace.ts` | 浏览器 localStorage 工作区、恢复与最近 10 条清理 |
 | `app/amazon/_components/audit-report.tsx` | 可编辑审查工作台与最终 Listing |
+| `app/page.tsx` | 首页路由渲染壳（步骤切换） |
+| `app/_components/home/use-home-workflow.ts` | 单张/批量状态、粘贴、analyze/embed、ZIP |
+| `app/_components/home/*` | types/utils、batch-ui、single-flow、done-page-layout |
 
 ## 本地命令
 
@@ -80,7 +83,7 @@ npm test
 ## 红线
 
 - 写入图片元数据**只用英文字段**（`alt_text_en` 等）。
-- 单张流程 UI 已在 `app/page.tsx`；勿随意改批量 Tab，除非用户明确要求。
+- 首页单张/批量 UI：编排在 `app/page.tsx`，展示组件在 `app/_components/home/`；勿随意改批量流程，除非用户明确要求。
 - 不要恢复飞书依赖；`lib/feishu.ts` 已删除。
 - Amazon 规则必须区分“已确认规则”和“优化建议”；不得把类目建议写成平台违规结论。
 

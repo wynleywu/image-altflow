@@ -6,7 +6,7 @@
 
 Image Altflow 将产品图经视觉模型识图后，把 **英文** SEO 文案写入图片 EXIF/XMP/IPTC（完整描述、Headline、无障碍 Alt、关键词），供素材库与 CMS 使用。中文文案仅用于对照与校对，不写入二进制。
 
-当前交付形态：**CLI + HTTP API + Web 单张/批量流程**（`app/page.tsx`）+ **Amazon Listing 审查**（`app/amazon/page.tsx`）。旧 `/review` 已下线。批量 Tab 在浏览器端串行调用既有 `/api/analyze`、`/api/embed`（并发=1，失败自动重试），完成后打包 ZIP 下载。
+当前交付形态：**CLI + HTTP API + Web 单张/批量流程**（`app/page.tsx` 编排 + `app/_components/home/*` UI）+ **Amazon Listing 审查**（`app/amazon/page.tsx`）。旧 `/review` 已下线。批量流程在浏览器端串行调用既有 `/api/analyze`、`/api/embed`（并发=1，失败自动重试），完成后打包 ZIP 下载。
 
 ## 数据流
 

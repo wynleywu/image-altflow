@@ -15,8 +15,8 @@
 | Embed 运行时输入校验 | 完成（2026-07-10，Base64、图片签名/MIME、AI 字段与 JPEG 段长度） |
 | 可选 Neon + Blob 持久化 | 完成 |
 | Vercel 生产部署 | 完成（2026-06-26，`image-altflow.vercel.app`） |
-| Web UI 单张流程（`app/page.tsx`） | 完成（2026-06-25） |
-| Web UI 批量 Tab | 完成（2026-07-01，串行处理 + 重试 + ZIP 下载） |
+| Web UI 单张流程（`app/page.tsx` + `app/_components/home/*`） | 完成（2026-06-25；2026-07-12 拆分巨石 page） |
+| Web UI 批量流程 | 完成（2026-07-01，串行处理 + 重试 + ZIP 下载） |
 | Amazon Listing 审查 (`/amazon`) | 完成 V2 首批闭环（2026-07-01，诊断证据 + 编辑确认 + 最终稿 + localStorage） |
 | `/review` 旧审核 UI | 已下线（2026-07-10） |
 | Shopify 回写 | 未开始 |
