@@ -36,8 +36,19 @@ Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-al
 ## 阶段二待办
 
 - [x] 公开 API IP 限流（Upstash；未配置则跳过）
-- [ ] Vercel Password Protection（可选额外加固）
-- [ ] Amazon 审查：多策略版本、单章节重新生成、云端历史、Sanity/SP-API
+- [x] 首页 UI 拆分（`app/page.tsx` + `app/_components/home/*`，2026-07-12）
+- [ ] Vercel Password Protection（可选额外加固；公开 API 已有 Upstash 时后置）
+- [ ] Amazon 审查：多策略版本、单章节重新生成、云端历史、Sanity/SP-API（产品 backlog，未排期）
+
+## 与 tools-jinqing 的能力边界
+
+| 能力 | 主落点 | 说明 |
+|------|--------|------|
+| 图片 SEO 元数据（识图 + EXIF） | **本仓** `image-altflow`（alt.jinqing.cc） | 单张/批量 + CLI |
+| Amazon **Listing 审查**（规则/证据/可编辑最终稿） | **本仓** `/amazon` | V2 工作台，localStorage |
+| Amazon **卖点/关键词洞察**（抓取 + 卖点结构化） | **tools-jinqing** `/tools/amazon-insights` | 轻量选品分析，不替代 Listing 审查 |
+
+勿在 tools 再扩深度合规审查；勿在本仓重做卖点抓取工作台。交叉入口：tools 目录链到 altflow；本仓 mode tab 链到 `/amazon`。
 
 ## 历史决策
 
