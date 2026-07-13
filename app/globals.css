@@ -1112,14 +1112,25 @@ select.field-input {
   padding: 36px 40px 40px;
   overflow-y: auto;
   max-height: 88vh;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line) transparent;
 }
 
 .help-dialog-body::-webkit-scrollbar {
-  display: none;
-  width: 0;
-  height: 0;
+  width: 6px;
+}
+
+.help-dialog-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.help-dialog-body::-webkit-scrollbar-thumb {
+  background: var(--line);
+  border-radius: 999px;
+}
+
+.help-dialog-body::-webkit-scrollbar-thumb:hover {
+  background: var(--muted);
 }
 
 .help-dialog-header {
