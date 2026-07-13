@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import Link from "next/link";
-import { ThemeToggle } from "@/app/theme-toggle";
 import { THEME_BOOTSTRAP_SCRIPT } from "@/lib/theme";
 import "./globals.css";
 
@@ -59,7 +58,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Link href="/history" className="signin-corner">
           历史记录
         </Link>
-        <ThemeToggle />
       </body>
     </html>
   );

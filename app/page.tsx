@@ -4,6 +4,7 @@ import Link from "next/link";
 import { MetadataHelpFab } from "@/app/metadata-help";
 import { PageFrame } from "@/app/metadata-lightbox";
 import { BrandLink } from "@/app/brand-link";
+import { ThemeToggle } from "@/app/theme-toggle";
 import {
   BatchAnalyzeSplit,
   BatchDonePage,
@@ -26,6 +27,7 @@ export default function HomePage() {
     if (w.mode === "batch" && w.batchView === "processing") {
       return (
         <PageFrame lightbox={w.metadataLightbox} onCloseLightbox={w.closeMetadataLightbox}>
+          <ThemeToggle />
           <BatchAnalyzeSplit items={w.batchItems} onViewMetadata={w.openBatchItemMetadata} />
         </PageFrame>
       );
@@ -34,6 +36,7 @@ export default function HomePage() {
     if (w.mode === "batch" && w.batchView === "complete" && w.batchItems.length > 0) {
       return (
         <PageFrame lightbox={w.metadataLightbox} onCloseLightbox={w.closeMetadataLightbox}>
+          <ThemeToggle />
           <BatchDonePage
             items={w.batchItems}
             zipping={w.batchZipping}
@@ -48,6 +51,7 @@ export default function HomePage() {
 
     return (
       <PageFrame lightbox={w.metadataLightbox} onCloseLightbox={w.closeMetadataLightbox}>
+        <ThemeToggle />
         <div className={`upload-page upload-page-amazon${w.mode === "batch" && w.batchItems.length > 0 ? " upload-page-batch-ready" : ""}`}>
           <BrandLink className="page-logo" />
           <div className="mode-tabs">
