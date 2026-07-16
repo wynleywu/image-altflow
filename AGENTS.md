@@ -12,6 +12,12 @@
 
 Next.js 15 App Router · Gemini / ModelScope / Cloudflare Workers AI · `exiftool-vendored` · 可选 Neon + Vercel Blob
 
+## 本地端口
+
+- 默认 **3040**（`npm run dev` → `scripts/dev.mjs`）
+- worktree / 并行：`$env:PORT = 3041; npm run dev`
+- 工作区总表：上级目录 `PORTS.md`
+
 ## 核心流程（两步）
 
 ```text

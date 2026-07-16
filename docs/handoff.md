@@ -30,7 +30,7 @@ cp .env.example .env.local   # AI_PROVIDER + 对应 Key
 npm run process -- ./input.jpg ./output.jpg
 ```
 
-Web：`npm run dev` → `http://localhost:3000/`；生产 → **https://image-altflow.vercel.app/**
+Web：`npm run dev` → `http://localhost:3040/`（`PORT` 可覆盖）；生产 → **https://image-altflow.vercel.app/**
 需要改文案时（CLI）：`--analyze-only` → 编辑 `*.ai.json` → `--ai`。
 
 ## 阶段二待办
