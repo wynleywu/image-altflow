@@ -18,6 +18,13 @@ Next.js 15 App Router · Gemini / ModelScope / Cloudflare Workers AI · `exiftoo
 - worktree / 并行：`$env:PORT = 3041; npm run dev`
 - 工作区总表：上级目录 `PORTS.md`
 
+## 本地预览（Orca 内置浏览器）
+
+- 禁止系统浏览器打开预览
+- Web：`orca tab create --url http://localhost:3040 --json`（已有 tab 用 `orca goto`）
+- Markdown：`orca file open --path docs/handoff.md --json`
+- 本地 HTML：`orca tab create --url "file:///<绝对路径>" --json`
+
 ## 核心流程（两步）
 
 ```text
