@@ -25,3 +25,9 @@ tmp/
 test-data/
 
 .vercel
+
+# agent / local dev noise
+.codex-*.log
+.codex-*.err.log
+.next-dev*.log
+.playwright-mcp/
