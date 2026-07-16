@@ -2,7 +2,7 @@
 
 AI 图片 SEO 助手：本地上传 → 视觉模型双语识图（Gemini、ModelScope 或 Cloudflare Workers AI）→ **英文元数据写入图片** → 下载成品。
 
-提供 **CLI + HTTP API + Web 单张/批量流程**（`/`）及 **Amazon Listing 审查工作台**（`/amazon`）。生产环境：**https://image-altflow.vercel.app**
+提供 **CLI + HTTP API + Web 单张/批量流程**（`/`）及 **Amazon Listing 审查工作台**（`/amazon`）。生产环境：**https://alt.jinqing.cc**（Vercel 备用：https://image-altflow.vercel.app）
 
 ## 功能
 
