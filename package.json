@@ -20,7 +20,7 @@
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
     "@vercel/blob": "^2.6.1",
-    "exiftool-vendored": "^36.0.0",
+    "exiftool-vendored": "^37.0.0",
     "jszip": "^3.10.1",
     "next": "^15.3.3",
     "react": "^19.1.0",
