@@ -2,11 +2,14 @@
   "name": "image-altflow",
   "version": "0.1.0",
   "private": true,
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "node scripts/dev.mjs",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "test": "tsx --test lib/amazon/*.test.ts lib/*.test.ts",
     "process": "tsx scripts/process-image.ts",
     "cf:agree": "tsx scripts/cloudflare-agree.ts"
@@ -16,18 +19,22 @@
     "@neondatabase/serverless": "^1.0.1",
     "@upstash/ratelimit": "^2.0.8",
     "@upstash/redis": "^1.38.0",
-    "@vercel/blob": "^1.1.1",
-    "exiftool-vendored": "^28.0.0",
+    "@vercel/blob": "^2.6.1",
+    "exiftool-vendored": "^36.0.0",
     "jszip": "^3.10.1",
     "next": "^15.3.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
   },
   "devDependencies": {
+    "@eslint/js": "^9.0.0",
+    "@eslint/eslintrc": "^3.3.3",
     "@tailwindcss/postcss": "^4.1.8",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",
+    "eslint": "^9.0.0",
+    "eslint-config-next": "^15.5.19",
     "tailwindcss": "^4.1.8",
     "tsx": "^4.19.4",
     "typescript": "^5.8.3"
