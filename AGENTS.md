@@ -1,91 +1,16 @@
 # Image Altflow — Agent 指南
 
-> 最后对齐：2026-07-10。面向在本仓库内协作的 AI。
+> 最后对齐：2026-07-25。全局行为见用户级 AGENTS/CLAUDE；**勿重复全局硬规则**。  
+> 进度与历史决策：[`docs/handoff.md`](./docs/handoff.md)。按需地图：[`docs/agent/`](./docs/agent/README.md)。
 
-## 当前阶段
+**产品：** 双语识图 + 英文 SEO 元数据写入图片（CLI / Web / API）；Amazon Listing 审查工作台在 `/amazon`。
 
-- **阶段一（已完成）**：CLI + HTTP API + 核心库；双语识图（Gemini / ModelScope / Cloudflare Workers AI）；英文元数据写入图片（ExifTool）。
-- **阶段二（进行中）**：首页单张/批量流程已接 API；**Vercel 生产已部署**（2026-06-26）；Amazon Listing 审查已升级为本地持久化编辑工作台；旧 `/review` 已下线。
-- **Legacy**：`docs/mvp-test-plan.md`、`docs/workflow-spec.md`、`n8n/` 描述早期飞书/n8n 方案，勿按其实现。
+**栈：** Next.js 15 App Router · Gemini / ModelScope / Cloudflare Workers AI · `exiftool-vendored` · 可选 Neon + Blob。
 
-## 技术栈
-
-Next.js 15 App Router · Gemini / ModelScope / Cloudflare Workers AI · `exiftool-vendored` · 可选 Neon + Vercel Blob
-
-## 本地端口
-
-- 默认 **3040**（`npm run dev` → `scripts/dev.mjs`）
-- worktree / 并行：`$env:PORT = 3041; npm run dev`
-- 工作区总表：上级目录 `PORTS.md`
-
-## 本地预览（Orca 内置浏览器）
-
-- 禁止系统浏览器打开预览
-- Web：`orca tab create --url http://localhost:3040 --json`（已有 tab 用 `orca goto`）
-- Markdown：`orca file open --path docs/handoff.md --json`
-- 本地 HTML：`orca tab create --url "file:///<绝对路径>" --json`
-
-## 核心流程（两步）
-
-```text
-analyze：本地图 → lib/ai.ts（Gemini、ModelScope 或 Cloudflare）→ 双语 AiImageResult（JSON）
-embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
-```
-
-编排入口：`lib/pipeline.ts`（CLI 与 API 共用，勿在 route 里重复逻辑）。
-
-## 路由
-
-| 路由 | 方法 | 用途 |
-|------|------|------|
-| `/api/analyze` | POST | `multipart` 字段 `image`；返回 `ai` + `originalImageBase64`（不支持 `image_url`） |
-| `/api/embed` | POST | JSON：`imageBase64`, `mimeType`, `ai`；返回 `download` |
-| `/api/records` | GET | 可选历史（需 `POSTGRES_URL` + `RECORDS_API_SECRET`） |
-| `/api/records/[recordId]` | PATCH | 可选审核字段更新（需 Bearer） |
-| `/api/amazon/audit` | POST | ASIN/URL 抓取或手动 Listing；返回 V2 诊断与建议稿 |
-
-## 环境变量
-
-| 变量 | 必填 | 说明 |
-|------|------|------|
-| `AI_PROVIDER` | 否 | `gemini`、`modelscope` 或 `cloudflare`；未设置默认 `modelscope` |
-| `GEMINI_API_KEY` | `AI_PROVIDER=gemini` 时 | Gemini 识图 |
-| `GEMINI_MODEL` | 否 | 默认 `gemini-3.1-flash-lite` |
-| `MODELSCOPE_API_KEY` | 默认 provider 路径时 | ModelScope 识图 |
-| `MODELSCOPE_MODEL` | 否 | 推荐 `Qwen/Qwen3-VL-30B-A3B-Instruct`（`.env.example`）；代码回退默认同左 |
-| `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Account ID |
-| `CLOUDFLARE_API_TOKEN` | `AI_PROVIDER=cloudflare` 时 | Workers AI API Token；禁止提交到 Git |
-| `CLOUDFLARE_MODEL` | 否 | 默认 `@cf/meta/llama-3.2-11b-vision-instruct` |
-| `UPSTASH_REDIS_REST_URL` | 否 | 与 TOKEN 同时配置时启用公开 API 的 IP 限流 |
-| `UPSTASH_REDIS_REST_TOKEN` | 否 | Upstash Redis REST Token；禁止提交到 Git |
-| `POSTGRES_URL` | 否 | Neon；仅 `canPersistRecords()` 时写库 |
-| `BLOB_READ_WRITE_TOKEN` | 否 | 成品图云存储；需与 Postgres 同时配置才在 embed 时持久化 |
-| `RECORDS_API_SECRET` | 使用 `/api/records*` 时 | Bearer 鉴权；未配置则 records HTTP API 503 |
-
-## 关键文件
-
-| 路径 | 职责 |
-|------|------|
-| `lib/ai.ts` | `analyzeImageFromBuffer` 路由（Gemini / ModelScope / Cloudflare） |
-| `lib/gemini.ts` | Gemini 实现；`normalizeAiResult` 共用 |
-| `lib/modelscope.ts` | ModelScope OpenAI 兼容接口（Qwen3-VL 等） |
-| `lib/cloudflare.ts` | Cloudflare Workers AI REST 接口；复用公共 Prompt 与标准化逻辑 |
-| `lib/rate-limit.ts` | 公开 API 的 IP 限流（Upstash；未配置则跳过） |
-| `lib/embed-metadata.ts` | `embedMetadataIntoImage`（只写 `_en`；ExifTool 失败时 JPEG/PNG 走 JS 兜底） |
-| `lib/embed-metadata-js.ts` | JPEG / PNG 无 ExifTool 时的元数据注入（Description / Headline / Alt / Keywords） |
-| `lib/embed-validation.ts` | embed Base64、图片签名与 MIME 运行时校验 |
-| `lib/pipeline.ts` | `analyzeLocalImage`, `embedImageBuffer`, `parseAiFromJson` |
-| `scripts/process-image.ts` | 本地 CLI：`npm run process --` |
-| `lib/amazon/normalize-audit.ts` | V2 审查结果标准化与旧结果兼容 |
-| `lib/amazon/workspace.ts` | 浏览器 localStorage 工作区、恢复与最近 10 条清理 |
-| `app/amazon/_components/audit-report.tsx` | 可编辑审查工作台与最终 Listing |
-| `app/page.tsx` | 首页路由渲染壳（步骤切换） |
-| `app/_components/home/use-home-workflow.ts` | 单张/批量状态、粘贴、analyze/embed、ZIP |
-| `app/_components/home/*` | types/utils、batch-ui、single-flow、done-page-layout |
-
-## 本地命令
+## 命令与端口
 
 ```bash
+npm run dev              # 默认 :3040（scripts/dev.mjs）；PORT 可覆盖
 npm run process -- ./input.jpg ./output.jpg
 npm run process -- ./input.jpg --analyze-only
 npm run process -- ./input.jpg ./output.jpg --ai ./input.ai.json
@@ -93,17 +18,49 @@ npm run build
 npm test
 ```
 
+worktree 并行：`$env:PORT = 3041; npm run dev`。工作区总表：上级 `PORTS.md`。
+
+## 本地预览（Orca）
+
+默认 Orca 内置浏览器；禁止系统浏览器打开预览。
+
+```bash
+orca tab create --url http://localhost:3040 --json
+orca goto --url http://localhost:3040 --json
+orca file open --path docs/handoff.md --json
+```
+
+## 核心流程（速记）
+
+```text
+analyze → lib/ai.ts → 双语 JSON
+embed   → 仅 _en 字段写入 EXIF/XMP/IPTC
+```
+
+编排：`lib/pipeline.ts`（CLI 与 API 共用）。路由 / env / 文件表 → [`docs/agent/api-and-env.md`](./docs/agent/api-and-env.md)。
+
 ## 红线
 
-- 写入图片元数据**只用英文字段**（`alt_text_en` 等）。
-- 首页单张/批量 UI：编排在 `app/page.tsx`，展示组件在 `app/_components/home/`；勿随意改批量流程，除非用户明确要求。
-- 不要恢复飞书依赖；`lib/feishu.ts` 已删除。
-- Amazon 规则必须区分“已确认规则”和“优化建议”；不得把类目建议写成平台违规结论。
+- 写入图片元数据**只用英文字段**（`alt_text_en` 等）
+- 首页单张/批量：编排在 `app/page.tsx` + `app/_components/home/`；勿随意改批量流程，除非用户明确要求
+- 不要恢复飞书依赖；`lib/feishu.ts` 已删除
+- Amazon 规则必须区分「已确认规则」和「优化建议」；不得把类目建议写成平台违规结论
+- Legacy：`docs/mvp-test-plan.md`、`docs/workflow-spec.md`、`n8n/` 勿按其实现
 
-## 文档索引
+## 能力边界（vs tools-jinqing）
 
-- 接入：`docs/integration-guide.md`
-- 架构：`docs/architecture.md`
-- 运维：`docs/runbook.md`
-- 进度：`docs/handoff.md`
-- 设计 token：`docs/figma-design-system.md`
+| 能力 | 落点 |
+|------|------|
+| 图片 SEO 元数据（识图 + EXIF） | **本仓** |
+| Amazon Listing **审查**（规则/证据/可编辑稿） | **本仓** `/amazon` |
+| Amazon **卖点/关键词洞察** | **tools-jinqing** `/tools/amazon-insights` |
+
+## 按需文档
+
+| 文档 | 用途 |
+|------|------|
+| [`docs/agent/api-and-env.md`](./docs/agent/api-and-env.md) | 路由 / env / 关键文件 |
+| [`docs/handoff.md`](./docs/handoff.md) | 进度与决策 |
+| [`docs/architecture.md`](./docs/architecture.md) | 架构 |
+| [`docs/integration-guide.md`](./docs/integration-guide.md) | HTTP 接入 |
+| [`docs/runbook.md`](./docs/runbook.md) | 运维 |
