@@ -2576,7 +2576,15 @@ select.field-input {
   white-space: nowrap;
 }
 
-.batch-thumb-status-queued { background: var(--thumb-status-bg); color: var(--muted); }
+.batch-thumb-status-queued {
+  right: auto;
+  padding: 0;
+  background: none;
+  backdrop-filter: none;
+  color: var(--muted);
+}
+.batch-thumb-status-queued .batch-thumb-status-text { display: none; }
+.batch-thumb-status-queued svg { width: 14px; height: 14px; }
 .batch-thumb-status-analyzing,
 .batch-thumb-status-embedding { background: var(--thumb-status-embed-bg); color: var(--thumb-status-embed-ink); }
 .batch-thumb-status-done { background: var(--thumb-status-done-bg); color: var(--ok); }
