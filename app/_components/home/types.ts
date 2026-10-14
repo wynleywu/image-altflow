@@ -4,7 +4,7 @@ export type Step = "upload" | "confirm" | "analyzing" | "edit" | "done";
 
 export type Mode = "idle" | "single" | "batch";
 
-export const BATCH_MAX_FILES = 20;
+export const BATCH_MAX_FILES = 30;
 export const BATCH_CONCURRENCY = 1;
 
 export type BatchStatus = "queued" | "analyzing" | "embedding" | "done" | "error";
