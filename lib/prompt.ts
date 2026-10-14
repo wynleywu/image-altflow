@@ -24,7 +24,7 @@ Return JSON only, with no markdown or explanation.`;
 export function buildContextPrefix(opts?: { brand?: string; model?: string }): string {
   const lines: string[] = [];
   if (opts?.brand) lines.push(`Brand: ${opts.brand}`);
-  if (opts?.model) lines.push(`Model: ${opts.model}`);
+  if (opts?.model) lines.push(`Amazon ASIN: ${opts.model}`);
   return lines.length
     ? `Known product info (use these exactly in your output — do not guess or modify):\n${lines.join("\n")}\n\n`
     : "";

@@ -429,8 +429,8 @@ export function BatchPanel({
                       className="confirm-field-input"
                       value={model}
                       onChange={(e) => setModel(e.target.value)}
-                      placeholder="型号"
-                      aria-label="型号"
+                      placeholder="ASIN"
+                      aria-label="ASIN"
                       disabled={processing}
                     />
                   </label>

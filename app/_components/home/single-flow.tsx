@@ -68,8 +68,8 @@ export function SingleConfirmStep({
             className="confirm-field-input"
             value={model}
             onChange={(e) => onModelChange(e.target.value)}
-            placeholder="型号"
-            aria-label="型号"
+            placeholder="ASIN"
+            aria-label="ASIN"
           />
         </label>
       </div>
@@ -257,7 +257,7 @@ export function SingleEditStep({
         <div className="fields-card">
           <div className="field-row">
             <div className="field-label-row">
-              <span className="field-key">品牌 / 型号</span>
+              <span className="field-key">品牌 / ASIN</span>
               <span className="field-badge">仅 Prompt 上下文</span>
             </div>
             <div className="field-pair">
@@ -271,7 +271,7 @@ export function SingleEditStep({
                 className="field-input sm"
                 value={ai.model ?? ""}
                 onChange={(e) => onUpdateAi({ model: e.target.value })}
-                placeholder="型号"
+                placeholder="ASIN"
               />
             </div>
           </div>
