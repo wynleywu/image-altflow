@@ -51,6 +51,7 @@ export function useHomeWorkflow() {
   const [batchView, setBatchView] = useState<"ready" | "processing" | "editing" | "complete">("ready");
   const [batchEditId, setBatchEditId] = useState("");
   const pendingEditIdsRef = useRef<string[]>([]);
+  const [batchEmbedding, setBatchEmbedding] = useState(false);
   const [batchZipping, setBatchZipping] = useState(false);
   const [batchError, setBatchError] = useState("");
   const [metadataLightbox, setMetadataLightbox] = useState<MetadataLightboxPayload | null>(null);
@@ -297,6 +298,7 @@ export function useHomeWorkflow() {
     setBatchBrand("");
     setBatchModel("");
     setBatchEditId("");
+    setBatchEmbedding(false);
     pendingEditIdsRef.current = [];
     setBatchView("ready");
     if (batchInputRef.current) batchInputRef.current.value = "";
@@ -373,41 +375,51 @@ export function useHomeWorkflow() {
     )));
   }
 
-  async function embedBatchItem(id: string) {
-    const target = batchItemsRef.current.find((item) => item.id === id);
-    if (!target?.ai || target.status === "embedding" || target.status === "analyzing") return;
+  async function embedPendingBatch() {
+    if (batchEmbedding) return;
+    const ids = batchItemsRef.current
+      .map((item) => item.id)
+      .filter((id) => pendingEditIdsRef.current.includes(id));
+    if (ids.length === 0) {
+      setBatchView("complete");
+      return;
+    }
 
-    patchBatchItem(id, { status: "embedding", errorMessage: undefined });
+    setBatchEmbedding(true);
     try {
-      const nextDownload = await withRetry(async () => {
-        const form = new FormData();
-        form.append("image", target.file);
-        form.append("ai", JSON.stringify(target.ai));
-        form.append("originalFileName", target.file.name);
+      for (const id of ids) {
+        const target = batchItemsRef.current.find((item) => item.id === id);
+        if (!target?.ai || target.status === "analyzing") continue;
 
-        const response = await fetch("/api/embed", { method: "POST", body: form });
-        const data = (await response.json()) as EmbedApiResponse;
-        if (!response.ok || !data.ok || !data.download) {
-          throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
+        patchBatchItem(id, { status: "embedding", errorMessage: undefined });
+        try {
+          const nextDownload = await withRetry(async () => {
+            const form = new FormData();
+            form.append("image", target.file);
+            form.append("ai", JSON.stringify(target.ai));
+            form.append("originalFileName", target.file.name);
+
+            const response = await fetch("/api/embed", { method: "POST", body: form });
+            const data = (await response.json()) as EmbedApiResponse;
+            if (!response.ok || !data.ok || !data.download) {
+              throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
+            }
+            return data.download;
+          });
+          pendingEditIdsRef.current = pendingEditIdsRef.current.filter((itemId) => itemId !== id);
+          patchBatchItem(id, { status: "done", download: nextDownload, errorMessage: undefined });
+        } catch (embedError) {
+          patchBatchItem(id, {
+            status: "analyzed",
+            errorMessage: embedError instanceof Error ? embedError.message : "写入失败",
+          });
+          setBatchEditId(id);
+          return;
         }
-        return data.download;
-      });
-
-      pendingEditIdsRef.current = pendingEditIdsRef.current.filter((itemId) => itemId !== id);
-      patchBatchItem(id, { status: "done", download: nextDownload, errorMessage: undefined });
-      const nextId = batchItemsRef.current
-        .map((item) => item.id)
-        .find((itemId) => pendingEditIdsRef.current.includes(itemId));
-      if (nextId) {
-        setBatchEditId(nextId);
-      } else {
-        setBatchView("complete");
       }
-    } catch (embedError) {
-      patchBatchItem(id, {
-        status: "analyzed",
-        errorMessage: embedError instanceof Error ? embedError.message : "写入失败",
-      });
+      setBatchView("complete");
+    } finally {
+      setBatchEmbedding(false);
     }
   }
 
@@ -481,9 +493,10 @@ export function useHomeWorkflow() {
     batchView,
     setBatchView,
     batchEditId,
+    batchEmbedding,
     selectBatchEdit,
     updateBatchAi,
-    embedBatchItem,
+    embedPendingBatch,
     batchZipping,
     batchError,
     metadataLightbox,

@@ -43,14 +43,15 @@ export default function HomePage() {
               previewUrl={editing.previewUrl}
               fileName={editing.file.name}
               fileSize={formatSize(editing.file.size)}
-              embedding={editing.status === "embedding" || editing.status === "analyzing"}
-              busyLabel={editing.status === "analyzing" ? "分析中…" : "写入中…"}
+              embedding={w.batchEmbedding || editing.status === "analyzing"}
+              busyLabel={editing.status === "analyzing" && !w.batchEmbedding ? "分析中…" : "写入中…"}
+              embedLabel="批处理写入"
               error={editing.errorMessage ?? ""}
               canReanalyze
               onUpdateAi={(patch) => w.updateBatchAi(editing.id, patch)}
               onReanalyze={() => void w.processBatchItem(editing.id)}
               onReset={w.resetBatch}
-              onEmbed={() => void w.embedBatchItem(editing.id)}
+              onEmbed={() => void w.embedPendingBatch()}
               editStrip={w.batchItems.map((item) => ({
                 id: item.id,
                 previewUrl: item.previewUrl,

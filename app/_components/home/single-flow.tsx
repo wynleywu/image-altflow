@@ -181,6 +181,7 @@ export function SingleEditStep({
   onReanalyze,
   onReset,
   onEmbed,
+  embedLabel = "写入并继续",
   busyLabel,
   editStrip,
   onSelectEditItem,
@@ -196,6 +197,7 @@ export function SingleEditStep({
   onReanalyze: () => void;
   onReset: () => void;
   onEmbed: () => void;
+  embedLabel?: string;
   busyLabel?: string;
   editStrip?: {
     id: string;
@@ -277,7 +279,7 @@ export function SingleEditStep({
               ← 重新选择
             </button>
             <button type="button" className="btn" onClick={onEmbed} disabled={embedding}>
-              {embedding ? (busyLabel ?? "写入中…") : "写入并继续"}
+              {embedding ? (busyLabel ?? "写入中…") : embedLabel}
             </button>
           </div>
         </div>
