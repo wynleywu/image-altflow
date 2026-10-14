@@ -36,6 +36,7 @@ export default function HomePage() {
       const editing = w.batchItems.find((item) => item.id === w.batchEditId && item.ai)
         ?? w.batchItems.find((item) => item.ai);
       if (editing?.ai) {
+        const batchWriting = w.batchItems.some((item) => item.status === "embedding");
         return (
           <PageFrame lightbox={w.metadataLightbox} onCloseLightbox={w.closeMetadataLightbox}>
             <SingleEditStep
@@ -43,8 +44,8 @@ export default function HomePage() {
               previewUrl={editing.previewUrl}
               fileName={editing.file.name}
               fileSize={formatSize(editing.file.size)}
-              embedding={w.batchEmbedding || editing.status === "analyzing"}
-              busyLabel={editing.status === "analyzing" && !w.batchEmbedding ? "分析中…" : "写入中…"}
+              embedding={batchWriting || editing.status === "analyzing"}
+              busyLabel={editing.status === "analyzing" && !batchWriting ? "分析中…" : "写入中…"}
               embedLabel="批处理写入"
               error={editing.errorMessage ?? ""}
               canReanalyze

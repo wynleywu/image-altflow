@@ -51,7 +51,6 @@ export function useHomeWorkflow() {
   const [batchView, setBatchView] = useState<"ready" | "processing" | "editing" | "complete">("ready");
   const [batchEditId, setBatchEditId] = useState("");
   const pendingEditIdsRef = useRef<string[]>([]);
-  const [batchEmbedding, setBatchEmbedding] = useState(false);
   const [batchZipping, setBatchZipping] = useState(false);
   const [batchError, setBatchError] = useState("");
   const [metadataLightbox, setMetadataLightbox] = useState<MetadataLightboxPayload | null>(null);
@@ -298,7 +297,6 @@ export function useHomeWorkflow() {
     setBatchBrand("");
     setBatchModel("");
     setBatchEditId("");
-    setBatchEmbedding(false);
     pendingEditIdsRef.current = [];
     setBatchView("ready");
     if (batchInputRef.current) batchInputRef.current.value = "";
@@ -376,7 +374,7 @@ export function useHomeWorkflow() {
   }
 
   async function embedPendingBatch() {
-    if (batchEmbedding) return;
+    if (batchItemsRef.current.some((item) => item.status === "embedding")) return;
     const ids = batchItemsRef.current
       .map((item) => item.id)
       .filter((id) => pendingEditIdsRef.current.includes(id));
@@ -385,42 +383,37 @@ export function useHomeWorkflow() {
       return;
     }
 
-    setBatchEmbedding(true);
-    try {
-      for (const id of ids) {
-        const target = batchItemsRef.current.find((item) => item.id === id);
-        if (!target?.ai || target.status === "analyzing") continue;
+    for (const id of ids) {
+      const target = batchItemsRef.current.find((item) => item.id === id);
+      if (!target?.ai || target.status === "analyzing") continue;
 
-        patchBatchItem(id, { status: "embedding", errorMessage: undefined });
-        try {
-          const nextDownload = await withRetry(async () => {
-            const form = new FormData();
-            form.append("image", target.file);
-            form.append("ai", JSON.stringify(target.ai));
-            form.append("originalFileName", target.file.name);
+      patchBatchItem(id, { status: "embedding", errorMessage: undefined });
+      try {
+        const nextDownload = await withRetry(async () => {
+          const form = new FormData();
+          form.append("image", target.file);
+          form.append("ai", JSON.stringify(target.ai));
+          form.append("originalFileName", target.file.name);
 
-            const response = await fetch("/api/embed", { method: "POST", body: form });
-            const data = (await response.json()) as EmbedApiResponse;
-            if (!response.ok || !data.ok || !data.download) {
-              throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
-            }
-            return data.download;
-          });
-          pendingEditIdsRef.current = pendingEditIdsRef.current.filter((itemId) => itemId !== id);
-          patchBatchItem(id, { status: "done", download: nextDownload, errorMessage: undefined });
-        } catch (embedError) {
-          patchBatchItem(id, {
-            status: "analyzed",
-            errorMessage: embedError instanceof Error ? embedError.message : "写入失败",
-          });
-          setBatchEditId(id);
-          return;
-        }
+          const response = await fetch("/api/embed", { method: "POST", body: form });
+          const data = (await response.json()) as EmbedApiResponse;
+          if (!response.ok || !data.ok || !data.download) {
+            throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
+          }
+          return data.download;
+        });
+        pendingEditIdsRef.current = pendingEditIdsRef.current.filter((itemId) => itemId !== id);
+        patchBatchItem(id, { status: "done", download: nextDownload, errorMessage: undefined });
+      } catch (embedError) {
+        patchBatchItem(id, {
+          status: "analyzed",
+          errorMessage: embedError instanceof Error ? embedError.message : "写入失败",
+        });
+        setBatchEditId(id);
+        return;
       }
-      setBatchView("complete");
-    } finally {
-      setBatchEmbedding(false);
     }
+    setBatchView("complete");
   }
 
   async function downloadBatchZip() {
@@ -493,7 +486,6 @@ export function useHomeWorkflow() {
     batchView,
     setBatchView,
     batchEditId,
-    batchEmbedding,
     selectBatchEdit,
     updateBatchAi,
     embedPendingBatch,
