@@ -99,10 +99,12 @@ function BatchThumbGrid({
             aria-label={isViewable ? `查看 ${item.download!.fileName} 的写入元数据` : undefined}
           >
             <img src={item.previewUrl} alt="" className="batch-thumb-card-img" />
-            <span className={`batch-thumb-status batch-thumb-status-${item.status}`} title={batchStatusLabel(item)} aria-label={batchStatusLabel(item)}>
-              <BatchStatusIcon status={item.status} />
-              <span className="batch-thumb-status-text">{batchStatusLabel(item)}</span>
-            </span>
+            {item.status === "queued" ? null : (
+              <span className={`batch-thumb-status batch-thumb-status-${item.status}`} title={batchStatusLabel(item)} aria-label={batchStatusLabel(item)}>
+                <BatchStatusIcon status={item.status} />
+                <span className="batch-thumb-status-text">{batchStatusLabel(item)}</span>
+              </span>
+            )}
             {!processing && (item.status === "queued" || item.status === "error") ? (
               <>
                 {onRemoveItem ? (
