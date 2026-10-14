@@ -2731,7 +2731,29 @@ select.field-input {
 
 @media (max-width: 480px) {
   .done-hero { padding: 16px; }
-  .upload-page { padding: 32px 16px; }
+  /* 让开固定的 logo / 主题切换，以及底部历史记录和帮助按钮 */
+  .upload-page { padding: 88px 16px 96px; }
+  .upload-h1 {
+    letter-spacing: -0.6px;
+    line-height: 1.25;
+    margin-bottom: 28px;
+  }
+  .steps-strip { margin-top: 28px; }
+  .steps-strip-item { padding: 14px 4px; }
+  .steps-strip-item p:last-child {
+    font-size: 10px;
+    letter-spacing: 0;
+    white-space: nowrap;
+  }
+  .signin-corner {
+    left: 16px;
+    bottom: 72px;
+  }
+  .analyze-left { padding: 84px 16px 20px; }
+  .analyze-right { padding: 24px 16px 96px; }
+  .done-page { padding: 88px 16px 96px; }
+  .meta-sidebar { padding-top: 84px; }
+  .meta-content { padding-bottom: 88px; }
   .audit-diff-grid { grid-template-columns: 1fr; }
   .audit-attr-row { grid-template-columns: 1fr; }
 }
