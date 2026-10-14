@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { MetadataHelpFab } from "@/app/metadata-help";
 import { PageFrame } from "@/app/metadata-lightbox";
 import { BrandLink } from "@/app/brand-link";
@@ -54,12 +53,6 @@ export default function HomePage() {
         <ThemeToggle />
         <div className={`upload-page upload-page-amazon${w.mode === "batch" && w.batchItems.length > 0 ? " upload-page-batch-ready" : ""}`}>
           <BrandLink className="page-logo" />
-          <div className="mode-tabs">
-            <span className="mode-tab is-active">图片 SEO</span>
-            <Link href="/amazon" className="mode-tab mode-tab-link">
-              Amazon 审查
-            </Link>
-          </div>
 
           {w.mode === "batch" && w.batchItems.length > 0 ? (
             <BatchPanel

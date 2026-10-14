@@ -3,7 +3,7 @@
 > 最后对齐：2026-07-25。全局行为见用户级 AGENTS/CLAUDE；**勿重复全局硬规则**。  
 > 进度与历史决策：[`docs/handoff.md`](./docs/handoff.md)。按需地图：[`docs/agent/`](./docs/agent/README.md)。
 
-**产品：** 双语识图 + 英文 SEO 元数据写入图片（CLI / Web / API）；Amazon Listing 审查工作台在 `/amazon`。
+**产品：** 双语识图 + 英文 SEO 元数据写入图片（CLI / Web / API）。Amazon Listing 审查已实现（`/amazon`），首页入口已隐藏、代码保留，待后续再开；不要把入口加回首页。
 
 **栈：** Next.js 15 App Router · Gemini / ModelScope / Cloudflare Workers AI · `exiftool-vendored` · 可选 Neon + Blob。
 
@@ -52,7 +52,7 @@ embed   → 仅 _en 字段写入 EXIF/XMP/IPTC
 | 能力 | 落点 |
 |------|------|
 | 图片 SEO 元数据（识图 + EXIF） | **本仓** |
-| Amazon Listing **审查**（规则/证据/可编辑稿） | **本仓** `/amazon` |
+| Amazon Listing **审查**（规则/证据/可编辑稿） | **本仓** `/amazon`（首页入口已隐藏，代码保留） |
 | Amazon **卖点/关键词洞察** | **tools-jinqing** `/tools/amazon-insights` |
 
 ## 按需文档

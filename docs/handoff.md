@@ -1,6 +1,6 @@
 # Handoff & Changelog
 
-> 最后更新：2026-07-10
+> 最后更新：2026-10-14
 
 ## 当前状态
 
@@ -17,7 +17,7 @@
 | Vercel 生产部署 | 完成（2026-06-26，`image-altflow.vercel.app`） |
 | Web UI 单张流程（`app/page.tsx` + `app/_components/home/*`） | 完成（2026-06-25；2026-07-12 拆分巨石 page） |
 | Web UI 批量流程 | 完成（2026-07-01，串行处理 + 重试 + ZIP 下载） |
-| Amazon Listing 审查 (`/amazon`) | 完成 V2 首批闭环（2026-07-01，诊断证据 + 编辑确认 + 最终稿 + localStorage） |
+| Amazon Listing 审查 (`/amazon`、`/amazon/result`) | 已实现（本地持久化编辑工作台）；首页入口已隐藏（2026-10-14），代码与路由保留，待后续再开 |
 | `/review` 旧审核 UI | 已下线（2026-07-10） |
 | Shopify 回写 | 未开始 |
 
@@ -38,6 +38,7 @@ Web：`npm run dev` → `http://localhost:3040/`（`PORT` 可覆盖）；生产 
 - [x] 公开 API IP 限流（Upstash；未配置则跳过）
 - [x] 首页 UI 拆分（`app/page.tsx` + `app/_components/home/*`，2026-07-12）
 - [ ] Vercel Password Protection（可选额外加固；公开 API 已有 Upstash 时后置）
+- [ ] 重新开放首页 Amazon 审查入口（实现已在 `/amazon` 与 `/amazon/result`，当前仅隐藏入口）
 - [ ] Amazon 审查：多策略版本、单章节重新生成、云端历史、Sanity/SP-API（产品 backlog，未排期）
 
 ## 与 tools-jinqing 的能力边界
@@ -48,12 +49,13 @@ Web：`npm run dev` → `http://localhost:3040/`（`PORT` 可覆盖）；生产 
 | Amazon **Listing 审查**（规则/证据/可编辑最终稿） | **本仓** `/amazon` | V2 工作台，localStorage |
 | Amazon **卖点/关键词洞察**（抓取 + 卖点结构化） | **tools-jinqing** `/tools/amazon-insights` | 轻量选品分析，不替代 Listing 审查 |
 
-勿在 tools 再扩深度合规审查；勿在本仓重做卖点抓取工作台。交叉入口：tools 目录链到 altflow；本仓 mode tab 链到 `/amazon`。
+勿在 tools 再扩深度合规审查；勿在本仓重做卖点抓取工作台。交叉入口：tools 目录链到 altflow。本仓首页 mode tab 已隐藏，`/amazon` 仍可直达。
 
 ## 历史决策
 
 | 日期 | 决策 |
 |------|------|
+| 2026-10-14 | Amazon Listing 审查已实现，首页入口隐藏、代码与路由保留，待后续再开 |
 | 2026-07-10 | 公开 analyze/embed/amazon audit 采用无登录 IP 限流（Upstash sliding window）；本地无 env 时 fail-open |
 | 2026-07-10 | 下线 Legacy `/review` Server Actions；数据库记录 HTTP 管理仅保留带 Bearer 鉴权的 `/api/records*` |
 | 2026-07-10 | 视觉提供商共享 55 秒总预算；Embed 在元数据写入前执行严格运行时校验 |
