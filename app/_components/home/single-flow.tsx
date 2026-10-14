@@ -170,7 +170,7 @@ export function SingleAnalyzingStep({
   );
 }
 
-const MAX_KEYWORD_COUNT = 25;
+const MAX_KEYWORD_COUNT = 20;
 const MAX_KEYWORD_LENGTH = 100;
 
 function KeywordsEditor({
