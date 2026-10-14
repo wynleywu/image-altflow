@@ -39,6 +39,8 @@ embed   → 仅 _en 字段写入 EXIF/XMP/IPTC
 
 编排：`lib/pipeline.ts`（CLI 与 API 共用）。路由 / env / 文件表 → [`docs/agent/api-and-env.md`](./docs/agent/api-and-env.md)。
 
+识图 Gemini 可选 `GEMINI_BASE_URL`（例如 `https://s2a.jinqing.cc/antigravity`）；未设置时仍请求官方 `https://generativelanguage.googleapis.com`。模型名用 `GEMINI_MODEL`。
+
 ## 红线
 
 - 写入图片元数据**只用英文字段**（`alt_text_en` 等）

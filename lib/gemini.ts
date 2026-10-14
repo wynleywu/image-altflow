@@ -9,6 +9,18 @@ const REQUIRED_FIELDS: (keyof AiImageResult)[] = [
   "caption_en",
 ];
 const DEFAULT_REQUEST_TIMEOUT_MS = 25_000;
+const DEFAULT_GEMINI_MODEL = "gemini-3.1-flash-lite";
+
+function readEnv(name: string): string {
+  const raw = process.env[name] ?? "";
+  return (raw.charCodeAt(0) === 0xfeff ? raw.slice(1) : raw).trim();
+}
+
+/** Unset keeps the SDK default (https://generativelanguage.googleapis.com). */
+function geminiBaseUrl(): string | undefined {
+  const configured = readEnv("GEMINI_BASE_URL").replace(/\/+$/, "");
+  return configured || undefined;
+}
 
 export function stripMarkdownFence(text: string): string {
   let cleaned = text.trim();
@@ -76,23 +88,24 @@ async function callGeminiWithInlineData(
   opts?: { brand?: string; model?: string },
   timeoutMs = DEFAULT_REQUEST_TIMEOUT_MS,
 ): Promise<AiImageResult> {
-  const rawKey = process.env.GEMINI_API_KEY ?? "";
-  const apiKey = (rawKey.charCodeAt(0) === 0xfeff ? rawKey.slice(1) : rawKey).trim();
+  const apiKey = readEnv("GEMINI_API_KEY");
   if (!apiKey) {
     throw new Error("GEMINI_API_KEY is not configured");
   }
 
-  const rawModel = process.env.GEMINI_MODEL ?? "";
-  const modelName = (rawModel.charCodeAt(0) === 0xfeff ? rawModel.slice(1) : rawModel).trim()
-    || "gemini-3.1-flash-lite";
+  const modelName = readEnv("GEMINI_MODEL") || DEFAULT_GEMINI_MODEL;
+  const baseUrl = geminiBaseUrl();
   const genAI = new GoogleGenerativeAI(apiKey);
-  const model = genAI.getGenerativeModel({
-    model: modelName,
-    generationConfig: {
-      maxOutputTokens: 2048,
-      responseMimeType: "application/json",
+  const model = genAI.getGenerativeModel(
+    {
+      model: modelName,
+      generationConfig: {
+        maxOutputTokens: 2048,
+        responseMimeType: "application/json",
+      },
     },
-  });
+    baseUrl ? { baseUrl } : undefined,
+  );
 
   let result;
   try {

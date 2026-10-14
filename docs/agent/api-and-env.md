@@ -26,6 +26,7 @@ embed：原图 buffer + ai（仅 _en 字段）→ EXIF/XMP/IPTC → 成品图
 | `AI_PROVIDER` | 否 | `gemini`、`modelscope` 或 `cloudflare`；未设置默认 `modelscope` |
 | `GEMINI_API_KEY` | `AI_PROVIDER=gemini` 时 | Gemini 识图 |
 | `GEMINI_MODEL` | 否 | 默认 `gemini-3.1-flash-lite` |
+| `GEMINI_BASE_URL` | 否 | 未设置时走官方 `https://generativelanguage.googleapis.com`；自建兼容端点示例 `https://s2a.jinqing.cc/antigravity` |
 | `MODELSCOPE_API_KEY` | 默认 provider 路径时 | ModelScope 识图 |
 | `MODELSCOPE_MODEL` | 否 | 推荐 `Qwen/Qwen3-VL-30B-A3B-Instruct`（`.env.example`） |
 | `CLOUDFLARE_ACCOUNT_ID` | `AI_PROVIDER=cloudflare` 时 | Cloudflare Account ID |
