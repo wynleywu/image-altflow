@@ -2671,6 +2671,7 @@ select.field-input {
 .analyze-left-batch {
   align-items: flex-start;
   overflow-y: auto;
+  padding-top: 96px;
 }
 
 .analyze-left-inner-batch {
@@ -2748,6 +2749,7 @@ select.field-input {
 @media (max-width: 900px) {
   .analyze-split { flex-direction: column; }
   .analyze-left { width: 100%; padding: 28px 20px 20px; }
+  .analyze-left-batch { padding-top: 96px; }
   .analyze-right { padding: 32px 24px 48px; }
 
   .meta-split { flex-direction: column; }
