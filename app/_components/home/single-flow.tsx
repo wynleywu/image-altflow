@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import type { AiImageResult } from "@/lib/types";
 import { RotateCwIcon } from "@/app/_components/home/icons";
 import { DonePageLayout } from "@/app/_components/home/done-page-layout";
@@ -165,6 +166,83 @@ export function SingleAnalyzingStep({
           </div>
         </div>
       </div>
+    </div>
+  );
+}
+
+const MAX_KEYWORD_COUNT = 25;
+const MAX_KEYWORD_LENGTH = 100;
+
+function KeywordsEditor({
+  tags,
+  onChange,
+}: {
+  tags: string[];
+  onChange: (next: string[]) => void;
+}) {
+  const [draft, setDraft] = useState("");
+  const [hint, setHint] = useState("");
+
+  const addDraft = () => {
+    const value = draft.trim();
+    if (!value) return;
+    if (value.length > MAX_KEYWORD_LENGTH) {
+      setHint(`单个关键词不能超过 ${MAX_KEYWORD_LENGTH} 个字符`);
+      return;
+    }
+    if (tags.some((t) => t.toLowerCase() === value.toLowerCase())) {
+      setHint("关键词已存在");
+      return;
+    }
+    if (tags.length >= MAX_KEYWORD_COUNT) {
+      setHint(`最多 ${MAX_KEYWORD_COUNT} 个关键词`);
+      return;
+    }
+    onChange([...tags, value]);
+    setDraft("");
+    setHint("");
+  };
+
+  return (
+    <div>
+      <div className="tags-en-row">
+        {tags.map((tag, index) => (
+          <span key={`${tag}-${index}`} className="tag-pill-dark">
+            {tag}
+            <button
+              type="button"
+              className="tag-pill-remove"
+              aria-label={`删除关键词 ${tag}`}
+              title="删除"
+              onClick={() => onChange(tags.filter((_, i) => i !== index))}
+            >
+              ×
+            </button>
+          </span>
+        ))}
+      </div>
+      <div className="tag-add-row">
+        <input
+          className="field-input sm"
+          value={draft}
+          placeholder="输入英文关键词，回车添加"
+          maxLength={MAX_KEYWORD_LENGTH}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            setHint("");
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              e.preventDefault();
+              addDraft();
+            }
+          }}
+        />
+        <button type="button" className="btn-ghost" onClick={addDraft} disabled={!draft.trim()}>
+          添加
+        </button>
+      </div>
+      {hint ? <p className="tag-add-hint">{hint}</p> : null}
     </div>
   );
 }
@@ -365,11 +443,10 @@ export function SingleEditStep({
             </div>
             <div className="field-bilingual">
               <div className="field-col-en">
-                <div className="tags-en-row">
-                  {ai.tags_en.map((tag) => (
-                    <span key={tag} className="tag-pill-dark">{tag}</span>
-                  ))}
-                </div>
+                <KeywordsEditor
+                  tags={ai.tags_en}
+                  onChange={(next) => onUpdateAi({ tags_en: next })}
+                />
               </div>
               <div className="field-col-zh">
                 <p className="field-zh-text">{ai.tags_zh.join("、")}</p>

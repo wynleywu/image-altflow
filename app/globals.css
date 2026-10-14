@@ -948,6 +948,40 @@ select.field-input {
   border-radius: 50px;
   letter-spacing: -0.1px;
 }
+.tag-pill-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  padding: 0;
+  width: 16px;
+  height: 16px;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: inherit;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.tag-pill-remove:hover {
+  opacity: 1;
+  background: rgba(255, 255, 255, 0.15);
+}
+.tag-add-row {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+.tag-add-row .field-input {
+  flex: 1;
+}
+.tag-add-hint {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #b45309;
+}
 
 .meta-error {
   margin-top: 16px;
