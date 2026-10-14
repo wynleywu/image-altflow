@@ -465,6 +465,7 @@ export function SingleEditStep({
               value={ai.image_description_en}
               onChange={(e) => onUpdateAi({ image_description_en: e.target.value })}
             />
+            <p className="field-zh-text">{ai.image_description_zh}</p>
           </div>
         </div>
 
