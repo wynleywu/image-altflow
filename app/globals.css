@@ -1612,6 +1612,11 @@ select.field-input {
   flex-wrap: wrap;
 }
 
+.history-topbar {
+  border-bottom: none;
+  background: transparent;
+}
+
 .audit-topbar-left {
   display: flex;
   align-items: center;

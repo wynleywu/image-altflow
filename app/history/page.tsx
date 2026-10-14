@@ -45,7 +45,7 @@ export default function HistoryPage() {
 
   return (
     <PageFrame lightbox={lightbox} onCloseLightbox={() => setLightbox(null)}>
-      <div className="audit-result-topbar" />
+      <div className="audit-result-topbar history-topbar" />
 
       <div className="audit-result-inner">
         {loading ? (
