@@ -6,12 +6,10 @@ import Link from "next/link";
 import type { AmazonAuditWorkspace } from "@/lib/amazon/types";
 import { loadAuditWorkspace, migrateLegacyWorkspace, saveAuditWorkspace } from "@/lib/amazon/workspace";
 import { AuditReport } from "../_components/audit-report";
-import { BrandLink } from "@/app/brand-link";
 
 function BrandBar() {
   return (
     <div className="audit-result-topbar">
-      <BrandLink />
       <span className="audit-topbar-title">Amazon 审查工作台</span>
     </div>
   );

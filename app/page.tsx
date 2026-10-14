@@ -2,7 +2,6 @@
 
 import { MetadataHelpFab } from "@/app/metadata-help";
 import { PageFrame } from "@/app/metadata-lightbox";
-import { BrandLink } from "@/app/brand-link";
 import { ThemeToggle } from "@/app/theme-toggle";
 import {
   BatchAnalyzeSplit,
@@ -16,6 +15,7 @@ import {
   SingleEditStep,
 } from "@/app/_components/home/single-flow";
 import { BATCH_MAX_FILES } from "@/app/_components/home/types";
+import { formatSize } from "@/app/_components/home/utils";
 import { useHomeWorkflow } from "@/app/_components/home/use-home-workflow";
 
 export default function HomePage() {
@@ -30,6 +30,40 @@ export default function HomePage() {
           <BatchAnalyzeSplit items={w.batchItems} onViewMetadata={w.openBatchItemMetadata} />
         </PageFrame>
       );
+    }
+
+    if (w.mode === "batch" && w.batchView === "editing") {
+      const editing = w.batchItems.find((item) => item.id === w.batchEditId && item.ai)
+        ?? w.batchItems.find((item) => item.ai);
+      if (editing?.ai) {
+        return (
+          <PageFrame lightbox={w.metadataLightbox} onCloseLightbox={w.closeMetadataLightbox}>
+            <SingleEditStep
+              ai={editing.ai}
+              previewUrl={editing.previewUrl}
+              fileName={editing.file.name}
+              fileSize={formatSize(editing.file.size)}
+              embedding={editing.status === "embedding" || editing.status === "analyzing"}
+              busyLabel={editing.status === "analyzing" ? "分析中…" : "写入中…"}
+              error={editing.errorMessage ?? ""}
+              canReanalyze
+              onUpdateAi={(patch) => w.updateBatchAi(editing.id, patch)}
+              onReanalyze={() => void w.processBatchItem(editing.id)}
+              onReset={w.resetBatch}
+              onEmbed={() => void w.embedBatchItem(editing.id)}
+              editStrip={w.batchItems.map((item) => ({
+                id: item.id,
+                previewUrl: item.previewUrl,
+                label: item.file.name,
+                active: item.id === editing.id,
+                disabled: !item.ai,
+                done: item.status === "done",
+              }))}
+              onSelectEditItem={w.selectBatchEdit}
+            />
+          </PageFrame>
+        );
+      }
     }
 
     if (w.mode === "batch" && w.batchView === "complete" && w.batchItems.length > 0) {
@@ -51,9 +85,7 @@ export default function HomePage() {
     return (
       <PageFrame lightbox={w.metadataLightbox} onCloseLightbox={w.closeMetadataLightbox}>
         <ThemeToggle />
-        <div className={`upload-page upload-page-amazon${w.mode === "batch" && w.batchItems.length > 0 ? " upload-page-batch-ready" : ""}`}>
-          <BrandLink className="page-logo" />
-
+        <div className={`upload-page upload-page-amazon${w.mode === "batch" && w.batchItems.length > 0 ? " upload-page-batch-ready" : " upload-page-hero"}`}>
           {w.mode === "batch" && w.batchItems.length > 0 ? (
             <BatchPanel
               items={w.batchItems}
@@ -80,7 +112,9 @@ export default function HomePage() {
             />
           ) : (
             <>
-              <h1 className="upload-h1">上传产品图片，获取嵌入式 SEO 元数据。</h1>
+              <h1 className="upload-h1">
+                <span className="upload-h1-line">上传产品图片，</span><span className="upload-h1-line">获取嵌入式 SEO 元数据。</span>
+              </h1>
 
               <label
                 className={`drop-zone ${w.dragOver ? "is-dragover" : ""}`}

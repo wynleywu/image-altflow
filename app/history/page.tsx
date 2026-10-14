@@ -4,7 +4,6 @@ import { useEffect, useState } from "react";
 import type { ImageRecord } from "@/lib/types";
 import { PageFrame, type MetadataLightboxPayload } from "@/app/metadata-lightbox";
 import { listLocalHistoryRecords, parseManualNoteAi } from "@/lib/client/history-store";
-import { BrandLink } from "@/app/brand-link";
 
 function formatTime(ts: number | null): string {
   if (!ts) return "";
@@ -46,11 +45,7 @@ export default function HistoryPage() {
 
   return (
     <PageFrame lightbox={lightbox} onCloseLightbox={() => setLightbox(null)}>
-      <div className="audit-result-topbar">
-        <div className="audit-topbar-left">
-          <BrandLink />
-        </div>
-      </div>
+      <div className="audit-result-topbar" />
 
       <div className="audit-result-inner">
         {loading ? (

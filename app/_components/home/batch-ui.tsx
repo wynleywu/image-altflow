@@ -1,7 +1,6 @@
 "use client";
 
 import type { RefObject } from "react";
-import { BrandLink } from "@/app/brand-link";
 import { buildEmbeddedImageUrl } from "@/lib/embedded-metadata-display";
 import { DonePageLayout } from "@/app/_components/home/done-page-layout";
 import {
@@ -17,6 +16,8 @@ function batchStatusLabel(item: BatchItem): string {
       return "排队中";
     case "analyzing":
       return "分析中…";
+    case "analyzed":
+      return "待编辑";
     case "embedding":
       return "写入中…";
     case "done":
@@ -153,18 +154,17 @@ export function BatchAnalyzeSplit({
   items: BatchItem[];
   onViewMetadata?: (item: BatchItem) => void;
 }) {
-  const doneCount = items.filter((item) => item.status === "done").length;
   const errorCount = items.filter((item) => item.status === "error").length;
+  const finishedCount = items.filter((item) => item.status === "analyzed" || item.status === "done" || item.status === "error").length;
   const activeCount = items.filter((item) => item.status === "analyzing" || item.status === "embedding").length;
   const allReceived = items.length > 0;
   const hasActive = activeCount > 0;
-  const allFinished = doneCount + errorCount === items.length;
+  const allAnalyzed = items.length > 0 && items.every((item) => item.status !== "queued" && item.status !== "analyzing");
 
   return (
     <div className="analyze-split fade-up">
       <div className="analyze-left analyze-left-batch">
         <div className="analyze-left-inner analyze-left-inner-batch">
-          <BrandLink className="" />
           <BatchThumbGrid items={items} processing onViewMetadata={onViewMetadata} />
         </div>
       </div>
@@ -186,7 +186,7 @@ export function BatchAnalyzeSplit({
         </div>
 
         <p className="batch-analyze-count">
-          已完成 {doneCount} / {items.length}
+          已完成 {finishedCount} / {items.length}
           {errorCount > 0 ? `，失败 ${errorCount}` : ""}
         </p>
 
@@ -218,8 +218,8 @@ export function BatchAnalyzeSplit({
             )}
             {hasActive ? `正在处理 ${activeCount} 张…` : "产品内容已识别"}
           </div>
-          <div className={`analyze-step${allFinished ? "" : " is-pending"}`}>
-            {allFinished ? (
+          <div className={`analyze-step${allAnalyzed ? "" : " is-pending"}`}>
+            {allAnalyzed ? (
               <svg width="16" height="16" viewBox="0 0 16 16">
                 <circle cx="8" cy="8" r="7" fill="#16A34A" />
                 <path d="M5 8l2 2 4-4" stroke="#fff" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -229,7 +229,7 @@ export function BatchAnalyzeSplit({
                 <circle cx="8" cy="8" r="6" stroke="#C9F178" strokeWidth="2" fill="none" strokeDasharray="8 5" strokeLinecap="round" />
               </svg>
             )}
-            {allFinished ? "元数据写入完成" : "写入元数据中…"}
+            {allAnalyzed ? "即将进入编辑" : "完成后进入编辑"}
           </div>
         </div>
       </div>

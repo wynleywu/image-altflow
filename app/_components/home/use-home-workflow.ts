@@ -48,7 +48,9 @@ export function useHomeWorkflow() {
   const [batchBrand, setBatchBrand] = useState("");
   const [batchModel, setBatchModel] = useState("");
   const [batchProcessing, setBatchProcessing] = useState(false);
-  const [batchView, setBatchView] = useState<"ready" | "processing" | "complete">("ready");
+  const [batchView, setBatchView] = useState<"ready" | "processing" | "editing" | "complete">("ready");
+  const [batchEditId, setBatchEditId] = useState("");
+  const pendingEditIdsRef = useRef<string[]>([]);
   const [batchZipping, setBatchZipping] = useState(false);
   const [batchError, setBatchError] = useState("");
   const [metadataLightbox, setMetadataLightbox] = useState<MetadataLightboxPayload | null>(null);
@@ -259,9 +261,9 @@ export function useHomeWorkflow() {
       const onIdleUpload = mode === "idle" && step === "upload";
       const onBatchUpload =
         mode === "batch"
+        && batchView === "ready"
         && !batchProcessing
         && !batchZipping
-        && batchView !== "complete"
         && batchItems.length < BATCH_MAX_FILES;
       if (!onIdleUpload && !onBatchUpload) return;
 
@@ -294,6 +296,8 @@ export function useHomeWorkflow() {
     setBatchError("");
     setBatchBrand("");
     setBatchModel("");
+    setBatchEditId("");
+    pendingEditIdsRef.current = [];
     setBatchView("ready");
     if (batchInputRef.current) batchInputRef.current.value = "";
     setMode("idle");
@@ -320,24 +324,9 @@ export function useHomeWorkflow() {
         return data.ai;
       });
 
-      patchBatchItem(id, { status: "embedding", ai: analyzed });
+      if (!pendingEditIdsRef.current.includes(id)) pendingEditIdsRef.current.push(id);
+      patchBatchItem(id, { status: "analyzed", ai: analyzed, errorMessage: undefined });
       void thumbnailPromise.then((thumbnail) => saveLocalHistory(analyzed, target.file.name, thumbnail));
-
-      const nextDownload = await withRetry(async () => {
-        const form = new FormData();
-        form.append("image", target.file);
-        form.append("ai", JSON.stringify(analyzed));
-        form.append("originalFileName", target.file.name);
-
-        const response = await fetch("/api/embed", { method: "POST", body: form });
-        const data = (await response.json()) as EmbedApiResponse;
-        if (!response.ok || !data.ok || !data.download) {
-          throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
-        }
-        return data.download;
-      });
-
-      patchBatchItem(id, { status: "done", download: nextDownload });
     } catch (batchItemError) {
       patchBatchItem(id, {
         status: "error",
@@ -360,7 +349,65 @@ export function useHomeWorkflow() {
       await runWithConcurrency(queuedIds, BATCH_CONCURRENCY, processBatchItem);
     } finally {
       setBatchProcessing(false);
-      setBatchView("complete");
+      const firstEditableId = batchItemsRef.current
+        .map((item) => item.id)
+        .find((itemId) => pendingEditIdsRef.current.includes(itemId));
+      if (firstEditableId) {
+        setBatchEditId(firstEditableId);
+        setBatchView("editing");
+      } else {
+        setBatchView("complete");
+      }
+    }
+  }
+
+  function selectBatchEdit(id: string) {
+    const target = batchItemsRef.current.find((item) => item.id === id && item.ai);
+    if (!target) return;
+    setBatchEditId(id);
+  }
+
+  function updateBatchAi(id: string, patch: Partial<AiImageResult>) {
+    setBatchItems((current) => current.map((item) => (
+      item.id === id && item.ai ? { ...item, ai: { ...item.ai, ...patch } } : item
+    )));
+  }
+
+  async function embedBatchItem(id: string) {
+    const target = batchItemsRef.current.find((item) => item.id === id);
+    if (!target?.ai || target.status === "embedding" || target.status === "analyzing") return;
+
+    patchBatchItem(id, { status: "embedding", errorMessage: undefined });
+    try {
+      const nextDownload = await withRetry(async () => {
+        const form = new FormData();
+        form.append("image", target.file);
+        form.append("ai", JSON.stringify(target.ai));
+        form.append("originalFileName", target.file.name);
+
+        const response = await fetch("/api/embed", { method: "POST", body: form });
+        const data = (await response.json()) as EmbedApiResponse;
+        if (!response.ok || !data.ok || !data.download) {
+          throw new Error(formatEmbedErrorMessage(data.error, data.error_type));
+        }
+        return data.download;
+      });
+
+      pendingEditIdsRef.current = pendingEditIdsRef.current.filter((itemId) => itemId !== id);
+      patchBatchItem(id, { status: "done", download: nextDownload, errorMessage: undefined });
+      const nextId = batchItemsRef.current
+        .map((item) => item.id)
+        .find((itemId) => pendingEditIdsRef.current.includes(itemId));
+      if (nextId) {
+        setBatchEditId(nextId);
+      } else {
+        setBatchView("complete");
+      }
+    } catch (embedError) {
+      patchBatchItem(id, {
+        status: "analyzed",
+        errorMessage: embedError instanceof Error ? embedError.message : "写入失败",
+      });
     }
   }
 
@@ -433,6 +480,10 @@ export function useHomeWorkflow() {
     batchProcessing,
     batchView,
     setBatchView,
+    batchEditId,
+    selectBatchEdit,
+    updateBatchAi,
+    embedBatchItem,
     batchZipping,
     batchError,
     metadataLightbox,

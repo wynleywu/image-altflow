@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { BrandLink } from "@/app/brand-link";
 import { DoneCheckIcon } from "@/app/_components/home/icons";
 import type { DoneThumb } from "@/app/_components/home/types";
 
@@ -23,8 +22,6 @@ export function DonePageLayout({
 
   return (
     <div className="done-page fade-up">
-      <BrandLink className="page-logo" />
-
       <div className="done-check-sm">
         <DoneCheckIcon size={28} />
       </div>

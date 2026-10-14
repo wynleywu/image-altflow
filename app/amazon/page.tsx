@@ -5,7 +5,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import type { AmazonMarketplace } from "@/lib/amazon/types";
 import { createAuditWorkspace, saveAuditWorkspace } from "@/lib/amazon/workspace";
-import { BrandLink } from "@/app/brand-link";
 
 const FALLBACK_ERROR = "Audit failed. Please try again.";
 const RATE_LIMITED_MESSAGE = "请求过于频繁，请稍后再试";
@@ -102,8 +101,6 @@ export default function AmazonAuditPage() {
 
   return (
     <div className="upload-page upload-page-amazon">
-      <BrandLink className="page-logo" />
-
       <nav className="mode-tabs amazon-nav-tabs">
         <Link href="/" className="mode-tab mode-tab-link">Image SEO</Link>
         <span className="mode-tab is-active">Amazon Audit</span>

@@ -1,7 +1,6 @@
 "use client";
 
 import type { AiImageResult } from "@/lib/types";
-import { BrandLink } from "@/app/brand-link";
 import { RotateCwIcon } from "@/app/_components/home/icons";
 import { DonePageLayout } from "@/app/_components/home/done-page-layout";
 import type { DoneThumb } from "@/app/_components/home/types";
@@ -33,8 +32,6 @@ export function SingleConfirmStep({
 }) {
   return (
     <div className="upload-page fade-up">
-      <BrandLink className="page-logo" />
-
       <div className="confirm-preview-wrap">
         {previewUrl ? (
           <img
@@ -101,7 +98,6 @@ export function SingleAnalyzingStep({
     <div className="analyze-split fade-up">
       <div className="analyze-left">
         <div className="analyze-left-inner">
-          <BrandLink className="" />
           <div className="analyze-preview">
             {previewUrl ? (
               <img src={previewUrl} alt={fileName ? `产品预览：${fileName}` : "已上传的产品图片预览"} />
@@ -185,6 +181,9 @@ export function SingleEditStep({
   onReanalyze,
   onReset,
   onEmbed,
+  busyLabel,
+  editStrip,
+  onSelectEditItem,
 }: {
   ai: AiImageResult;
   previewUrl: string;
@@ -197,11 +196,21 @@ export function SingleEditStep({
   onReanalyze: () => void;
   onReset: () => void;
   onEmbed: () => void;
+  busyLabel?: string;
+  editStrip?: {
+    id: string;
+    previewUrl: string;
+    label: string;
+    active: boolean;
+    disabled: boolean;
+    done: boolean;
+  }[];
+  onSelectEditItem?: (id: string) => void;
 }) {
   return (
     <div className="meta-split fade-up">
       <aside className="meta-sidebar">
-        <BrandLink className="sidebar-logo" />
+        <div className="sidebar-logo" aria-hidden="true" />
         <div className="sidebar-preview">
           {previewUrl ? <img src={previewUrl} alt="" /> : null}
         </div>
@@ -249,10 +258,30 @@ export function SingleEditStep({
               ← 重新选择
             </button>
             <button type="button" className="btn" onClick={onEmbed} disabled={embedding}>
-              {embedding ? "写入中…" : "写入并继续"}
+              {embedding ? (busyLabel ?? "写入中…") : "写入并继续"}
             </button>
           </div>
         </div>
+
+        {editStrip && editStrip.length > 1 ? (
+          <div className="edit-strip" role="tablist" aria-label="本批图片">
+            {editStrip.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={item.active}
+                className={`edit-strip-btn${item.active ? " is-active" : ""}${item.done ? " is-done" : ""}`}
+                disabled={item.disabled}
+                title={item.label}
+                onClick={() => onSelectEditItem?.(item.id)}
+              >
+                <img src={item.previewUrl} alt="" />
+                <span className="edit-strip-index">{index + 1}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
 
         <div className="fields-card">
           <div className="field-row">
