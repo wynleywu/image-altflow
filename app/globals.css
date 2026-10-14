@@ -2699,17 +2699,16 @@ select.field-input {
 }
 
 .edit-strip {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 8px;
-  overflow-x: auto;
-  margin: 0 0 18px;
-  padding-bottom: 4px;
+  margin: 0;
 }
 .edit-strip-btn {
   position: relative;
-  width: 64px;
-  height: 64px;
-  flex-shrink: 0;
+  width: 100%;
+  aspect-ratio: 1;
+  height: auto;
   padding: 0;
   border-radius: 12px;
   overflow: hidden;
@@ -2723,6 +2722,7 @@ select.field-input {
   display: block;
 }
 .edit-strip-btn.is-active { border-color: var(--ink); }
+.edit-strip-btn.is-done .edit-strip-index { background: var(--ok); }
 .edit-strip-btn:disabled { opacity: 0.4; }
 .edit-strip-index {
   position: absolute;
@@ -2758,6 +2758,18 @@ select.field-input {
   .sidebar-preview {
     width: 120px;
     aspect-ratio: 1;
+    flex-shrink: 0;
+  }
+  .edit-strip {
+    flex: 1 1 180px;
+    display: flex;
+    grid-template-columns: none;
+    overflow-x: auto;
+    min-width: 0;
+  }
+  .edit-strip-btn {
+    width: 56px;
+    height: 56px;
     flex-shrink: 0;
   }
   .sidebar-info { flex-direction: row; flex-wrap: wrap; gap: 10px 20px; }

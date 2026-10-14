@@ -214,6 +214,25 @@ export function SingleEditStep({
         <div className="sidebar-preview">
           {previewUrl ? <img src={previewUrl} alt="" /> : null}
         </div>
+        {editStrip && editStrip.length > 1 ? (
+          <div className="edit-strip" role="tablist" aria-label="本批图片">
+            {editStrip.map((item, index) => (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-selected={item.active}
+                className={`edit-strip-btn${item.active ? " is-active" : ""}${item.done ? " is-done" : ""}`}
+                disabled={item.disabled}
+                title={item.label}
+                onClick={() => onSelectEditItem?.(item.id)}
+              >
+                <img src={item.previewUrl} alt="" />
+                <span className="edit-strip-index">{item.done ? "✓" : index + 1}</span>
+              </button>
+            ))}
+          </div>
+        ) : null}
         <div className="sidebar-info">
           <div>
             <p className="sidebar-info-label">原始文件</p>
@@ -262,26 +281,6 @@ export function SingleEditStep({
             </button>
           </div>
         </div>
-
-        {editStrip && editStrip.length > 1 ? (
-          <div className="edit-strip" role="tablist" aria-label="本批图片">
-            {editStrip.map((item, index) => (
-              <button
-                key={item.id}
-                type="button"
-                role="tab"
-                aria-selected={item.active}
-                className={`edit-strip-btn${item.active ? " is-active" : ""}${item.done ? " is-done" : ""}`}
-                disabled={item.disabled}
-                title={item.label}
-                onClick={() => onSelectEditItem?.(item.id)}
-              >
-                <img src={item.previewUrl} alt="" />
-                <span className="edit-strip-index">{index + 1}</span>
-              </button>
-            ))}
-          </div>
-        ) : null}
 
         <div className="fields-card">
           <div className="field-row">
